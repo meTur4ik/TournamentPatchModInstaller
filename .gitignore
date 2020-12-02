@@ -1,2 +1,3 @@
 TPModInstaller.exe
-!Files/
+Files/*
+!README.md
