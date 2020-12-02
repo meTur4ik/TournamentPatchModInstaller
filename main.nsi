@@ -11,15 +11,16 @@
 ;General
 
   ;Name and file
-  Name "Modern UI Test"
+  Name "Tournament Patch Mod"
   OutFile "TPModInstaller.exe"
   Unicode True
 
   ;Default installation folder
-  InstallDir "$LOCALAPPDATA\Modern UI Test"
   
+  ;InstallDir "$LOCALAPPDATA\"
+
   ;Get installation folder from registry if available
-  InstallDirRegKey HKCU "Software\Modern UI Test" ""
+  InstallDirRegKey HKLM "SOFTWARE\WOW6432Node\THQ\Dawn of War - Soulstorm" "installlocation"
 
   ;Request application privileges for Windows Vista
   RequestExecutionLevel user
@@ -48,10 +49,10 @@
 ;--------------------------------
 ;Installer Sections
 
-Section "Dummy Section" SecDummy
+Section "TP mod" SecTPmod
 
   SetOutPath "$INSTDIR"
-  
+
   ;ADD YOUR OWN FILES HERE...
   File /r "Files\*"
 
@@ -80,8 +81,8 @@ SectionEnd
 Section "Uninstall"
 
   ;ADD YOUR OWN FILES HERE...
-  RMDir /r "$INSTDIR\TournamentPatchTest"
-  Delete "$INSTDIR\TournamentPatchTest.module"
+  RMDir /r "$INSTDIR\TournamentPatch"
+  Delete "$INSTDIR\TournamentPatch.module"
 
   Delete "$INSTDIR\TPUninstall.exe"
   
