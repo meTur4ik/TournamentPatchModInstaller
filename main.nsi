@@ -51,10 +51,14 @@
 
 Section "TP mod" SecTPmod
 
-  SetOutPath "$INSTDIR"
+  SetOutPath "$INSTDIR\TournamentPatch"
 
   ;ADD YOUR OWN FILES HERE...
-  File /r "Files\*"
+
+  File /r "Files\TournamentPatch\*"
+
+  SetOutPath "$INSTDIR"
+  File "Files\TournamentPatch.module"
 
   ;Store installation folder
   WriteRegStr HKCU "Software\Modern UI Test" "" $INSTDIR
