@@ -1,11 +1,8 @@
-;NSIS Modern User Interface
-;Basic Example Script
-;Written by Joost Verburg
-
 ;--------------------------------
 ;Include Modern UI
 
   !include "MUI2.nsh"
+
 
 ;--------------------------------
 ;General
@@ -16,19 +13,18 @@
   Unicode True
 
   ;Default installation folder
-  
-  ;InstallDir "$LOCALAPPDATA\"
-
   ;Get installation folder from registry if available
   InstallDirRegKey HKLM "SOFTWARE\WOW6432Node\THQ\Dawn of War - Soulstorm" "installlocation"
 
   ;Request application privileges for Windows Vista
   RequestExecutionLevel admin
 
+
 ;--------------------------------
 ;Interface Settings
 
   !define MUI_ABORTWARNING
+
 
 ;--------------------------------
 ;Pages
@@ -39,7 +35,8 @@
   
   !insertmacro MUI_UNPAGE_CONFIRM
   !insertmacro MUI_UNPAGE_INSTFILES
-  
+
+
 ;--------------------------------
 ;Languages
  
