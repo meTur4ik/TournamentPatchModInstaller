@@ -49,13 +49,20 @@
 ;Variables
 
   Var /GLOBAL CAMERA_FIX
+  Var /GLOBAL TP_MOD_KEY
 
 
 ;--------------------------------
 ;Installer Sections
 
-Section "TP mod" SecTPmod
+Section "-TP mod" SecTPmod
 
+  ReadRegStr $TP_MOD_KEY HKCU "Software\TournamentPatchMod" "installlocation"
+  ${If} $TP_MOD_KEY != ""
+    MessageBox MB_OK "Tournament Patch Mod is already installed"
+    Abort "Tournament Patch Mod is already installed"
+  ${EndIf}
+  
   ;ADD YOUR OWN FILES HERE...
   SetOutPath $INSTDIR\TournamentPatch
   File /r "Files\TournamentPatch\*"
@@ -83,6 +90,13 @@ Section "Camera Fix" SecCameraFix
   File Files\CameraFix\camera_low.lua
   File Files\CameraFix\camera_ed.lua
   WriteRegStr HKCU "Software\TournamentPatchMod" "camerafix" $CAMERA_FIX
+
+SectionEnd
+
+Section /o "Set QWERTY Hotkeys by default" SecQwertyHotkeys
+
+  SetOutPath $INSTDIR\Profiles\Profile1\tournamentpatch
+  File Files\QwertyHotkeys\KEYDEFAULTS.LUA
 
 SectionEnd
 
