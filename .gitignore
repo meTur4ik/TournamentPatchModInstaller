@@ -1,3 +1,4 @@
 TPModInstaller.exe
 Files/*
-!README.md
+!Files/README.md
+!Files/LICENSE

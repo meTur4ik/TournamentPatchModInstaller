@@ -1,1 +1,2 @@
-# Unpack TournamentPatch archive here no need to remove this README.md file, it won't join the setup
+# Unpack TournamentPatch archive here.
+No need to remove this `README.md` file, it won't join the setup. Also consider replacing the LICENSE file with yours if so called "MIT license" is not the license you are using
