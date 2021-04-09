@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="TournamentPatchModInstaller" Language="1033" Version="1.6.4" Manufacturer="Tournament Patch" UpgradeCode="664efaf7-ab73-44f9-9ac1-0b98202a9ae8">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <UIRef Id="WixUI_InstallDir"/>
+    <Property Id="WIXUI_INSTALLDIR" Value="TARGETDIR" />
+    <WixVariable Id="WixUILicenseRtf" Value="Visuals\License.rtf" />
+
+    <Property Id="DOWROOTFOLDER">
+      <RegistrySearch Id="DowRootFolder"
+                      Root="HKLM"
+                      Key="SOFTWARE\WOW6432Node\THQ\Dawn of War - Soulstorm"
+                      Name="installlocation"
+                      Type="raw" />
+    </Property>
+
+    <CustomAction Id="SetTargetDir" Property="TARGETDIR" Value="[DOWROOTFOLDER]"/>
+
+      <Feature Id="ProductFeature" Title="TournamentPatchModInstaller" Level="1">
+      <ComponentGroupRef Id="ProductComponents" />
+    </Feature>
+
+    <InstallUISequence>
+      <Custom Action="SetTargetDir" Before="CostFinalize"/>
+    </InstallUISequence>
+    <InstallExecuteSequence>
+      
+    </InstallExecuteSequence>
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+    </Directory>
+  </Fragment>
+
+
+  <Fragment>
+    <Variable Name="TPFOLDER" Value="..\..\Files"/>
+    <ComponentGroup Id="ProductComponents" Directory="TARGETDIR">
+      
+
+      <!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
+      <Component Id="ProductComponent" Guid="DA24A905-94E4-4AEF-91D3-21E3E6EE0447">
+        <File Id="TournamentPatch.module" Name="TournamentPatch.module" Source="..\..\Files\TournamentPatch.module"></File>
+        <!-- TODO: Insert files, registry keys, and other resources here. -->
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+</Wix>
