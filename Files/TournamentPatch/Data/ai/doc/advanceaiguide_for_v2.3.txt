@@ -1,0 +1,1096 @@
+####################################################################################################
+##
+## GENERAL INFO FOR MODDERS (for use with Dawn of War + Dark Crusade expansion) - Revision 3
+## Edited by Arkhan 22.04.2007
+## Edited by Corsix 02.04.2006
+## Edited by Thudmeizer 23.04.2007
+##
+####################################################################################################
+
+Content:
+
+1.) Introduction
+2a.) Files in a race folder
+2b.) Quick Tutorial how to use each File
+3.) Adding a new race
+4.) Adding new units to an existing race
+5.) Combining different mods
+6.) Compatibility with further revisions of the skirmish AI
+7.) The AI Control Panel
+8.) TroubleShooting and Tweaking
+9.) How to have All-AI battles
+
+----------------------------------------------------------------------------------------------------
+1.) Introduction:
+----------------------------------------------------------------------------------------------------
+
+In this new revision of the skirmish AI for the Dark Crusade expansion, the structure of the code was
+changed to separate the core AI code from the race AI code.
+The core AI code, located in the 'ai\core' folder contains the fundamental AI functions used by all
+races. This part should only be changed by the AI programmers of the skirmish AI team.
+If you're a modder who includes new races or modifies existing races, then you should only need
+to modify the race AI code, located in the 'ai\races' folder. Each race has its own AI folder in
+this directory. If you want to modify the chaos space marine race, then all code files you need are
+located in the 'ai\races\chaos_marine_race' directory.
+
+
+
+----------------------------------------------------------------------------------------------------
+2a.) Files in a race folder:
+----------------------------------------------------------------------------------------------------
+
+Each race folder normally has a loader AI file in the root directory and three subfolders with required
+and optional AI files. 
+
+To describe the purpose and content of the files we'll take the chaos marines race folder as an example:
+
+Folder 'ai\races\chaos_marine_race':
+
+>> loader.ai
+
+You MUST have a loader file like that for every race. It is the interface from the race specific ai files
+to the core AI code. The loader files contains one race class with several fixed methods. Fixed methods
+means that all race loaders must have them, but with different content of course. Most of them load and
+initialize race specific ai files and/or provide information about the race. Make sure that the loader file
+is called loader.ai and that the folder name for the race is the same as the race's name
+(eg. space_marine_race , eldar_race , gaurd_race , ...)
+
+There are three different sub folders in each race folder:
+
+The 'info' subfolder:
+---------------------
+
+>> chaosunitstats.ai
+
+This folder contains both Unit/Leader/Attachment Strengths and General Info about squad and vehicle stats. 
+This file is required.
+
+The 'strategies' subfolder:
+---------------------------
+
+>> chaosbuildbasestrategy.ai
+>> chaosstrategyinfo.ai
+
+
+This folder contains pretty much the most important files. The build base strategy file contains a lot of
+information about buildings, researches and addons. The strategy info file contains the very heart of the
+race specific information separated in three categories:
+
+a.) BuildBaseStrategyInfo:
+Contains mainly one or more build programs. A build program defines exactly in which order to build buildings
+and make researches and addons. (Note: Inherited from BuildBaseStrategy in the core AI)
+
+b.) BuildOrderStrategyInfo:
+Defines the basic build order for the first steps
+
+c.) AttackStrategyInfo:
+Very small and very unimportant because the info is mainly obsolete. It's still there to ensure compatibility.
+
+All AI difficulty levels are now used in the one file so seperate EASY, STANDARD, and HARD are now combined into one!
+All files in the strategies sub folder are REQUIRED!
+
+The 'tactics' subfolder:
+------------------------
+
+>> bloodthirstertactic.ai
+>> chaoslordtactic.ai
+>> etc.
+
+Ths folder contains only optional ai files. If one of the units of the race has special abilities, then the
+standard tactics of the core AI might not be enough to use them. In this case you write your own tactic file
+exactly for this unit. (Note: Inherited from InfantryTactic/VehicleTactic in the core AI)
+
+
+----------------------------------------------------------------------------------------------------
+2b.) Quick Tutorial how to use each File or Folder (Chaos Marines are used as example):
+----------------------------------------------------------------------------------------------------
+
+Root of the race folder:
+------------------------
+
+loader.ai
+~~~~~~~~~~~~~~
+This file basically points the AI logic to the various files and folders related to this faction
+
+Things of interest you should know:
+
+1) For the function chaos_marine_race:GetRaceName()
+	return "chaos_marine_race"
+- Make sure the "_race" name above is all lowercase!
+- Also, make sure that the class name is the same as the race name
+
+
+2) For function chaos_marine_race:LoadRace( eDifficulty )
+- This section loads all applicable files based on general builds and unit-specific abilities.
+This section also applies to function ChaosMarineRace:CreateTactic(oSquadAI) associating the unit-specific abilities
+with their tactic files. Note how they synch with each other and do the same with your faction.
+
+
+3) For the function chaos_marine_race:GetInfo(sType) a default value of:
+
+	-- Check info type
+	if (sType == "TurretPower") then
+		return 300
+	elseif (sType == "SupportAllyFactor") then
+		return 8 / 4
+	elseif (sType == "AttackModifier") then
+		return 10
+	elseif (sType == "CriticalRangeIncreasePerTier") then
+		return 10
+	elseif (sType == "MinArmyStrengthPerTier") then
+		return 750
+	elseif (sType == "AttackRatio") then
+		return 4 / 5
+	elseif (sType == "RetreatRatio") then
+		return 3 / 5
+	elseif (sType == "InvisibleBuildings") then
+		return false
+
+Should be considered. TurretPower is mainly for keeping enemies away from turrets in Tier1 or near gamestart. Orks usually have
+a value of 100 since they build plenty of banners so the lower the value the more likely chance of attack. However, since Orks 
+have plenty of banners, they are kept safe but enemy AI will still attack. A value of 300 with the Orks would cause any AI to
+avoid them all together in Tier1. A good balance is between 150-300.
+
+SupportAllyFactor ranges from a value "10 / 4" (always help out no matter what) to "8 / 4" (somewhat commit) to "6 / 4" (reluctant)
+to "1" (indecisive). A good middle ground is between "9 / 4" to "7 / 4". As example, Eldar offer the highest support at
+"10 / 4" due to their fast tanks and infantry. 
+
+AttackModifier should be set to either -10 (supports allies more often) to 0 (neutral and cautious) to 10 (much more aggressive and risk-taking)
+
+CriticalRangeIncreasePerTier - returns the range increase per tier for the critical range around the home base or allied bases - default is 10
+
+MinArmyStrengthPerTier - Sets the minimum army strength per tier required for an attack - default is 750
+
+AttackRatio and Retreat Ratio - Sets how aggressive the faction is and what tolerance it has to retreat from attacks. Generally, this value 
+should remain as it shows above.
+
+
+4) For function chaos_marine_race:CreateBaseTactic(oBuilding)
+This method is new and adds tactic files for the buildings of your race. For example the IG HQ and the Eldar 
+Webwaygate have special tactic files. If you do not have a building using a special ability then use the Chaos scripts
+as your example.
+
+
+5) This section: function chaos_marine_race:GetBuildingType(sBuildingName)
+
+This area sets the threat value per building. Normally, turrets and mines will have a value while most others will not. 
+Use the Chaos faction as an example to fill out your values. You do not need to use all your buildings here - just the ones
+shown which Chaos uses UNLESS you have specific buildings with exception anti-infantry/vehicle/monster damage. Then their
+threat values should be made higher.
+
+
+
+The 'info' subfolder:
+---------------------
+
+chaosunitstats.ai
+~~~~~~~~~~~~~~~~~
+This file essentially sets the UnitStrength Value for all the faction's units and the # of weapon upgrades for each unit of that faction
+and when best to build that upgrade.
+
+For the following section:
+
+UnitStrengths.chaos_squad_slave = 0
+UnitStrengths.chaos_squad_cultist = 20
+UnitStrengths.chaos_marine_squad = 50
+
+LeaderStrengths.chaos_squad_cultist = 75
+LeaderStrengths.chaos_marine_squad = 75
+LeaderStrengths.chaos_squad_raptor = 75
+
+Attachments.chaos_squad_cultist = { "chaos_squad_lord", "chaos_squad_sorcerer" }
+Attachments.chaos_marine_squad = { "chaos_squad_lord", "chaos_squad_sorcerer" }
+
+- The UnitStrengths entry is quiet obvious and represents the strength of the unit. This should be kept very close
+to the resource cost of the unit.
+- The LeaderStrengths entry sets the unit strength of the leader of a squad.
+- The Attachments entries must contain all possible attachments to the squad.
+
+
+For the next section:
+
+		name = "Chaos Marine",
+		sbp_name = "chaos_marine_squad",
+		ebp_name = "chaos_marine_bolter",
+		class = UnitStatsAI.UC_HeavyInfantryMed,
+		rating = 4,
+		potential =
+		{
+			{
+				name = "chaos_bolter_tactical",
+				effectiveness = GenerateUnitEffectiveness(3.9,4.4,4.1,4.2,4.1,1.5,0.0,0.0,4.1,0.0,3.0,3.7,1.9,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "chaos_heavy_bolter_tactical",
+				effectiveness = GenerateUnitEffectiveness(6.5,6.1,5.9,5.9,5.7,3.4,2.4,0.0,5.4,0.0,4.2,4.3,2.6,1.9),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "chaos_plasma_gun_tactical",
+				effectiveness = GenerateUnitEffectiveness(6.1,5.1,5.1,5.3,7.1,4.9,3.8,2.2,7.1,2.2,6.5,0.0,4.1,3.2),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "chaos_knife_tactical",
+				effectiveness = GenerateUnitEffectiveness(4.1,4.4,4.0,4.1,4.1,0.0,0.0,0.0,4.0,0.0,3.6,4.1,2.2,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Chaos Raptor",
+		sbp_name = "chaos_squad_raptor",
+		ebp_name = "chaos_raptor",
+		class = UnitStatsAI.UC_HeavyInfantryMed,
+		rating = 4,
+		potential =
+		{
+			{
+				name = "chaos_flamer_raptor",
+				effectiveness = GenerateUnitEffectiveness(3.2,4.0,4.2,4.5,4.1,1.6,0.0,0.0,4.1,0.0,3.3,2.9,1.9,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "chaos_bolt_pistol_raptor",
+				effectiveness = GenerateUnitEffectiveness(1.6,3.1,3.2,3.1,3.1,0.0,0.0,0.0,3.3,0.0,2.0,2.4,1.6,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "chaos_chainsword_raptor",
+				effectiveness = GenerateUnitEffectiveness(5.1,5.6,5.3,5.3,4.6,2.4,0.7,0.0,5.3,0.0,4.2,4.0,2.8,0.0),
+				range = UnitStatsAI.RT_Melee,
+
+Things of interest you should know:
+
+1) Units which are built from the same building OR have either the same rating or class (both set by you) *SHOULD*
+   have close-to-similar weapon values for their starting weapon so that the AI will build both rather then
+   favouring one unit over another. ie. Note the 11 values for the Chaos Marine's starting weapon: "chaos_bolter_tactical"
+   and then note the same for the Raptor's starting (and only) weapon: "chaos_chainsword_raptor". Both are somewhat close
+   to the same sequence of values BUT different enough so that the AI will build these units based on what values are 
+   higher or lower.
+
+2) Keep the sequence of unit entries ordered based on its "class" where lowest unit (usually engineer) to highest one 
+   (uber) so the start of your <faction name>unitstats.ai (ordered from top to bottom) should look like:
+   UnitStatsAI.UC_LightInfantryLow	-- Engineers or Scouts
+   UnitStatsAI.UC_LightInfantryMed	-- Basic Infantry
+   UnitStatsAI.UC_LightInfantryHigh 	-- Basic Infantry
+   UnitStatsAI.UC_HeavyInfantryMed 	-- Main Infantry
+   UnitStatsAI.UC_HeavyInfantryHigh	-- Main Infantry
+   UnitStatsAI.UC_MonsterMed 		-- Basic Monster
+   UnitStatsAI.UC_Commander 		-- Commander Infantry/Vehicles
+   UnitStatsAI.UC_VehicleLow 		-- Basic Vehicles
+   UnitStatsAI.UC_VehicleMed 		-- Medium Vehicles
+   UnitStatsAI.UC_VehicleHigh 		-- Advanced Vehicles or Uber Unit	
+   UnitStatsAI.UC_MonsterHigh		-- Advanced Monster or Uber Unit
+
+   Note: The "class" of your unit is a subjective designation you can choose to label your unit. Whatever you choose, however,
+   other enemies will use to choose their weapon to best fight against it based on the 11 GenerateUnitEffectiveness values
+   discussed below.
+
+3) The 14 GenerateUnitEffectiveness values for each weapon are numbered between 0 to 10. You can have a .5 value like
+   1.5 or 1.7. Each of the 14 GenerateUnitEffectiveness values correspondances from left-to-right how effective that 
+   weapon is against the following: 
+
+   lightinfantry_low, lightinfantry_med, lightinfantry_high, heavyinfantry_med, heavyinfantry_high, vehicle_low,
+   vehicle_med, vehicle_high, monster_med, monster_high, commander, building_low, building_med, building_high. 
+
+   As an example, note the Raptors above: their only weapon: "chaos_chainsword_raptor" is more effective against vehicles then 
+   infantry but the chaos marines: "chaos_heavy_bolter_tactical" is good against infantry thus it will be a priority to upgrade
+   the squad if infantry are near.
+
+   Note: when units have multiple weapon upgrades ALWAYS give each weapon AFTER the unit's primary one a reason to
+   upgrade to those weapon types. Use the Chaos Marines as an example as you'll see the "chaos_heavy_bolter_tactical"
+   weapon has some higher values over their starting weapon "chaos_bolter_tactical". This tells the AI to upgrade
+   the squad with "chaos_heavy_bolter_tactical" weapons based on the higher GenerateUnitEffectiveness values for the
+   "chaos_heavy_bolter_tactical". If a squad has more weapon upgrades, then designate values for those based on the
+   weapon's primary strengths.
+
+4) The "range" line for each weapon has four possibilities: 
+   UnitStatsAI.RT_None		-- no weapons
+   UnitStatsAI.RT_Melee		-- weapons like for swords or anything for close combat
+   UnitStatsAI.RT_ShortRanged	-- weapons like flamers or laser pistols
+   UnitStatsAI.RT_Ranged	-- weapons like rockets and basically anything that fires at a distance
+
+5) You MUST have all necessary weapon entries, or the AI will never upgrade the unit to the missing weapon type.
+
+
+
+The 'strategies' subfolder:
+---------------------------
+
+chaosbuildbasestrategy.ai
+~~~~~~~~~~~~~~~~~~~~~~~~~
+This is a primary build file for your faction that sets overall behaviours for the way the faction builds. Its best
+to use other factions as an example when building your own file here.
+
+The function areas of interest are:
+
+function ChaosBuildBaseStrategy:__init( baseinfo ) super( baseinfo ) 
+AddDetectorUnit("unit_name"):
+- Since DC offers a new infiltration system you should add the valid detectors of your race in the constructor with
+the new method AddDetectorUnit("unit_name"). If you've more than one unit just call it several times. Make sure to
+add the best detector first and the worst last. The AI will favor the best available detectors.
+
+
+function ChaosBuildBaseStrategy:ChooseBuildProgram()
+- Chooses which buildprogram to use. Customize this based on your needs.
+
+
+function ChaosBuildBaseStrategy:EvaluateSquadCap()
+- Researches or builds squad or support cap items for your faction to increase its total population size. The scripts will
+look different based on if you need research items to increase population (Space Marines or Chaos) or if buildings are 
+needed (Orks, Eldar, or Imperial Guard). 
+
+Note the sections of the script:  CheckSquadCap(300, 0)  and  CheckSupportCap(150, 300)  -- the left value is requisition
+and the right, power. You can increase/decrease these values based on how fast you want population to increase HOWEVER 
+it is recommended to keep it over the actual cost of the research/building item.
+
+
+function ChaosBuildBaseStrategy:GetBuildingName( sType )
+- Sets a quick check for the presence of important buildings. The ones used by Chaos should apply to all factions.
+If, however, your faction has no generator or turrets, for example, use your listening post as a substitute or else the
+game will crash
+
+
+function ChaosBuildBaseStrategy:GetAddonBuilding( sType )
+- Sets a quick check for the presence of addons for their respective buildings
+
+
+function ChaosBuildBaseStrategy:IsTierAddon( sName, iTargetTier )
+- Another check to ensure an addon is meant for a tier upgrade (this function only applies if your using a major
+building addon to denote a tier upgrade based on the function UpdateTierLevel() you'll see mentioned below).
+
+
+function ChaosBuildBaseStrategy:GetUnitStats(sSquadName)
+- Sets a quick check for what units in your faction have a certain squad or support cap. If your unit has none, then
+the unit should not appear in this area. As example: a value of: return 2, 0  means the unit has a squad cap of 2.
+Conversely, return 0, 2 is a support cap of 2.
+
+
+function ChaosBuildBaseStrategy:UpdateTierLevel()
+- Sets a quick check for when tier changes occur. Use other factions as an example to customize this based on when 
+the AI will know when major tier changes take place.
+
+
+function ChaosBuildBaseStrategy:BuildFlexible()
+- Sets priority schedules for when applicable research items or buildings are built by the AI.
+Example: self:DynamicResearch("chaos_frag_grenade_research", 2, 25, 75, 0, 0, "chaos_marine_squad", 2)
+The research item "chaos_frag_grenade_research" is built when a minimum prerequisite of Tier2, Requisition of 25,
+Power of 75, No Squad or Support cap, and when 2 squads of "chaos_marine_squad" are present/is reached.
+
+For dynamic buildings its somewhat similar:
+Example: self:DynamicBuild("chaos_temple", 2, 1, 800, 0, 0, 0)
+The building "chaos_temple" must be the SECOND one to be built (note the "2"), with a minimum prerequisite of Tier1, with a 
+Requisition of 800 and no power or squad/support cap needed. 
+
+Note there are two of these:
+self:DynamicBuild("chaos_machine_pit", 2, 2, 200, 600, 0, 0)
+self:DynamicBuild("chaos_machine_pit", 3, 3, 500, 1500, 0, 0)
+The first value after the building name is the BuildingCount. This value MUST represent the grand total of all buildings
+of that type the more you ask the AI to build it. The other values after it are when you ask the AI to build it which can
+be anything you like (although should be higher #s then the last one called).
+
+function ChaosBuildBaseStrategy:ForceTech()
+- Sets a priority for the AI to quickly force itself to tech quickly. This is NOT really necessary but we use it so the
+AI should feel it MUST desire buildings in higher tiers. This will give the AI urgency to tech faster.
+
+function ChaosBuildBaseStrategy:RangedDeepStrike(iBuildingID)
+- checks if building deepstrikes only ranged units.
+
+function ChaosBuildBaseStrategy:GetPlacementType(iBuildingID)
+- a new improved building placement system. With the inherited method GetPlacementType(iBuildingID), you
+can adjust the placement of the buildings of your race individually.
+The following placement types exist:
+"HQ" => First built at start point, second at ally (You can modify this with the self.m_iNumHQAtStartPos variable in the constructor. Used with Necrons.)
+"Military" => First at start point, further ones at front posts
+"Front1" => Build 1 instance at the closest listening post / bigger generator / HQ to the enemy.
+"Front2" => Build 2 instances at the closest listening post / bigger generator / HQ to the enemy.
+"Mine" => Built at criticals and front posts
+"Baseback" => Build at the back of the base if possible
+
+function ChaosBuildBaseStrategy:RelicRequired(sName)
+You should add all your Relic troops/researches/addons to this method. The build controller checks if the AI owns a Relic and will ignore this item in this
+case.
+
+
+Other functions NOT included with the Chaos example but still important:
+
+
+function MarineBuildBaseStrategy:ModifySquadDemand(iUnitID)
+- Using the SpaceMarines example here, this assigns certain units that can attach to squads and ensures the number of
+these "attachable units" are kept in line with how many squads are choosen to be attached to. With Apothecaries, as
+an example, their numbers are kept low if the number of squads like "space_marine_squad_tactical" are also low. 
+
+
+
+chaosstrategyinfo.ai
+~~~~~~~~~~~~~~~~~~~~
+- A general template file (used now for ALL AI difficulty settings) that you should duplicate for your faction. 
+The first section is everything before the BuildPrograms. This section should be used for your own as its generally 
+universal requiring very little modification.
+
+When designing your BuildProgram, thinks to consider:
+
+Use this key for the following between the {....}, :
+Min. Tier,  Min. Requisition,  Min. Power,  Min. ArmyStrength,  Object-Count (or Percentage),  Object-Type,  Object-Name
+
+1) Definition of each item:
+a) { 1, 700, 150, 0, 1,  "Building",	"chaos_hq" },
+Create the building "chaos_hq" in Tier1 minimum, with 700 requisition and 150 Power, create it right away building only 1!
+Note: This is normally always present right at the start of your buildorder so that if the HQ is destroyed the AI 
+will rebuild it.
+
+
+b) { 1, 220, 50, 0, 1,	 "Unit",	"chaos_squad_lord" },
+Create the unit "chaos_squad_lord" in Tier1 minimum, with 220 requisition and 50 Power, create it right away building only 1! 
+IMPORTANT: The min army strength value has another meaning here. If 0, the unit will always be built, if > 0 then the AI will
+only build the unit if the army strength is lesser than the given value. That's exactly the opposite of how it's used in the
+other build types. Usually this should be 0.
+
+
+c) { 1, 100, 75, 0, 100, "TurretAddon", "chaos_list_post_addon_1" },
+Build the addon "chaos_list_post_addon_1" in Tier1 minimum, with 100 requisition and 75 Power, build it right away and 100% of 
+the time. The last item deals with percents so you have the option to control what percentage of new addons of this type
+are built as a percentage of all buildings that can build it.
+
+
+d) { 1, 300, 100, 800, 100,"Addon",	"chaos_hq_addon_1" },
+Same as above except note the "800" instead of "0". This will be explained in the next section under Min. ArmyStrength.
+
+
+e) { 1, 50, 25, 500, 1,	 "Research",    "chaos_furious_charge_research" },
+Build the research item "chaos_furious_charge_research" in Tier1 minimum, and with 50 requisition and 25 Power, and only once.
+Again, note the "500". This will be explained in the next section under Min. ArmyStrength.
+
+
+f) { 2, 0, 0, 0, 0,	 "Restrict",	"chaos_squad_cultist" },
+This restricts a certain item. The first value "2" denotes what Tier to start restricting. Restricting means the AI 
+will not build or "severely curtail" the item defined in that Tier. Units are, by and large, the ones that normally get
+restricted. 
+
+
+g) { 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" },
+This initiates the start of a Rush Tactic - a cool new feature of the BuildPrograms. Rushes will be explained in the next 
+section.
+
+Tip:
+If you define a rush with { 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" }, unit building is restricted but
+reinforcing is allowed. With { 1, 0, 0, 0, 1,	 "Rush", 	"Prepare" }, you can also restrict reinforcing.
+
+
+h) { 2, 6, 6, 1500, 0,	 "Rush", 	"Unleash" },
+This ends the Rush Tactic. Rushes will be explained in the next section.
+
+
+
+2) Creating a buildprogram is generally simple. Essentially, you can use the other factions buildprograms as a template to
+construct your own. However, there are some basics you should quickly know:
+
+a) Always ensure that your buildprogram has all its items "in order" they should be built. If one item is out of sequence, then
+the AI will not progress any further to new tiers. 
+
+b) Always ensure there are NO spelling mistakes in any of the items in your buildprogram. If, say, a building name is
+incorrectly spelled or has caps when it shouldn't or doesn't exist for the AI to use, then the game will immediately crash.
+
+c) Min. ArmyStrength
+This value essentially is the value of your total army population (which increases from gamestart as the AI builds). 
+Its use here is to put pauses in your buildprogram so the AI can naturally progress through the buildprogram without
+building everything quickly. Using this value, you can place items in the same tier out of order but when the AI sees the 
+Min. ArmyStrength it will build that item based on that value and NOT in the descending order of the program. Note this
+example:
+
+				{ 1, 220, 50, 0, 1,	 "Unit",	"chaos_squad_lord" },
+				{ 1, 200, 75, 500, 1,	 "Building",	"chaos_armoury" },
+				{ 1, 100, 75, 0, 1,	 "TurretAddon", "chaos_list_post_addon_1" },
+				{ 1, 300, 100, 800, 1,	 "Addon",	"chaos_hq_addon_1" },
+				{ 1, 150, 75, 500, 1,	 "Building",	"chaos_turret_bolter" },
+				{ 1, 50, 25, 500, 1,	 "Research",    "chaos_furious_charge_research" },
+				{ 1, 100, 75, 250, 100,	 "TurretAddon", "chaos_list_post_addon_1" },
+				{ 1, 40, 20, 500, 1,	 "Research",    "chaos_champion_melee_research_1" },
+
+The "chaos_squad_lord" is built immediately (note the "0" value) as well as that single "chaos_list_post_addon_1" TurretAddon.
+Once 250 is reached, a full "chaos_list_post_addon_1" TurretAddon sequence begins (upgrades all LPs continuously) then all
+items with a 500 are built "in order" they appear above.
+
+There is not really a general rule on marking your Min. ArmyStrength values through the buildprogram but you should stick with
+this formula:
+
+
+Tier   Min.ArmyStrength Range
+---    ----------------------
+ 1	       0 - 1000
+ 2	    1000 - 2500
+ 3	    2000 - 3000
+ 4	    2500 - 6000
+
+As mentioned, marking a "0" for any item means that item takes effect immediately in the tier its currently in. In early tier 2,
+some build items have only a min army strength of ~250. That's usually the vehicle building which is essentially required,
+even if the AI has lost most of its forces.
+
+So the key is to "slow ramp up" your Min.ArmyStrength values throughout the Tiers reaching 6000 in the last 2-3 items in Tier4.
+
+NOTE: End-Game super units (aka Uber units) should have a Min.ArmyStrength value of "0" or in case of the BT research, a low
+value like "250". This is important as the last thing you want is to limit their presence! 
+Example:
+				{ 4, 400, 400, 250, 1,	 "Research",    "chaos_bloodthirster_research" },
+				{ 4, 265, 155, 3000, 100,"TurretAddon", "chaos_list_post_addon_2" },
+				{ 4, 700, 150, 6000, 2,	 "Building",	"chaos_hq" }
+
+Note the BloodThirster research is kept at "250" while everything afterwards ramps up quickly. 
+
+d) Using the "Restrict" feature.
+You'll notice in the chaos buildprograms that there are areas where "Restrict" is used. This is to limit that particular
+item so the AI will not build it for that Tier. Normally, such "Restrict" features are used at the start of a new Tier and
+are almost always applied to units.
+Examples:
+				{ 2, 0, 0, 0, 0,	 "Restrict",	"chaos_squad_cultist" },  --Start of Tier2
+				{ 3, 0, 0, 0, 0,	 "Restrict",	"chaos_marine_squad" },   --Start of Tier3
+
+You can also have multiple restricts in the same Tier:
+				{ 2, 0, 0, 0, 0,	 "Restrict",	"chaos_squad_cultist" },
+				{ 2, 0, 0, 0, 0,	 "Restrict",	"chaos_marine_squad" },
+				{ 2, 0, 0, 0, 0,	 "Restrict",	"chaos_squad_raptor" },
+
+
+e) The "Rush" Program!
+The primary goal of a rush is to tech quick or amass a certain squad/combo of units and throw them at the enemy fast!
+These are the key elements to build a Rush into your program:
+
+{ 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" },
+As you'll note in the Chaos buildprograms, the above feature is added everytime you want the AI to immediately tech and build
+quickly and acts as a "checkpoint" that is used at each Tier until the Rush is made complete (see "Unleash" below). If the 
+rush is to only occur in one single tier, then only one { 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" }, at the 
+very start of the buildprogram is needed. If a rush spans several tiers like the typical vehicle rush, then you need a
+rush prepare entry at the start of each tier.
+
+Min. ArmyStrength in a "Rush" program
+This value is the fourth variable in the line of values. It remains at "0" throughout a Rush until the "Unleash" command
+is issued (see below). When an Min. ArmyStrength value is "0" then the AI runs that line immediately or as fast as it can.
+
+{ 2, 0, 0, 1500, 0,	 "Rush", 	"Unleash" },
+This concludes the Rush Tactic but is only used if your Rush Tactic spans more than 1 Tier. Note the "1500" which is a huge
+jump over "0" which was the normal Min. ArmyStrength value used during the Rush period. This huge jump means the AI is now
+"caught up" with its army size and will proceed to tech normally (like in its All Around Strategy). 
+
+Once a Rush is complete, then the AI continues on normally provided you copied the same sequence of items to follow 
+which would normally exist if your program was NOT a rush one.
+If an AI is attacked with a superior force while making a rush, the AI will switch to the default build program which
+is the first one.
+
+
+3) ALWAYS create a regular (all-around) or NON rush program first to test that your faction will can run through the 
+entire program without problems.
+
+
+"SquadLimits ="
+This section must contain ALL of your unit SBPS names and should be order in the same way from top-to-bottom the same
+way you ordered your unitstats.ai. This section basically tells the AI how much of a certain unit you can have on the 
+screen at one time. I would recommend using a randomizer like "math.random( 1,2 )" to randomly specify how many the AI
+can build. Some units that have a maximum build limit should really have a single fixed number (ie. Commander units). 
+
+
+"BuildOrderStrategyInfo ="
+This is a static buildorder the AI will use within the first minute of the game. Use the existing factions and 
+simply duplicate what they've done in this area. As a quick definition of each static buildorder:
+"Basic"		-- Used by most of the games (generic initial buildorder)
+"QuickStart"	-- For QuickStart games only (add an extra infantry-producing building)
+"LargeMap" 	-- When maps are detected to be "Large" in size (add an extra capturing squad)
+
+
+"AttackStrategyInfo ="
+This section sets a default value for what tolerance the AI will retreat when overwhelmed. The following is best used:
+
+		MinArmyStrength = 750,
+
+
+The 'tactics' subfolder:
+------------------------
+This folder houses customized tactic scripts for various units. Such files are called from the loader.ai file 
+(ie. Chaosloader.ai). The kind of scripts used for your own custom units depends on their requirements to initiate their
+abilities. It is HIGHLY RECOMMENDED you look at the \tactics folder of the other factions and see how they have done it.
+Duplicate as much as what is relevant to you. 
+
+Note: When testing your AI, most game crashes occur when one of your units which has its own tactic file is built. 
+Always remember to keep your unit's "ability names" correct and, if necessary, don't run with a tactic file for your units
+first. First test-run your faction with the most basic setup. Only then can you troubleshoot more advanced ability issues
+associated with specific units.
+
+Note: With the new inherited method IsSupportDetector(), you can define a non combat support detector which will join 
+attack and defend forces if necessary. Look at scarabbuilders and skull probes for an example.
+
+
+
+----------------------------------------------------------------------------------------------------
+3.) Adding a new race:
+----------------------------------------------------------------------------------------------------
+
+To add a new race, you have to create a new race folder for it. The best thing is to use one of the existing
+races as a template. Rename the ai files and the classes to your race name and the adjust the functions and
+stats to your purpose.
+
+How to include the new race:
+----------------------------
+Provided that you have created a race folder with all required data, then that's all! If your race folder
+is configured correct, then you can play with or against your new race in the game now. Just remember to
+get the race folder name and loader class name to be the same as the race name or your AI will sit there
+and do nothing.
+
+
+----------------------------------------------------------------------------------------------------
+4.) Adding new units to an existing race:
+----------------------------------------------------------------------------------------------------
+If your intent is to just add new units to the existing factions or to your own then simply follow these steps:
+
+Add the following sections to their applicable .ai file (we will use the CHAOS faction as an example and we'll add a
+custom squad called "ubercultist"):
+
+a) chaosunitstats.ai
+
+Under the UnitStrengths lets give the squad a value, for example, of 30:
+UnitStrengths.chaos_squad_ubercultist = 30
+
+If your squad can reinforce with a squad leader/sargent lets add that as well with a value of 75:
+LeaderStrengths.chaos_squad_ubercultist = 75
+
+If your squad is attachable by both the "chaos_squad_lord" and "chaos_squad_sorcerer" then add that as well:
+Attachments.chaos_squad_ubercultist = { "chaos_squad_lord", "chaos_squad_sorcerer" }
+
+Now lets put the squad in the lines below so the AI fully identifies what the new squad's armour class, rating, and 
+how to best upgrade its weapons during combat! 
+
+		name = "Uber Cultist",
+		sbp_name = "chaos_squad_ubercultist",
+		ebp_name = "chaos_ubercultist",
+		class = UnitStatsAI.UC_LightInfantryMed,
+		rating = 3,
+		potential =
+		{
+			{
+				name = "chaos_knife_ubercultist",
+				effectiveness = GenerateUnitEffectiveness(3.1,4.2,3.2,2.9,0.0,0.0,0.0,0.0,0.9,0.0,0.9,2.0,0.8,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "chaos_plasma_gun_ubercultist",
+				effectiveness = GenerateUnitEffectiveness(3.4,3.2,3.2,3.2,4.5,3.7,3.9,3.0,4.5,0.0,4.1,3.2,2.0,1.4),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "chaos_grenade_launcher",
+				effectiveness = GenerateUnitEffectiveness(4.0,4.0,4.0,4.0,2.6,0.9,0.7,0.0,2.8,0.0,0.6,2.1,0.8,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "chaos_laspistol",
+				effectiveness = GenerateUnitEffectiveness(2.3,2.7,2.3,2.2,0.0,0.0,0.0,0.0,1.0,0.0,0.6,1.5,0.5,0.8),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+
+NOTE: Follow the advice in Section 2b (Info Section) of this doc on how to structure the above so the AI will be able to create your new squad
+above while balancing creating other squads as well.
+
+
+b) chaosbuildbasestrategy.ai
+
+Here, we are adding your custom squad to the function ChaosBuildBaseStrategy:GetUnitStats(sSquadName) section. Note
+the value of "2" below! Thats the squad cap of this custom squad you created. If its a vehicle cap then it should look below
+"0, 2".
+
+	elseif (sSquadName == "chaos_squad_ubercultist") then
+		return 2, 0
+
+
+c) chaosstrategyinfo.ai
+
+The last section is to place your custom squad in the "SquadLimits =" area similar to the other units.
+This section denotes a value of the maximum the AI can spawn this unit at one time. For example, commanders normally have a maximum of 1.
+
+For our purposes we will put this:
+
+
+				chaos_squad_ubercultist = 2,
+
+So now the AI can only have 2 squads of the ubercultist built at one time.
+
+
+This basically concludes the tutorial how to add basic units for the AI to use.
+
+NOTE: If your units require special tactics or abilities to preform to their best by the AI, these will have to be coded for. How to do
+so is covered in Section 2b but essentially the loader.ai and custom tactic.ai files will handle this.
+ 
+
+----------------------------------------------------------------------------------------------------
+5.) Combining different mods:
+----------------------------------------------------------------------------------------------------
+
+One of the big advantages of the new code management is the easy combination of different mods, provided
+that all of them use this skirmish AI. For example if you want to combine the SteelLegion and Thousand Sons
+mods with the Rebirth mod, the you only have to add the SteelLegion and the ThousandSons race folder and
+replace the existing Chaos/Eldar/Guard/Ork/Marine race folders with the one from the rebirth mod.
+Okay, granted the race mods are probably not balanced for rebirth, but you got the idea!
+
+
+
+----------------------------------------------------------------------------------------------------
+6.) Compatibility with further revisions of the skirmish AI:
+----------------------------------------------------------------------------------------------------
+
+If you're a modder, you possibly know this situation: You've spent a lot of annoying work to adjust
+your mod to the latest skirmish AI revision. All is good, until they suddently release a new revision:
+OH NO!!! NOT AGAIN!!! I WAS FINISHED!!!
+But players slowly get a pain in your neck with questions like "Will you support the new AI in your mod?!".
+And so the work begins again... Editing code, getting execution errors and crash to desktops - All the
+nice coding stuff...
+
+Okay, with the new system, the update should be like that. Take new core AI folder and copy it over the
+existing one: Upgrade complete!
+
+This works as long as we don't touch the syntax of the race loader. And we will definetly try to avoid this.
+We'll keep you informed about such changes of course if we have any. Normally we also optimize the existing
+races a bit. Therefore, if you have a race mod and not a rebalancing mod like DowXP or DOWPro, then it
+is highly adviced to replace those folders too.
+
+
+----------------------------------------------------------------------------------------------------
+7.) AIControlPanel:
+----------------------------------------------------------------------------------------------------
+
+There are several options you can change for each difficulty level to adjust the AI behaviour to you liking.
+
+1. Dancing
+~~~~~~~~~~~
+Dancing is the ability to run away with ranged units if they are attacked in melee.
+There are three possible settings:
+a) Off		=>	Dancing is not used at all
+b) Standard	=>	The AI is restricted to only dance with one unit at a time
+c) Godlike	=>	The AI will dance with several units at a time if necessary
+
+2. Attack Delay
+~~~~~~~~~~~~~~~~
+This forces the AI to wait with an attack until a specif time has passed.
+You can adjust this time in two minute steps from 0 to 20 minutes.
+
+3. Tech Speed
+~~~~~~~~~~~~~~
+With an increased teching speed, the AI will spend its resources more on teching than on building troops.
+With a decreased teching speed, the AI will spend its resources more on building troops than on teching.
+
+4. Teching Handicap
+~~~~~~~~~~~~~~~~~~~~
+A handicap will slow down the teching of an AI. It will also hoard more ressources
+instead of spending it immediately for units or buildings.
+You can give allies an handicap or opponents. If you give allies a handicap, all
+AI's allied with a human player are affected. If you give opponents a handicap, all
+AI's not allied with a human player are affected. You can use this behaviour for
+example to weaken AI opponents if you don't feel good enough to face them at full
+strength. Or you want the exact opposite, a real challenge, and weaken your own
+allies, so you have to do more yourselve.
+
+5. Allow alternative strategies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+All AI's have 4 different strategies:
+
+- A solid allround strategy
+- A special ranged strategy
+- A special melee strategy
+- A vehicle fast tech strategy
+
+If alternative strategies are activated, the AIs will choose one of those strategies at the start by
+random, though the chances of each strategy are influenced by opponent and map size. If deactivated,
+the AI will always choose the solid allround strategy.
+
+6. Early Harassing
+~~~~~~~~~~~~~~~~~~~
+This allows commanders and combat troops to make an attack at an extremly early state to
+avoid opposing scout capturing strategic points. If successfull, this can severly cripple
+the opponents ressource income and decide the game at a very early state. On the other side,
+harassing can also lead to a quick sacrifice of troops, which gives the opponent an advantage.
+Harassing is only possible in the first 4 minutes.
+
+7. Multiple Troop Production Buildings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The AI normally builds more troop production buildings if it has excess ressources. This allows
+often an outproducing of the opponent who can't replace its losses fast enough.
+Bear in mind that the AI might still build more troop production because of other reasons. IG for
+example need to build them to increase their squad and support caps. In this case those buildings
+are normally only built a bit later. This can also hurt the balance between the races since some
+of them are affected more and others less of it.
+
+8. Allow Relic units
+~~~~~~~~~~~~~~~~~~~~~
+If deactivated, the AI won't build any Relic units like the Baneblade from the Imperial Guard or the Chaos
+Bloodthirster.
+
+9. AI donations
+~~~~~~~~~~~~~~~~~~~~~
+Allows the AI to donate resources. (Requires AI SCAR support)
+
+
+----------------------------------------------------------------------------------------------------
+8.) TroubleShooting and Tweaking:
+----------------------------------------------------------------------------------------------------
+
+This section provides a very quick guide to ensure your integrated Advanced AI works seamlessly and is
+easy to troubleshoot problems. I have included some useful tips to follow.
+
+TO START OFF SOME MAJOR ADVICE: 
+
+ALWAYS USE THE EXISTING FACTIONS AS A TEMPLATE TO MAKE YOUR OWN! 
+
+Follow the precise exact script formats and syntaxes already present to you from the other factions.
+If you deviate from the norm, likely expect problems.
+
+
+Getting Started
+~~~~~~~~~~~~~~~
+
+Firstly, to ensure you're able to properly troubleshoot your issues when you experience crashes, edit your
+DarkCrusade desktop shortcut or which ever one you plan to do AI testing for (you can also do this for 
+the Dawn of Skirmish AI one as well) and add:  -dev   as part of the shortcut. This will set the game into 
+"developer mode". 
+
+Secondly, edit the file: W40k.ini  found in the root of your \<Dark Crusade folder> and under this section:
+
+; console
+
+Set the following:
+
+consolekey=
+
+to
+
+consolekey=Grave
+
+This will set the in-game console to use the ~ key instead of multiple keys which was more cumbersome.
+
+Now with this set, you can see what error occurs ingame relating to the AI. Crashing to Desktop errors won't 
+obviously be helpful here. ;)
+
+
+AI_log.txt
+~~~~~~~~~~
+
+This file is created in the root of your \<Dark Crusade folder> which records a basic snapshot of the AI when
+the game ends either normally or abruptly due to a crash. A sample dump looks like: 
+
+AI1000 27:03 CpuManager: Starting AI Think
+AI1000 27:03    CpuManager: Update strategies...
+AI1000 27:03       DefendStrategy: Update...
+AI1000 27:03    CpuManager: Update plans...
+AI1000 27:03    Defendplan: Update...
+AI1000 27:03    ResourcePlan: Update...
+AI1000 27:03    BuildPlan: Update...
+AI1000 27:03    BuildPlan: Update...
+AI1000 27:03    CpuManager: Update tactics...
+AI1000 27:03 CpuManager: End AI Think
+
+- AI1000 is Player0 (if the AI for Player1 crashes the game then it would show AI1001 instead of AI1000).
+- The time of the crash is reported above. For this example, it happened after 27mins and 03seconds.
+- The other column deals with what actually happened. The general rule is: if the dump above ends with 
+"CpuManager: End AI Think" then the AI did not cause the crash. If this is the case, then the problem lies
+with a mod problem or system stability. If the latter, then consider the following to rectify:
+
+- defrag your harddrives regularily
+- ensure no "rogue" services are running
+- clean any spy/malware or viruses from your system
+- turn off programs that are running which can slow your computer down
+- update drivers for all system devices including windows security patches
+- don't overclock your computer so much 
+
+If the dump above DOES NOT end with the "CpuManager: End AI Think" but with something else then the last line it shows
+will likely point you to where the fault in your AI script lies. The normal 2 culprits are "BuildBaseStrategy" which
+means something in your \strategies folder is mislabelled, incorrectly designated, or the logic is wrong and the other
+culprit is "Tactic" which also means something is wrong with a tactic file in your AI faction's \tactics folder. 
+
+
+Utility.ai
+~~~~~~~~~~
+
+For a more advanced output of why your AI crashed, locate this file "utility.ai" in your \ai\core folder, edit
+it and near the beginning change this:
+
+g_bAITrace = false
+
+to
+
+g_bAITrace = true
+
+Now save and start a new game. This will record all activities by all the AIs and dump the result to text files onto
+the root of your C:\ drive. When the game crashes, go to these files and open up the one associated with the AI 
+player you were testing (I assume it will be "1000aitrace.txt" since that is Player0 which should be your faction which is being 
+tested for problems). At the end of this text file, note under what conditions caused the crash - you can determine this
+based on what happened a few seconds just prior to the crash. Take special note of what things finished happening a second
+or two before the last entry: this is critical in determining where the problem lies.
+
+PLEASE NOTE: Once your done troubleshooting your AI **YOU MUST** go back and set g_bAITrace back to = false 
+Leaving it on True will continually make those txt files grow to massive sizes after days or weeks so be careful! ;)
+
+
+Crashes
+~~~~~~~
+
+The most common crash will be the "Fatal AI Exception" Error which happens when the AI experiences a less severe logic
+problem. These errors can be seen in the console when it occurs. The most common one is a MilitaryManager() error. This
+is primarily caused when your AI scripts don't follow a certain format expected but which is found in the regular factions.
+This tends to be a very easy fix so please look over your scripts and compare them with the other traditional factions.
+If you cannot find the script problem but want to pinpoint the cause of the error then the best place to start is here:
+
+loader.ai
+
+The sections in question would be:
+
+function <faction_race_name>:LoadRace( eDifficulty )
+
+and
+
+function <faction_race_name>:CreateTactic(oSquadAI)
+
+Locate the various tactic files for specific units you have associated tactics for and comment them out in these sections
+using a "--" or to comment out large sections start the section with a "--[[" and end it with a "]]".
+
+Doing the above will allow you to troubleshoot which unit scripts are wrong and need revising. 
+
+
+
+----------------------------------------------------------------------------------------------------
+9.) How to have All-AI battles:
+----------------------------------------------------------------------------------------------------
+
+Yeop! You can fully test out your now-integrated AI against other vanilla factions as well to fully
+appreciate the work your mod has done. This will allow Player0 which is normally reserved for only a 
+human player to be fully controlled by the AI. 
+
+Firstly, create a text file in the root of your \<Dark Crusade folder> and call it:
+
+autoexec.lua
+
+In this autoexec.lua put this into it and save it:
+
+----<Begin Script Here>----
+
+run = Cpu_ControlLocalPlayer()
+run = setsimrate(35)
+run = FOW_RevealAll()
+
+bind("F1","setsimrate(5)")
+bind("F2","setsimrate(12)")
+bind("F3","setsimrate(20)")
+bind("F4","setsimrate(30)")
+bind("F5","test()")
+bind("F6","test1()")
+
+function test()
+local count=World_GetPlayerCount()
+g_Player1=World_GetPlayerAt(0);
+if count>1 then
+g_Player2=World_GetPlayerAt(1);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player2,0);
+end
+if count>2 then
+g_Player3=World_GetPlayerAt(2);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player3,0);
+end
+if count>3 then
+g_Player4=World_GetPlayerAt(3);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player4,0);
+end
+if count>4 then
+g_Player5=World_GetPlayerAt(4);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player5,0);
+end
+if count>5 then
+g_Player6=World_GetPlayerAt(5);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player6,0);
+end
+if count>6 then
+g_Player7=World_GetPlayerAt(6);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player7,0);
+end
+if count>7 then
+g_Player8=World_GetPlayerAt(7);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player8,0);
+end
+
+Player_SetResource(g_Player1,RT_Requisition,9999);
+Player_SetResource(g_Player1,RT_Power,9999);
+end
+
+function test1()
+local count=World_GetPlayerCount()
+g_Player1=World_GetPlayerAt(0);
+if count>1 then
+g_Player2=World_GetPlayerAt(1);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player2,0);
+end
+if count>2 then
+g_Player3=World_GetPlayerAt(2);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player3,0);
+end
+if count>3 then
+g_Player4=World_GetPlayerAt(3);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player4,0);
+end
+if count>4 then
+g_Player5=World_GetPlayerAt(4);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player5,0);
+end
+if count>5 then
+g_Player6=World_GetPlayerAt(5);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player6,0);
+end
+if count>6 then
+g_Player7=World_GetPlayerAt(6);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player7,0);
+end
+if count>7 then
+g_Player8=World_GetPlayerAt(7);
+World_EnablePlayerToPlayerFOW(g_Player1,g_Player8,0);
+end
+
+Player_SetResource(g_Player2,RT_Requisition,9999);
+Player_SetResource(g_Player2,RT_Power,9999);
+Player_SetResource(g_Player3,RT_Requisition,9999);
+Player_SetResource(g_Player3,RT_Power,9999);
+Player_SetResource(g_Player4,RT_Requisition,9999);
+Player_SetResource(g_Player4,RT_Power,9999);
+end
+
+----<End Script Here>----
+
+So now an explaination of the above:
+
+run = Cpu_ControlLocalPlayer()
+Sets Player0, usually reserved for the human, as the AI
+
+run = setsimrate(35)
+Automatically sets game speed in super-turbo mode.. set that # to anything higher if you wish. You can set the
+# as high as you want but it depends on your CPU, Mobo, and Ram speed. Otherwise, it could crash the game. ;)
+
+run = FOW_RevealAll()
+Disabled FogOfWar immediately so the entire map is revealed!
+
+bind("F1","setsimrate(5)")
+bind("F2","setsimrate(12)")
+bind("F3","setsimrate(20)")
+bind("F4","setsimrate(30)")
+bind("F5","test()")
+bind("F6","test1()")
+
+For above.. assigns F1-F4 for various game speeds as seen with "run = setsimrate(35)" from above.
+F5 gives Player0 (now assigned for AI) 99999 req and 99999 power. 
+F6 does the same as F5 but for Player1.
+
+Now, Secondly..
+
+Edit your DarkCrusade desktop shortcut or which ever one you plan to do AI testing for (you can also do this for 
+the Dawn of Skirmish AI one as well) and add:  -dev   as part of the shortcut. This will set the game into 
+"developer mode". This is the ONLY way for the autoexec.lua to become active as it cannot be active during a 
+normal game as it would de-synch online play.
+
+PLEASE NOTE: Its been determined that some game mod features, like the Night Shift Mod, will not work properly for
+an AI-controlled Player0 but works for all other Player slots. 
+

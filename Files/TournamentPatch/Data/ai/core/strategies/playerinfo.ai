@@ -1,0 +1,354 @@
+----------------------------------------
+-- File: 'playerinfo.ai'
+-- Created by Arkhan 	@ 12.11.2005
+
+
+class 'PlayerInfo'
+
+function PlayerInfo:__init( oPlayer, iLocalRange, iNearRange, iMidRange, iLongRange )
+
+	-- Set player
+	self.oPlayer = oPlayer
+	
+	-- Set player status
+	self.bDead = oPlayer:IsPlayerDead()
+	
+	-- Set range information
+	self.Settings =
+	{
+		iLocalRange	= sqr(iLocalRange),
+		iNearRange	= sqr(iNearRange),
+		iMidRange	= sqr(iMidRange),
+		iLongRange	= sqr(iLongRange)
+	}
+	
+	-- Check race
+	self.sRace = oPlayer:GetPlayerRaceName()
+	
+	-- Check allignement
+	self.bEnemy = cpu_manager.player_stats:IsEnemy(oPlayer)
+	
+	-- Get army power
+	self.iTotalArmyStrength = cpu_manager:GetArmyStrength(oPlayer)
+	
+	-- Init army position
+	self.vArmyPosition = Vector3f(0, 0, 0)
+	
+	-- Init generator count
+	self.iGeneratorCount = 0
+	
+	-- Init main base information
+	self.Base =
+	{
+		vPosition			= Vector3f(),
+		iDistance			= 0,		
+		iAlliedLocalPower	= 0,
+		iAlliedNearPower	= 0,
+		iAlliedMidPower		= 0,
+		iAlliedLongPower	= 0,
+		iEnemyLocalPower	= 0,
+		iEnemyNearPower		= 0,
+		iEnemyMidPower		= 0,
+		iEnemyLongPower		= 0
+	}
+	self.iHQCount = 0
+	
+	-- Init listening post information
+	self.ListeningPosts =
+	{
+		vPosition			= {},
+		iDistance			= {},
+		bFortified			= {},
+		iAlliedLocalPower	= {},
+		iAlliedNearPower	= {},
+		iAlliedMidPower		= {},
+		iAlliedLongPower	= {},
+		iEnemyLocalPower	= {},
+		iEnemyNearPower		= {},
+		iEnemyMidPower		= {},
+		iEnemyLongPower		= {}
+	}
+	self.iListeningPostCount = 0
+	
+	-- Init building information
+	self:InitBuildingInformation()
+end
+
+function PlayerInfo:SetDistances(vPosition)
+		
+	-- Calculate distance from given position to main base
+	self.Base.iDistance = cpu_manager:GetShortestPathingDistance(vPosition, self.Base.vPosition)
+	
+	-- Calculate distance from given position to all listening posts
+	for iLoop1 = 1, self.iListeningPostCount do
+		self.ListeningPosts.iDistance[iLoop1] = cpu_manager:GetShortestPathingDistance(vPosition, self.ListeningPosts.vPosition[iLoop1])
+	end
+end
+
+function PlayerInfo:AddAlliedSquadInfo(iSquadPower, vSquadPosition)
+
+	-- Calculate distance from main base to squad position
+	local iDistance = distance_sqr(self.Base.vPosition, vSquadPosition)
+	
+	-- Add squad power to base allied power info
+	if (iDistance < self.Settings.iLocalRange) then
+		self.Base.iAlliedLocalPower	= self.Base.iAlliedLocalPower + iSquadPower
+	elseif (iDistance < self.Settings.iNearRange) then
+		self.Base.iAlliedNearPower	= self.Base.iAlliedNearPower + iSquadPower
+	elseif (iDistance < self.Settings.iMidRange) then
+		self.Base.iAlliedMidPower	= self.Base.iAlliedMidPower + iSquadPower
+	elseif (iDistance < self.Settings.iLongRange) then
+		self.Base.iAlliedLongPower	= self.Base.iAlliedLongPower + iSquadPower
+	end
+	
+	-- Add squad power to listening posts information
+	for iLoop1 = 1, self.iListeningPostCount do
+		
+		-- Calculate distance
+		iDistance = distance_sqr(self.ListeningPosts.vPosition[iLoop1], vSquadPosition)
+
+		-- Add squad power to listening post allied power info
+		if (iDistance < self.Settings.iLocalRange) then
+			self.ListeningPosts.iAlliedLocalPower[iLoop1] = self.ListeningPosts.iAlliedLocalPower[iLoop1] + iSquadPower
+		elseif (iDistance < self.Settings.iNearRange) then
+			self.ListeningPosts.iAlliedNearPower[iLoop1] = self.ListeningPosts.iAlliedNearPower[iLoop1] + iSquadPower
+		elseif (iDistance < self.Settings.iMidRange) then
+			self.ListeningPosts.iAlliedMidPower[iLoop1]	= self.ListeningPosts.iAlliedMidPower[iLoop1] + iSquadPower
+		elseif (iDistance < self.Settings.iLongRange) then
+			self.ListeningPosts.iAlliedLongPower[iLoop1] = self.ListeningPosts.iAlliedLongPower[iLoop1] + iSquadPower
+		end
+	end
+end
+
+function PlayerInfo:AddEnemySquadInfo(iSquadPower, vSquadPosition)
+
+	-- Calculate distance from main base to squad position
+	local iDistance = distance_sqr(self.Base.vPosition, vSquadPosition)
+	
+	-- Add squad power to base enemy power info
+	if (iDistance < self.Settings.iLocalRange) then
+		self.Base.iEnemyLocalPower	= self.Base.iEnemyLocalPower + iSquadPower
+	elseif (iDistance < self.Settings.iNearRange) then
+		self.Base.iEnemyNearPower	= self.Base.iEnemyNearPower + iSquadPower
+	elseif (iDistance < self.Settings.iMidRange) then
+		self.Base.iEnemyMidPower	= self.Base.iEnemyMidPower + iSquadPower
+	elseif (iDistance < self.Settings.iLongRange) then
+		self.Base.iEnemyLongPower	= self.Base.iEnemyLongPower + iSquadPower
+	end
+	
+	-- Add squad power to listening posts information
+	for iLoop1 = 1, self.iListeningPostCount do
+		
+		-- Calculate distance
+		iDistance = distance_sqr(self.ListeningPosts.vPosition[iLoop1], vSquadPosition)
+
+		-- Add squad power to listening post enemy power info
+		if (iDistance < self.Settings.iLocalRange) then
+			self.ListeningPosts.iEnemyLocalPower[iLoop1] = self.ListeningPosts.iEnemyLocalPower[iLoop1] + iSquadPower
+		elseif (iDistance < self.Settings.iNearRange) then
+			self.ListeningPosts.iEnemyNearPower[iLoop1] = self.ListeningPosts.iEnemyNearPower[iLoop1] + iSquadPower
+		elseif (iDistance < self.Settings.iMidRange) then
+			self.ListeningPosts.iEnemyMidPower[iLoop1]	= self.ListeningPosts.iEnemyMidPower[iLoop1] + iSquadPower
+		elseif (iDistance < self.Settings.iLongRange) then
+			self.ListeningPosts.iEnemyLongPower[iLoop1] = self.ListeningPosts.iEnemyLongPower[iLoop1] + iSquadPower
+		end
+	end
+end
+
+function PlayerInfo:AddSquadToArmyPos(iSquadPower, vSquadPosition)
+
+	-- Calculate the average army position
+	local fArmyPercentage = iSquadPower / self.iTotalArmyStrength
+	self.vArmyPosition.x = self.vArmyPosition.x + fArmyPercentage * vSquadPosition.x
+	self.vArmyPosition.y = self.vArmyPosition.y + fArmyPercentage * vSquadPosition.y
+	self.vArmyPosition.z = self.vArmyPosition.z + fArmyPercentage * vSquadPosition.z
+end
+
+-- Use the position of the closest squad to get a valid terrain position (Important!)
+function PlayerInfo:ValidateArmyPosition()
+
+	-- Compute all squads
+	local vClosestPosition = self.oPlayer:GetStartingPosition()
+	local fClosestDistance = distance_sqr(self.vArmyPosition, vClosestPosition)
+	for oSquad in self.oPlayer:GetSquads() do
+							
+		if (oSquad:IsValid()) then
+			
+			-- Get squad position
+			local vSquadPosition = oSquad:GetPosition()
+			
+			-- Check distance
+			local fDistance = distance_sqr(self.vArmyPosition, vSquadPosition)
+			if (fDistance < fClosestDistance) then
+			
+				-- Set new closest position
+				fClosestDistance = fDistance
+				vClosestPosition = vSquadPosition
+			end
+		end
+	end
+	self.vArmyPosition = Vector3f(vClosestPosition)
+end
+
+function PlayerInfo:InitBuildingInformation()
+	
+	-- Get list of enemy start points
+	local vStartPoints = {}
+    for oPlayer in cpu_manager.stats:GetPlayerStats() do
+    
+    	-- Check alignement
+    	if (self.oPlayer:IsEnemy(oPlayer)) then
+    		table.insert(vStartPoints, Vector3f(oPlayer:GetStartingPosition()))
+    	end
+    end
+	
+	-- Init main HQ
+	local vStartPosition = self.oPlayer:GetStartingPosition()
+	self.Base.vPosition	= nil
+	local bHQ = false
+	local iClosestDistance = 0
+	for oBuilding in self.oPlayer:GetBases() do
+	
+		-- Check for valid building
+		if (oBuilding:IsValid() and not oBuilding:IsListeningPost()) then
+		
+			-- Get building type
+			local sBuildingName	= oBuilding:GetEntity():GetBlueprintName()
+			local sBuildingType = cpu_manager.m_oRaceLoader:GetBuildingType(self.sRace, sBuildingName)
+			
+			-- Get building position
+			local vPosition = oBuilding:GetPosition()
+			local iDistance = distance_sqr(vStartPosition, vPosition)
+			
+			-- Get base in close range of starting position
+			if (sBuildingType == "HQ" and (not bHQ or iDistance < iClosestDistance)) then
+				self.Base.vPosition = Vector3f(vPosition)
+				iClosestDistance = iDistance
+				self.iHQCount = self.iHQCount + 1
+				bHQ = true
+			elseif (self.Base.vPosition == nil or (not bHQ and iDistance < iClosestDistance)) then
+				self.Base.vPosition = Vector3f(vPosition)
+				iClosestDistance = iDistance			
+			end
+		end
+	end
+	if (self.Base.vPosition == nil) then
+		self.Base.vPosition = Vector3f(vStartPosition)
+	end
+	
+	-- Init listening posts
+	for oStrategicPoint in resource_manager:GetStrategicPointAIs() do
+	
+		-- Check owner
+		if (oStrategicPoint:Owner() == self.oPlayer:GetPlayerID()) then
+	
+			-- Check for listening post
+			if (oStrategicPoint:HasListeningPost()) then
+			
+				-- Add a listening post
+				table.insert(self.ListeningPosts.vPosition, Vector3f(oStrategicPoint:GetEntity():GetPosition()))
+				table.insert(self.ListeningPosts.iDistance, 0)
+				table.insert(self.ListeningPosts.bFortified, oStrategicPoint:HasWeapons())
+				table.insert(self.ListeningPosts.iAlliedLocalPower, 0)
+				table.insert(self.ListeningPosts.iAlliedNearPower, 0)
+				table.insert(self.ListeningPosts.iAlliedMidPower, 0)
+				table.insert(self.ListeningPosts.iAlliedLongPower, 0)
+				table.insert(self.ListeningPosts.iEnemyLocalPower, 0)
+				table.insert(self.ListeningPosts.iEnemyNearPower, 0)
+				table.insert(self.ListeningPosts.iEnemyMidPower, 0)
+				table.insert(self.ListeningPosts.iEnemyLongPower, 0)
+				self.iListeningPostCount = self.iListeningPostCount + 1
+			end
+		end
+	end
+	
+	-- Check turret protection
+	local sRace = self.oPlayer:GetPlayerRaceName()
+	for oBuilding in self.oPlayer:GetBases() do
+	
+		-- Check for valid building
+		if (oBuilding:IsValid() and not oBuilding:IsListeningPost()) then
+
+			-- Check for turret
+			local sBuildingName	= oBuilding:GetEntity():GetBlueprintName()
+			local sBuildingType, iThreat = cpu_manager.m_oRaceLoader:GetBuildingType(sRace, sBuildingName)
+			if (iThreat > 0) then
+						
+				-- Get turret position
+				local vTurretPosition = oBuilding:GetPosition()
+								
+				-- Check distance to main HQ
+				if (distance_sqr(self.Base.vPosition, vTurretPosition) < self.Settings.iLocalRange) then
+					self.Base.iAlliedLocalPower = self.Base.iAlliedLocalPower + iThreat
+				end
+				
+				-- Check distance to listening posts
+				for iLoop1 = 1, self.iListeningPostCount do
+				
+					-- Calculate distance to listening post
+					if (distance_sqr(self.ListeningPosts.vPosition[iLoop1], vTurretPosition) < self.Settings.iLocalRange) then
+						self.ListeningPosts.iAlliedLocalPower[iLoop1] = self.ListeningPosts.iAlliedLocalPower[iLoop1] + iThreat
+					end
+				end
+			end
+		end
+	end
+end
+
+function PlayerInfo:GetBuildingID(sType)
+
+	-- Get building name
+	local sBuildingName = self:GetBuildingName(sType)
+	dbAssert(sBuildingName ~= nil)
+
+	-- Return building ID
+	return cpu_manager.stats:GetBuildingID(sBuildingName)
+end
+
+function PlayerInfo:TraceInfo()
+
+	-- Trace player ID
+	aitrace("--------------------------------------------------")
+	aitrace("Player ID: "..tostring(self.oPlayer:GetPlayerID()))
+	aitrace("Player race: "..self.sRace)
+	aitrace("--------------------------------------------------")
+	
+	-- Trace basic info
+	aitrace("Total army strength: "..tostring(self.iTotalArmyStrength))
+	aitrace("Army position: "..tostring(self.vArmyPosition.x)..", "..tostring(self.vArmyPosition.z))
+	aitrace("HQ-Count: "..tostring(self.iHQCount))
+	aitrace("Generator-Count: "..tostring(self.iGeneratorCount))
+	
+	-- Trace main base info
+	aitrace("Main base position: "..tostring(self.Base.vPosition.x)..", "..tostring(self.Base.vPosition.z))
+	aitrace("Distance: "..tostring(self.Base.iDistance))
+	local sAlliedLocalPower	= tostring(self.Base.iAlliedLocalPower)
+	local sAlliedNearPower	= tostring(self.Base.iAlliedNearPower)
+	local sAlliedMidPower	= tostring(self.Base.iAlliedMidPower)
+	local sAlliedLongPower	= tostring(self.Base.iAlliedLongPower)
+	aitrace("AlliedPower: "..sAlliedLocalPower..", "..sAlliedNearPower..", "..sAlliedMidPower..", "..sAlliedLongPower)
+	local sEnemyLocalPower	= tostring(self.Base.iEnemyLocalPower)
+	local sEnemyNearPower	= tostring(self.Base.iEnemyNearPower)
+	local sEnemyMidPower	= tostring(self.Base.iEnemyMidPower)
+	local sEnemyLongPower	= tostring(self.Base.iEnemyLongPower)
+	aitrace("EnemyPower: "..sEnemyLocalPower..", "..sEnemyNearPower..", "..sEnemyMidPower..", "..sEnemyLongPower)
+	
+	-- Trace listening post info
+	aitrace("Listening-Posts: "..tostring(self.iListeningPostCount))
+	for iLoop1 = 1, self.iListeningPostCount do
+		aitrace("LP-ID: "..tostring(iLoop1))
+		aitrace("LP-Position: "..tostring(self.ListeningPosts.vPosition[iLoop1].x)..", "..tostring(self.ListeningPosts.vPosition[iLoop1].z))
+		aitrace("LP-Distance: "..tostring(self.ListeningPosts.iDistance[iLoop1]))
+		aitrace("LP-Fortified: "..tostring(self.ListeningPosts.bFortified[iLoop1]))
+		sAlliedLocalPower	= tostring(self.ListeningPosts.iAlliedLocalPower[iLoop1])
+		sAlliedNearPower	= tostring(self.ListeningPosts.iAlliedNearPower[iLoop1])
+		sAlliedMidPower		= tostring(self.ListeningPosts.iAlliedMidPower[iLoop1])
+		sAlliedLongPower	= tostring(self.ListeningPosts.iAlliedLongPower[iLoop1])
+		aitrace("LP-AlliedPower: "..sAlliedLocalPower..", "..sAlliedNearPower..", "..sAlliedMidPower..", "..sAlliedLongPower)
+		sEnemyLocalPower	= tostring(self.ListeningPosts.iEnemyLocalPower[iLoop1])
+		sEnemyNearPower		= tostring(self.ListeningPosts.iEnemyNearPower[iLoop1])
+		sEnemyMidPower		= tostring(self.ListeningPosts.iEnemyMidPower[iLoop1])
+		sEnemyLongPower		= tostring(self.ListeningPosts.iEnemyLongPower[iLoop1])
+		aitrace("LP-EnemyPower: "..sEnemyLocalPower..", "..sEnemyNearPower..", "..sEnemyMidPower..", "..sEnemyLongPower)
+	end
+end

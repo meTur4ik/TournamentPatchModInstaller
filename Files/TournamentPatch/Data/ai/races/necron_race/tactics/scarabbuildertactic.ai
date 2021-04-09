@@ -1,0 +1,35 @@
+----------------------------------------
+-- File: 'scarabbuildertactic.ai'
+-- Edited by Thudmeizer @ 26.10.2006
+
+class 'ScarabBuilderTactic' (EngineerTactic)
+
+function ScarabBuilderTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Scarab Builder Tactic")
+end
+
+function ScarabBuilderTactic:IsEngineerWhoCanCapture()
+	return true
+end
+
+function ScarabBuilderTactic:IsSupportDetector()
+	return true
+end
+
+function ScarabBuilderTactic:IsAffectedByMorale()
+	return false
+end
+
+function ScarabBuilderTactic:Reinforce()
+	
+	-- Always try to reinforce
+	if (not self.squad_ai:IsReinforcing()) then
+			
+	   if (self.squad_ai:CanReinforce( true, 0 )) then
+		  self.squad_ai:DoReinforce( true, 0 )
+	   elseif (self.squad_ai:CanReinforce( false, 0 )) then
+		  self.squad_ai:DoReinforce( false, 0 )
+	   end	
+	end
+end

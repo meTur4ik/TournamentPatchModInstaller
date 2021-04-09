@@ -1,0 +1,13 @@
+----------------------------------------
+-- File: 'flayedonestactic.ai'
+-- Created by Arkhan  @ 15.03.2008
+
+class 'FlayedOnesTactic' (NecronInfantryTactic)
+
+function FlayedOnesTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Flayed Ones Tactic")
+
+	-- Flayed one can deepstrike
+	self.m_iDeepStrikeBlueprintID = cpu_manager.stats:GetBuildingID("monolith")
+end

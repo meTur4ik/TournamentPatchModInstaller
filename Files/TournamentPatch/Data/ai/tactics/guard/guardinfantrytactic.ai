@@ -1,0 +1,56 @@
+class 'GuardInfantryTactic' (InfantryTactic)
+
+
+function GuardInfantryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Guard Infantry Tactic")
+
+end
+
+
+function GuardInfantryTactic:UpgradeAndReinforce()
+
+	-- if I am broken, don't upgrade/reinforce!
+	if self:IsAffectedByMorale() and self.squad_ai:IsBroken() then
+		return
+	end
+
+	if Tactic.Options.can_reinforce == false then
+		return
+	end
+	
+	if self.squad_ai:IsInCombat() == false then
+		-- check resource caps
+		if self:CanSpendMoney() == false then
+			return
+		end
+	end
+
+	-- Try for leader
+	if not self.squad_ai:IsReinforcing() then
+
+		if self.squad_ai:GetNumTroopers() > 4 and self.squad_ai:CanReinforce( true, 0 )  then
+			self.squad_ai:DoReinforce( true, 0 )
+		end
+	end
+	
+	if not self.squad_ai:IsReinforcing() then
+
+		-- Try for upgrade if in combat or tier 2 or higher (pick plasma over grenades unless we need them now!)
+		local tierLevel = cpu_manager:GetTierLevel()
+		if tierLevel >= 2 or self.squad_ai:IsInCombat() then
+
+			if self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetNumTroopers() > 3 then
+				local class_type = cpu_manager:GetFirstEnemyPlayer():GetMajorityClassType()
+				self.squad_ai:DoBestUpgrade( class_type )
+			end
+		end
+	end
+
+	if not self.squad_ai:IsReinforcing() then
+		-- base troops
+		if self.squad_ai:CanReinforce( false, 0 ) then
+			self.squad_ai:DoReinforce( false, 0 )
+		end
+	end
+end

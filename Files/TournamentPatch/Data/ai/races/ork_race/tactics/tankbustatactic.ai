@@ -1,0 +1,43 @@
+----------------------------------------
+-- File: 'tankbustatactic.ai'
+-- Edited by Thudmeizer   @ 26.10.2006
+
+class 'TankbustaTactic' (OrkInfantryTactic)
+
+Tankbusta = {}
+
+function TankbustaTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Tankbusta Tactic")
+end
+
+function TankbustaTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Tankbusta.bomb_id == nil) then
+		Tankbusta.bomb_id = cpu_manager.stats:GetAbilityID("ork_tankbusta_bombs")
+	end
+end
+
+function TankbustaTactic:DoAbilities()
+	
+	-- Try to use tank busta bomb ability
+	Ability.DoAbilityTarget(self.squad_ai, Tankbusta.bomb_id, Ability.Filters.CloseVehicleEnemy, 1)
+	
+	-- Call basic DoAbilities methods
+	OrkInfantryTactic.DoAbilities(self)
+end
+
+function TankbustaTactic:CheckDance(oSquad)
+
+	-- Check opponent
+	if (oSquad == nil) then
+		return false
+	end
+	
+	-- Check opponent
+	if (oSquad:GetSquadName() == "chaos_squad_cultist") then
+		return false
+	end
+	return true
+end

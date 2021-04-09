@@ -1,0 +1,117 @@
+----------------------------------------
+-- File: 'cultistactic.ai'
+-- Edited by LarkinVB	@ 19.08.2005
+-- Edited by Arkhan	@ 12.01.2006
+-- Edited by Thudmeizer	@ 26.10.2008
+
+class 'CultistTactic' (ChaosMarineInfantryTactic)
+
+Cultist = {}
+
+function CultistTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Cultist Tactic")
+end
+
+function CultistTactic:IsAttacker()
+	return (cpu_manager:GetTierLevel() >= 2)
+end
+
+function CultistTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Cultist.rage_id == nil) then
+		Cultist.rage_id = cpu_manager.stats:GetAbilityID( "chaos_furious_rage" )	
+	end
+end
+
+function CultistTactic:DoAbilities()
+
+	if (self.squad_ai:IsInCombat() and not self.squad_ai:IsCapturing() and not self.squad_ai:IsBroken()) then
+	  
+		-- Check if I can go berserk while stationary
+		if (not self:IsMoving()) then
+
+			if (self.squad_ai:CanDoAbility( Cultist.rage_id )) then
+				self.squad_ai:DoSpecialAbility( Cultist.rage_id )
+			end
+		end		
+	end
+	
+	-- Call basic DoAbilities methods
+	ChaosMarineInfantryTactic.DoAbilities(self)
+end
+
+function CultistTactic:Upgrade()
+
+ 	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+	
+	-- If there are no ressources available, don't upgrade!
+	if (not Tactic.Options.can_reinforce) then
+		return
+	end
+   
+	if (not self.squad_ai:IsReinforcing() and cpu_manager:GetTierLevel() >= 2) then
+	  
+		-- Try for upgrade if we've a leader and more than 6 troopers
+		if (self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetNumTroopers() > 6 and self.squad_ai:HasLeader()) then
+			local class_type = cpu_manager:FindClosestEnemyPlayer():GetMajorityClassType()
+			self.squad_ai:DoBestUpgrade( class_type )
+		end
+	end
+end
+
+function CultistTactic:Reinforce()
+
+	-- Check if we are reinforcing
+	if (self.squad_ai:IsReinforcing()) then
+		return
+	end
+	
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+	
+	-- Don't reinforce squads in critical condition
+	if (self.squad_ai:GetNumTroopers() <= self.squad_ai:GetMaxTroopers() / 3 and self.squad_ai:IsUnderAttack()) then
+		return
+	end
+
+	-- Always try to get the leader first
+	if (self.squad_ai:CanReinforce(true, 0)) then
+		self.squad_ai:DoReinforce(true, 0)
+		return
+	end
+
+	-- Check resources
+	local iRequisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	if ((iRequisition < 800 or self.m_bPowerCost) and not Tactic.Options.can_reinforce) then
+		return
+	end
+	
+	-- Always try to reinforce, as long as I have money
+	if (self.squad_ai:CanReinforce( false, 0 ) and self.squad_ai:HasLeader() and cpu_manager:GetTierLevel() >= 2) then
+		self.squad_ai:DoReinforce( false, 0 )
+	end
+end
+
+function CultistTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update( self )) then
+		return
+	end
+	
+    -- Set unit on ranged stance in tier 3+
+    if (cpu_manager:GetTierLevel() >= 3 and self.squad_ai:GetMeleeStance() ~= SquadAI.MSTANCE_Ranged) then
+    	self.squad_ai:DoSetMeleeStance(SquadAI.MSTANCE_Ranged)
+    end
+end

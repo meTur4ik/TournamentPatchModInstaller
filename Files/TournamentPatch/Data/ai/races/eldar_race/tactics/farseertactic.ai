@@ -1,0 +1,149 @@
+----------------------------------------
+-- File: 'farseertactic.ai'
+-- Edited by Thudmeizer @ 27.10.2008
+-- Edited by LarkinVB   @ 15.08.2005
+
+class 'FarSeerTactic' (EldarInfantryTactic)
+
+FarSeer = {}
+
+function FarSeerTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Far Seer Tactic")
+
+	self.dance_time = 0
+end
+
+-- Assassinate win condition -- never attack
+function FarSeerTactic:IsAttacker()	
+	return (not cpu_manager.assassinate and self:IsCommanderAttacker())
+end
+
+-- Assassinate win condition -- never defend
+function FarSeerTactic:IsDefender()
+	return (not cpu_manager.assassinate and self:IsCommanderDefender())
+end
+
+function FarSeerTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (FarSeer.storm_id == nil) then
+		FarSeer.storm_id = cpu_manager.stats:GetAbilityID( "eldar_psychic_storm" )
+	end
+	if (FarSeer.eldritchstorm_id == nil) then
+		FarSeer.eldritchstorm_id = cpu_manager.stats:GetAbilityID( "eldar_eldritchstorm" )
+	end
+	if (FarSeer.mind_war_id == nil) then
+		FarSeer.mind_war_id = cpu_manager.stats:GetAbilityID( "eldar_mind_war" )
+	end
+	if (FarSeer.guide_id == nil) then
+		FarSeer.guide_id = cpu_manager.stats:GetAbilityID( "eldar_guide" )
+	end
+	if (FarSeer.fleetoffoot_id == nil) then
+		FarSeer.fleetoffoot_id = cpu_manager.stats:GetAbilityID( "eldar_fleetoffoot" )
+	end
+end
+
+function FarSeerTactic:DoAbilities()
+	
+	if (self.squad_ai:CanDoAbility(FarSeer.guide_id)) then
+		local range = self.squad_ai:GetAbilityRange( FarSeer.guide_id )	
+		local squad_filter = function( squad_ai )		
+			return squad_ai:IsInCombat() and squad_ai:IsInStateAttackMove() and 
+					squad_ai:GetNumTroopers() >= 4 and not squad_ai:IsBroken() and
+					not squad_ai:IsCapturing()
+		end	
+   		local target_squad = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), range, squad_filter )
+		if (target_squad ~= nil) then
+			self.squad_ai:DoSpecialAbilitySquad( FarSeer.guide_id, target_squad:GetSquad() )
+ 		end
+	end
+	
+	-- If we are dying, lower requisites for attacks
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+			
+	   Ability.DoAbilityPos( self.squad_ai, FarSeer.eldritchstorm_id, Ability.Filters.CloseEnemy, 6 ) 	
+	   Ability.DoAbilityTarget( self.squad_ai, FarSeer.storm_id, Ability.Filters.CloseInfantryEnemy, 4 ) 
+	   Ability.DoAbilityTarget( self.squad_ai, FarSeer.mind_war_id, Ability.Filters.CloseInfantryEnemy, 1 )
+
+	   if (self.squad_ai:CanDoAbility(FarSeer.guide_id)) then
+			local range = self.squad_ai:GetAbilityRange( FarSeer.guide_id )	
+			local squad_filter = function( squad_ai )		
+				return squad_ai:IsInCombat() and squad_ai:IsInStateAttackMove() and 
+						squad_ai:GetNumTroopers() >= 2 and not squad_ai:IsBroken() and
+						not squad_ai:IsCapturing()
+			end	
+   			local target_squad = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), range, squad_filter )
+			if (target_squad ~= nil) then
+				self.squad_ai:DoSpecialAbilitySquad( FarSeer.guide_id, target_squad:GetSquad() )
+ 			end
+ 		end
+ 	else
+		Ability.DoAbilityPos( self.squad_ai, FarSeer.eldritchstorm_id, Ability.Filters.CloseEnemy, 12 ) 
+		Ability.DoAbilityTarget( self.squad_ai, FarSeer.storm_id, Ability.Filters.CloseInfantryEnemy, 8 ) 
+		Ability.DoAbilityTarget( self.squad_ai, FarSeer.mind_war_id, Ability.Filters.CloseCommanderEnemy, 1 )		
+	end
+
+	-- Check if I should enable/disable fleet of foot
+	if (not self.squad_ai:IsAttached()) then
+		self:DoAbilityFoF()
+	end
+end
+
+function FarSeerTactic:Update()
+
+    if (self:IsComplete()) then
+        return
+    end
+    
+    -- State machine
+    if (not InfantryTactic.Update( self )) then
+        return
+    end
+    
+ 	-- Check for close commander
+    local bSetRanged = false
+    local bSetMelee = false
+	local vSquadPos = self.squad_ai:GetPosition()
+	local eStance = self.squad_ai:GetMeleeStance()
+	local oEnemyCommander = Ability.Filters.CloseCommanderEnemy(vSquadPos, 20, 1)
+    if (oEnemyCommander ~= nil) then
+       
+        -- Check health
+        if (self.squad_ai:GetHealthPercentage() > 0.8 and oEnemyCommander:GetHealthPercentage() < 0.3) then
+            bSetMelee = (eStance == SquadAI.MSTANCE_Ranged)
+            self.dance_time = 0
+		else
+            bSetRanged = (eStance == SquadAI.MSTANCE_Assault)
+        end
+	else
+    
+    	-- Check for close attached commander
+    	local oSquad = Ability.Filters.CloseInfantryEnemy(vSquadPos, 20, 4)
+    	if (oSquad ~= nil and oSquad:IsAttached()) then
+    		bSetRanged = (eStance == SquadAI.MSTANCE_Assault)
+    	else
+    		bSetMelee = (eStance == SquadAI.MSTANCE_Ranged)
+    	end
+    end
+
+    -- At leat 10 secs ranged stance/dancing
+    if (bSetRanged) then
+        self.squad_ai:DoSetMeleeStance( SquadAI.MSTANCE_Ranged )
+        self.dance_time = g_iGMT
+    elseif (bSetMelee and self.stateID ~= Tactic.StateID.DoDance and g_iGMT > self.dance_time + 10) then
+        self.squad_ai:DoSetDefaultMeleeStance()
+        self.dance_time = 0
+    end
+    
+    -- Assassinate win condition -- never attach to a squad / do not attach while dancing
+    if (not cpu_manager.assassinate and self.squad_ai:GetMeleeStance() == SquadAI.MSTANCE_Assault) then          
+        if (self.squad_ai:IsInCombat() or self.squad_ai:WasRecentlyHurt()) then
+            if (self:TryAttachSquad(false, true, 50, 150, self.m_fCommanderAttachHealth) == nil) then
+                self:TryAttachSquadMelee()
+            end
+        end
+    end
+end
+
+

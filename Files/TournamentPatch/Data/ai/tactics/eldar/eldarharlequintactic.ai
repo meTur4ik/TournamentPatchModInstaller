@@ -1,0 +1,30 @@
+class 'EldarHarlequinTactic' (InfantryTactic)
+
+EldarHarlequinTactic.TargetAbilities = 
+{
+	{ nil, "eldar_liquefy", 								Ability.Filters.CloseInfantryEnemy, 1 },
+}
+
+function EldarHarlequinTactic:__init( squad_ai ) super( squad_ai )
+	
+	Tactic.UtilityFunctions.InitAbilitiesTable(EldarHarlequinTactic.SpecialAbilities)
+	
+	self:SetName("Harlequin Tactic")
+	
+end
+
+function EldarHarlequinTactic:DoAbilities()
+
+	Tactic.UtilityFunctions.DoAbilities(EldarHarlequinTactic.SpecialAbilities,self.squad_ai,Ability.DoAbility)
+
+	self:DoMeleeDanceAbility()	
+	
+end
+
+function EldarHarlequinTactic:DoMeleeDanceAbility()
+
+	if (self.squad_ai:IsInCombat() and self.squad_ai:CanMeleeDance()) then
+		self.squad_ai:DoMeleeDance()
+	end
+
+end

@@ -1,0 +1,24 @@
+class 'CanonessTactic' (InfantryTactic)
+
+CanonessTactic.SpecialAbilities = 
+{
+	{ nil, "sisters_act_of_faith_ascension", Ability.PredicateFilters.IsInCombat, nil },
+}
+
+function CanonessTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Canoness Tactic")
+	
+end
+
+function CanonessTactic:DoAbilities()
+
+	InfantryTactic.DoAbilities(self)
+	
+	target = Ability.Filters.CloseEnemy( self.squad_ai:GetPosition(), 10, 3 )	
+	if target ~= nil then
+		Tactic.UtilityFunctions.DoAbilities(CanonessTactic.SpecialAbilities, self.squad_ai, Ability.DoAbility)
+	end
+
+end
+

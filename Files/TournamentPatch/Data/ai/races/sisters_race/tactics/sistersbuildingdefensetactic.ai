@@ -1,0 +1,47 @@
+----------------------------------------
+-- File: 'sistersbuildingdefensetactic.ai'
+-- Edited by Thudmeizer		@ 22.03.2008
+
+class 'SistersBuildingDefenseTactic' (BaseTactic)
+
+SistersBuildingDefense = {}
+
+function SistersBuildingDefenseTactic:__init( base_ai ) super( base_ai )
+
+	self:SetName("Sisters Building Defense Tactic")
+end
+
+function SistersBuildingDefenseTactic:InitAbilities()
+	
+	-- Init abilities
+	if (self.m_iReliquaryhailersID == nil) then
+		self.m_iReliquaryhailersID = cpu_manager.stats:GetAbilityID( "sisters_laud_hailers_fx_reliquary" )
+	end
+
+	if (self.m_iChapelhailersID == nil) then
+		self.m_iChapelhailersID = cpu_manager.stats:GetAbilityID( "sisters_laud_hailers_fx_ecclesiarchal_chapel" )
+	end
+
+	if (self.m_iConventhailersID == nil) then
+		self.m_iConventhailersID = cpu_manager.stats:GetAbilityID( "sisters_laud_hailers_fx_as_convent" )
+	end
+
+	if (self.m_iSanctuaryhailersID == nil) then
+		self.m_iSanctuaryhailersID = cpu_manager.stats:GetAbilityID( "sisters_laud_hailers_fx_pristine_sanctuary" )
+	end
+
+	if (self.m_iWorkshophailersID == nil) then
+		self.m_iWorkshophailersID = cpu_manager.stats:GetAbilityID( "sisters_laud_hailers_fx_am_workshop" )
+	end
+end
+
+function SistersBuildingDefenseTactic:DoAbilities()
+
+       Ability.DoAbilityArea( self.base_ai, self.m_iReliquaryhailersID, Ability.Filters.CloseInfantryEnemy, 20, 2)
+       Ability.DoAbilityArea( self.base_ai, self.m_iChapelhailersID, Ability.Filters.CloseInfantryEnemy, 20, 2)
+       Ability.DoAbilityArea( self.base_ai, self.m_iConventhailersID, Ability.Filters.CloseInfantryEnemy, 20, 2)
+       Ability.DoAbilityArea( self.base_ai, self.m_iSanctuaryhailersID, Ability.Filters.CloseInfantryEnemy, 20, 2)
+       Ability.DoAbilityArea( self.base_ai, self.m_iWorkshophailersID, Ability.Filters.CloseInfantryEnemy, 20, 2)
+end
+
+

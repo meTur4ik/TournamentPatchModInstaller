@@ -1,0 +1,24 @@
+----------------------------------------
+-- File: 'grottactic.ai'
+-- Edited by Thudmeizer   @ 26.10.2006
+
+class 'GrotTactic' (EngineerTactic)
+
+function GrotTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Grot Tactic")
+end
+
+function GrotTactic:Reinforce()
+
+	-- Don't reinforce more than 5 grots -- they get stuck
+	if (not self.squad_ai:IsReinforcing() and self.squad_ai:GetNumTroopers() < 5) then
+		if (self.squad_ai:CanReinforce( false, 0 )) then
+			self.squad_ai:DoReinforce( false, 0 )
+		end
+	end
+end
+
+function GrotTactic:IsAffectedByMorale()
+	return false
+end

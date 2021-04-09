@@ -1,0 +1,446 @@
+----------------------------------------
+-- File: 'npcunitstats.ai'
+-- Edited by Arkhan     @ 20.11.2006
+
+UnitStrengths.guard_squad_civilian_child_a = 0
+UnitStrengths.guard_squad_civilian_child_b = 0
+UnitStrengths.guard_squad_civilian_child_c = 0
+UnitStrengths.guard_squad_civilian_child_d = 0
+UnitStrengths.guard_squad_civilian_female_a = 0
+UnitStrengths.guard_squad_civilian_female_b = 0
+UnitStrengths.guard_squad_civilian_male_a = 0
+UnitStrengths.guard_squad_civilian_male_b = 0
+UnitStrengths.guard_squad_civilian_male_c = 0
+UnitStrengths.guard_squad_civilian_male_d = 0
+UnitStrengths.guard_squad_colonel = 250
+UnitStrengths.guard_squad_inquisitor = 350
+UnitStrengths.guard_squad_lemun_russ = 450
+UnitStrengths.guard_squad_megaship = 250
+UnitStrengths.guard_squad_soldier = 30
+UnitStrengths.guard_squad_soldier_coward = 20
+UnitStrengths.npc_guard_thunderhawk = 250
+UnitStrengths.npc_necron_monolith = 1000
+UnitStrengths.npc_necron_warrior = 75
+UnitStrengths.npc_squad_dummy = 0
+UnitStrengths.npc_valkyrie = 250
+
+
+NPCUnitStats = 
+{
+	race = "npc_race",
+	{
+		name = "Guard Civilian Child A",
+		sbp_name = "guard_squad_civilian_child_a",
+		ebp_name = "guard_civilian_child_a",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Civilian Child B",
+		sbp_name = "guard_squad_civilian_child_b",
+		ebp_name = "guard_civilian_child_b",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Civilian Child C",
+		sbp_name = "guard_squad_civilian_child_c",
+		ebp_name = "guard_civilian_child_c",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Civilian Child D",
+		sbp_name = "guard_squad_civilian_child_d",
+		ebp_name = "guard_civilian_child_d",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Civilian Female A",
+		sbp_name = "guard_squad_civilian_female_a",
+		ebp_name = "guard_civilian_female_a",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Civilian Female B",
+		sbp_name = "guard_squad_civilian_female_b",
+		ebp_name = "guard_civilian_female_b",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Civilian Female D",
+		sbp_name = "guard_squad_civilian_female_d",
+		ebp_name = "guard_civilian_female_d",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Civilian Man A",
+		sbp_name = "guard_squad_civilian_male_a",
+		ebp_name = "guard_civilian_man_a",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Civilian Man B",
+		sbp_name = "guard_squad_civilian_male_b",
+		ebp_name = "guard_civilian_man_b",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Civilian Man C",
+		sbp_name = "guard_squad_civilian_male_c",
+		ebp_name = "guard_civilian_man_c",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Civilian Man D",
+		sbp_name = "guard_squad_civilian_male_d",
+		ebp_name = "guard_civilian_man_d",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Colonel",
+		sbp_name = "guard_squad_colonel",
+		ebp_name = "guard_colonel",
+		class = UnitStatsAI.UC_Commander,
+		rating = 2.6,
+		potential =
+		{
+			{
+				name = "npc_bolt_pistol",
+				effectiveness = GenerateUnitEffectiveness(2.8,3.3,2.7,2.2,2.2,0.3,0.1,0.0,2.2,0.4,1.3,2.6,0.7,1.1),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "npc_power_sword",
+				effectiveness = GenerateUnitEffectiveness(4.0,5.3,4.5,4.6,2.8,0.7,0.2,0.0,4.5,0.0,4.5,3.8,1.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Guard Inquisitor",
+		sbp_name = "guard_squad_inquisitor",
+		ebp_name = "guard_inquisitor",
+		class = UnitStatsAI.UC_Commander,
+		rating = 10.0,
+		potential =
+		{
+			{
+				name = "space_marine_plasma_pistol_commander",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,8.3,4.4,0.0,10.0,5.9,8.9,8.5,3.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "space_marine_daemon_hammer",
+				effectiveness = GenerateUnitEffectiveness(8.8,10.0,10.0,10.0,10.0,7.6,6.3,10.0,10.0,10.0,10.0,7.9,3.2,3.5),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_power_sword_librarian",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,7.6,6.7,10.0,10.0,10.0,10.0,5.2,2.5,2.4),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Guard Lemun Russ",
+		sbp_name = "guard_squad_lemun_russ",
+		ebp_name = "guard_lemun_russ",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 5.8,
+		potential =
+		{
+			{
+				name = "ork_battlecannon",
+				effectiveness = GenerateUnitEffectiveness(3.8,3.8,3.8,3.8,3.8,10.0,7.5,7.6,3.8,5.1,3.2,2.9,2.9,5.7),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "npc_lemanruss_heavybolter",
+				effectiveness = GenerateUnitEffectiveness(6.4,7.5,6.4,5.1,3.5,5.5,2.8,2.3,4.9,4.1,3.1,5.3,1.9,3.2),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "npc_lemanruss_heavybolter",
+				effectiveness = GenerateUnitEffectiveness(6.4,7.5,6.4,5.1,3.5,5.5,2.8,2.3,4.9,4.1,3.1,5.3,1.9,3.2),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "npc_lemanruss_heavybolter",
+				effectiveness = GenerateUnitEffectiveness(6.4,7.5,6.4,5.1,3.5,5.5,2.8,2.3,4.9,4.1,3.1,5.3,1.9,3.2),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Guard Megaship",
+		sbp_name = "guard_squad_megaship",
+		ebp_name = "guard_megaship",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Guard Soldier",
+		sbp_name = "guard_squad_soldier",
+		ebp_name = "guard_soldier",
+		class = UnitStatsAI.UC_LightInfantryMed,
+		rating = 1.0,
+		potential =
+		{
+			{
+				name = "npc_lasgun",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.3,0.9,0.8,0.0,0.0,0.0,0.0,0.3,0.0,0.1,0.5,0.1,0.2),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "npc_grenadelauncher",
+				effectiveness = GenerateUnitEffectiveness(2.8,3.1,2.6,1.7,0.9,0.2,0.1,0.0,1.0,0.0,0.1,0.6,0.2,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "npc_plasmagun",
+				effectiveness = GenerateUnitEffectiveness(2.7,3.1,2.6,3.6,3.0,0.2,0.1,0.0,2.1,1.4,1.7,0.7,0.2,0.3),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "npc_knife",
+				effectiveness = GenerateUnitEffectiveness(0.5,0.6,0.5,0.4,0.0,0.0,0.0,0.0,0.1,0.0,0.1,0.2,0.1,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Guard Soldier Coward",
+		sbp_name = "guard_squad_soldier_coward",
+		ebp_name = "guard_soldier_coward",
+		class = UnitStatsAI.UC_LightInfantryMed,
+		rating = 1.0,
+		potential =
+		{
+			{
+				name = "npc_lasgun",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.3,0.9,0.8,0.0,0.0,0.0,0.0,0.3,0.0,0.1,0.5,0.1,0.2),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "npc_grenadelauncher",
+				effectiveness = GenerateUnitEffectiveness(2.8,3.1,2.6,1.7,0.9,0.2,0.1,0.0,1.0,0.0,0.1,0.6,0.2,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "npc_plasmagun",
+				effectiveness = GenerateUnitEffectiveness(2.7,3.1,2.6,3.6,3.0,0.2,0.1,0.0,2.1,1.4,1.7,0.7,0.2,0.3),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "npc_knife",
+				effectiveness = GenerateUnitEffectiveness(0.5,0.6,0.5,0.4,0.0,0.0,0.0,0.0,0.1,0.0,0.1,0.2,0.1,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Guard Thunderhawk",
+		sbp_name = "npc_guard_thunderhawk",
+		ebp_name = "guard_thunderhawk",
+		class = UnitStatsAI.UC_VehicleHigh,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Necron Monolith",
+		sbp_name = "npc_necron_monolith",
+		ebp_name = "necron_monolith",
+		class = UnitStatsAI.UC_BuildingHigh,
+		rating = 6.7,
+		potential =
+		{
+			{
+				name = "necron_particle_whip",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,9.5,9.5,9.5,7.1,5.4,10.0,9.5,9.5,9.5),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "necron_heavy_gauss_cannon_left_front",
+				effectiveness = GenerateUnitEffectiveness(4.7,4.7,4.7,4.7,4.7,4.6,4.6,4.6,2.6,1.6,4.7,4.6,4.6,4.6),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "necron_heavy_gauss_cannon_left_rear",
+				effectiveness = GenerateUnitEffectiveness(4.7,4.7,4.7,4.7,4.7,4.6,4.6,4.6,2.6,1.6,4.7,4.6,4.6,4.6),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "necron_heavy_gauss_cannon_right_front",
+				effectiveness = GenerateUnitEffectiveness(4.7,4.7,4.7,4.7,4.7,4.6,4.6,4.6,2.6,1.6,4.7,4.6,4.6,4.6),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "necron_heavy_gauss_cannon_right_rear",
+				effectiveness = GenerateUnitEffectiveness(4.7,4.7,4.7,4.7,4.7,4.6,4.6,4.6,2.6,1.6,4.7,4.6,4.6,4.6),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Necron Warrior",
+		sbp_name = "npc_necron_warrior",
+		ebp_name = "necron_warrior",
+		class = UnitStatsAI.UC_HeavyInfantryMed,
+		rating = 2.6,
+		potential =
+		{
+			{
+				name = "necron_gauss_flayer_ranged",
+				effectiveness = GenerateUnitEffectiveness(3.3,3.3,3.3,3.3,3.3,2.4,2.4,2.4,3.3,2.2,3.3,2.4,2.4,2.4),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "necron_gauss_flayer_melee",
+				effectiveness = GenerateUnitEffectiveness(1.2,1.2,1.2,1.2,1.2,1.1,1.1,1.1,1.2,1.2,1.2,1.1,1.1,1.1),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Troop Dummy",
+		sbp_name = "npc_squad_dummy",
+		ebp_name = "npc_troop_dummy",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Valkyrie",
+		sbp_name = "npc_valkyrie",
+		ebp_name = "npc_valkyrie",
+		class = UnitStatsAI.UC_VehicleHigh,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+}

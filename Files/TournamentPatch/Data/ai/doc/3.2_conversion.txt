@@ -1,0 +1,13 @@
+
+1.) Replace core folder
+
+2.) Replace files in SCAR folder
+
+3.) Changes in race AI folder : Slight changes to all races
+
+4.1) Copy new mapdb folder
+
+4.1) Open mabdb.ai file in mapdb folder and change the following AIMod path to the one of YOUR own mod:
+
+	 MapDB.Path = "Dowai_mod\\Data\\ai\\mapdb\\"	( Line 10 )
+    

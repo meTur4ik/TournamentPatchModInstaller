@@ -1,0 +1,216 @@
+--------------------------------------------------------------------------------------------------------------
+-- CONSTANTS -------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+VALUE_NEVER_BUILD		= -400000
+VALUE_LOCK_BUILD		= -200000
+
+-- above this should never be built
+VALUE_TOO_MANY_REQS		= -150000
+VALUE_NO_BUILD			= -100000
+VALUE_CAP				= -50000
+VALUE_RESOURCE_RATE		= -25000
+VALUE_BUILD_TIME		= -10000
+
+VALUE_PER_TIER			= -200
+
+
+VALUE_PROMOTE_BUILD		= 200000
+INT_MAX					= 100000
+
+
+--------------------------------------------------------------------------------------------------------------
+-- Logging funcitons --------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+stack_trace_num = 0
+tracing = {}
+
+
+function aitrace( msg )
+
+	profile_start("aitrace")
+
+	for i = 0, stack_trace_num-1 do
+		msg = ("   "..msg)
+	end
+
+	table.insert(tracing, msg)
+	
+	profile_end("aitrace")
+end
+
+
+function aipushtrace( name )
+	aitrace( name )
+	stack_trace_num = stack_trace_num + 1
+end
+
+
+function aipoptrace( name )
+	stack_trace_num = stack_trace_num - 1
+	aitrace( name )
+end
+
+
+--------------------------------------------------------------------------------------------------------------
+-- Utility Fns -------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+
+function dbAssert( b )
+	if( b == false ) then
+		local source, line = dbGetLine()
+		ai_assert = true
+		local msg = "Assertion failed at "..source..", line "..line
+		aitrace(msg)
+		dbBreak()
+		error(msg)
+	end
+end
+
+
+function foreach_bind( tbl, func, ... )
+
+	local ret_val = nil
+	
+	local arg_count = arg.n
+	for i in tbl do
+		if( arg_count == 0) then
+			ret_val = func( tbl[i] )
+		elseif( arg_count == 1) then
+			ret_val = func( arg[1], tbl[i] )
+		elseif( arg_count == 2) then
+			ret_val = func( arg[1], arg[2], tbl[i] )
+		elseif( arg_count == 3) then
+			ret_val = func( arg[1], arg[2], arg[3], tbl[i] )
+		elseif( arg_count == 4) then
+			ret_val = func( arg[1], arg[2], arg[3], arg[4], tbl[i] )
+		end
+		
+		if( ret_val ~= nil ) then
+			break
+		end
+	end
+	
+	return ret_val
+
+end
+
+function GenerateUnitEffectiveness(light_low,light_med,light_high,heavy_med,heavy_high,
+														vehicle_low,vehicle_med,vehicle_high,
+														monster_med,monster_high,commander,
+														build_low,build_med,build_high,
+														air_low,air_med,air_high)
+
+	build_low = build_low or 0 -- returns larger number
+	build_med = build_low or 0 -- returns larger number
+	build_high = build_high or 0 -- returns larger number
+	
+	effectiveness = {}
+	
+	effectiveness[ UnitStatsAI.UC_LightInfantryLow ] 	= light_low
+	effectiveness[ UnitStatsAI.UC_LightInfantryMed ] 	= light_med
+	effectiveness[ UnitStatsAI.UC_LightInfantryHigh ] 	= light_high
+	effectiveness[ UnitStatsAI.UC_HeavyInfantryMed ] 	= heavy_med
+	effectiveness[ UnitStatsAI.UC_HeavyInfantryHigh ] 	= heavy_high
+	effectiveness[ UnitStatsAI.UC_VehicleLow ] 			= vehicle_low
+	effectiveness[ UnitStatsAI.UC_VehicleMed ] 			= vehicle_med
+	effectiveness[ UnitStatsAI.UC_VehicleHigh ] 		= vehicle_high
+	effectiveness[ UnitStatsAI.UC_MonsterMed ] 			= monster_med
+	effectiveness[ UnitStatsAI.UC_MonsterHigh ] 		= monster_high
+	effectiveness[ UnitStatsAI.UC_Commander ] 			= commander
+	effectiveness[ UnitStatsAI.UC_BuildingLow ] 		= build_low
+	effectiveness[ UnitStatsAI.UC_BuildingMed ] 		= build_med
+	effectiveness[ UnitStatsAI.UC_BuildingHigh ] 		= build_high
+	effectiveness[ UnitStatsAI.UC_AirLow ]		 		= air_low
+	effectiveness[ UnitStatsAI.UC_AirMed ] 				= air_med
+	effectiveness[ UnitStatsAI.UC_AirHigh ] 			= air_high
+
+	return effectiveness
+end
+
+
+function distance( vec1, vec2 )
+	dbAssert( vec1 ~= nil )
+	dbAssert( vec2 ~= nil )
+
+	local v1 = vec1
+	v1.y = 0
+	local v2 = vec2
+	v2.y = 0
+	return (v1 - v2):Length()
+end
+
+function distance_sqr( vec1, vec2 )
+
+	dbAssert( vec1 ~= nil )
+	dbAssert( vec2 ~= nil )
+
+	local v1 = vec1
+	v1.y = 0
+	local v2 = vec2
+	v2.y = 0
+	return (v1 - v2):LengthSqr()
+end
+
+function vec2str( vec )
+   
+   if vec ~= nil then
+	  local txt = "<"..string.format("%.1f",vec.x)..","..string.format("%.1f",vec.y)..","..string.format("%.1f",vec.z)..">"
+   
+	  return txt
+   end
+
+   return "nil"
+end
+
+
+--------------------------------------------------------------------------------------------------------------
+-- Profiling -------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+g_profile = false
+
+function profile_start(name)
+	
+	if g_profile then
+		aiprofile_start( cpu_manager.cpu_player, name )
+	end
+
+end
+
+function profile_end(name)
+
+	if g_profile then
+		aiprofile_end( cpu_manager.cpu_player, name )
+	end
+
+end
+
+--------------------------------------------------------------------------------------------------------------
+-- Timer -----------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+class 'Timer'
+
+function Timer:__init( method, object, count )
+
+	self.current_count = 0
+	self.count = count
+	self.method = method
+	self.object = object
+
+end
+
+function Timer:Call()
+	
+	self.current_count = self.current_count + 1
+	
+	if self.current_count >= self.count then
+		self.current_count = 0
+		self.method( self.object )
+	end
+	
+end
+

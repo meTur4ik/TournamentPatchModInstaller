@@ -1,0 +1,28 @@
+----------------------------------------
+-- File: 'sistersservitortactic.ai'
+-- Created by Thudmeizer @ 15.11.2007
+
+class 'SistersServitorTactic' (EngineerTactic)
+
+SistersServitor = {}
+
+function SistersServitorTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Servitor Tactic")
+end
+
+function SistersServitorTactic:InitAbilities()
+
+	if SistersServitor.dismantle_id == nil then
+	   SistersServitor.dismantle_id = cpu_manager.stats:GetAbilityID( "sisters_dismantle" )	
+     end
+end
+
+function SistersServitorTactic:DoAbilities()
+
+        Ability.DoAbilityTargetEntity( self.squad_ai, SistersServitor.dismantle_id, Ability.EntityFilters.CloseBaseEntityEnemy, 1)
+end
+
+function SistersServitorTactic:IsAffectedByMorale()
+	return false
+end

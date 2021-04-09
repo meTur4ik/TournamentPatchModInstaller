@@ -1,0 +1,38 @@
+----------------------------------------
+-- File: 'harlequintactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'HarlequinTactic' (InfantryTactic)
+
+Harlequin = {}
+
+function HarlequinTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Harlequin Tactic")
+end
+
+function HarlequinTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function HarlequinTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function HarlequinTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Harlequin.liquefy_id == nil) then
+		Harlequin.liquefy_id = cpu_manager.stats:GetAbilityID( "eldar_liquefy" )
+	end
+end
+
+function HarlequinTactic:DoAbilities()
+
+	Ability.DoAbilityTarget( self.squad_ai, Harlequin.liquefy_id, Ability.Filters.CloseSquadEnemy, 1 )
+	
+	-- Try to activate harlequin dance (Check if not bugged in SS 1.10)
+	if (self.squad_ai:IsInCombat() and self.squad_ai:CanMeleeDance()) then
+		self.squad_ai:DoMeleeDance()
+	end
+end

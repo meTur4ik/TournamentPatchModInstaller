@@ -1,0 +1,67 @@
+class 'ChaosLordTactic' (InfantryTactic)
+
+ChaosLordTactic.SpecialAbilities = 
+{
+	{ nil, "chaos_daemon_strength", Ability.PredicateFilters.IsInCombat, nil },
+--	{ nil, "chaos_symbol_of_chaos", Ability.PredicateFilters.IsInCombat, nil },
+}
+
+ChaosLordTactic.TimedSpecialAbilities = 
+{
+	{ nil, "chaos_detector", Ability.PredicateFilters.HasCloseInfiltratedEnemy, {ability_id = nil} },
+}
+
+function ChaosLordTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Chaos Lord Tactic")
+
+	Tactic.UtilityFunctions.InitAbilitiesTable(ChaosLordTactic.SpecialAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(ChaosLordTactic.TimedSpecialAbilities)
+	
+	Tactic.UtilityFunctions.SetArgAbilityID(ChaosLordTactic.TimedSpecialAbilities)	
+	
+	self.timedSpecialAbilities = Timer( ChaosLordTactic.DoTimedSpecialAbilities, self, 7 )
+end
+
+function ChaosLordTactic:IsAttacker()
+	
+	--assassinate win condition -- never attack
+	return not cpu_manager.assassinate
+end
+
+
+function ChaosLordTactic:Update()
+
+	if not InfantryTactic.Update( self ) then
+		return false
+	end
+
+	if cpu_manager.assassinate then
+		self:TryAttachAssassinateSquad( false )
+	else
+		-- experiment with attaching to squads
+		self:TryAttachSquad(true,true)
+	end
+	
+	return true
+end
+
+function ChaosLordTactic:DoAbilities()
+
+	self:DoPossessAbility()
+	
+	Tactic.UtilityFunctions.DoAbilities(ChaosLordTactic.SpecialAbilities,self.squad_ai,Ability.DoAbility)
+	
+	if (self.timedSpecialAbilities ~= nil) then
+		self.timedSpecialAbilities:Call()
+	else
+		ChaosLordTactic.DoTimedSpecialAbilities(self)
+	end
+end
+
+function ChaosLordTactic:DoTimedSpecialAbilities()
+
+	Tactic.UtilityFunctions.DoAbilities(ChaosLordTactic.TimedSpecialAbilities,self.squad_ai,Ability.DoAbility)
+
+end
+

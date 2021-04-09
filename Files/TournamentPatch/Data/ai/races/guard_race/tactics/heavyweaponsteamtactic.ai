@@ -1,0 +1,127 @@
+----------------------------------------
+-- File: 'guardhwttactic.ai'
+-- Edited by Thudmeizer @ 23.10.2006
+
+class 'HeavyWeaponsTeamTactic' (GuardInfantryTactic)
+
+function HeavyWeaponsTeamTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Guard Heavy Weapons Team Tactic")
+	
+	-- Assume squad just entrenched/retrenched
+	self.m_iLastEntrenchTime = g_iGMT
+	
+	-- Heavy weapon teams don't run for cover
+	self.m_bTakeCover = false
+	
+	-- Retrenched squad is transportable and able to occupy bunkers
+	if (self.squad_ai:CanEntrench(true)) then
+		self.m_iTransportable = 1
+		self.m_bBunkerSquad = true
+	else
+		self.m_iTransportable = 0
+		self.m_bBunkerSquad = false
+	end
+end
+
+function HeavyWeaponsTeamTactic:DoAbilities()
+
+	-- Try to entrench
+	self:DoEntrenchAbility()
+end
+
+function HeavyWeaponsTeamTactic:DoEntrenchAbility()
+
+	-- Don't entrench/retrench too fast after a retrench/entrench
+	if (g_iGMT < self.m_iLastEntrenchTime + 5 or g_iGMT < self.m_iCoverDelay + 5) then
+		return
+	end
+
+	-- Calculate distance to target position
+	local iDistance = distance_sqr(self.target, self.squad_ai:GetPosition())
+	
+	-- Check unit state
+	local bAttackState = (self:GetState() == Tactic.States.Attack)
+	
+	-- Check if we can entrench
+	if (self.squad_ai:CanEntrench(true)) then
+	
+		-- Check situation
+		local bDoEntrench = false
+		if (self.squad_ai:IsInCombat()) then
+		
+			-- Check state
+			if (bAttackState or iDistance < sqr(35)) then
+				bDoEntrench = true
+			end
+		 
+		elseif (not bAttackState and iDistance < sqr(20) and not cpu_manager.terrain_analyzer:HasThreat(self.target, 35)) then
+			bDoEntrench = true
+		end
+		
+		-- Try to entrench
+		if (bDoEntrench) then
+			self.squad_ai:DoEntrench(true)
+			self.m_iLastEntrenchTime = g_iGMT
+		end
+	end
+	
+	-- Check if we can retrench
+	if (self.squad_ai:CanEntrench(false)) then
+	
+		-- Check situation
+		local bDoRetrench = false
+		if (self.squad_ai:IsAttacking()) then
+		
+			-- Check state
+			if (not bAttackState and iDistance > sqr(35)) then
+				bDoRetrench = true
+			end
+	
+		elseif (bAttackState or iDistance > sqr(20) or cpu_manager.terrain_analyzer:HasThreat(self.target, 35)) then
+			bDoRetrench = true
+		end
+	
+		-- Try to retrench
+		if (bDoRetrench) then
+			self.squad_ai:DoEntrench(false)
+			self.m_iLastEntrenchTime = g_iGMT
+		end
+	end
+end
+
+function HeavyWeaponsTeamTactic:Upgrade()
+
+ 	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+	
+	-- If there are no ressources available, don't upgrade!
+	if (not Tactic.Options.can_reinforce) then
+		return
+	end
+
+	-- Check if we are already upgrading
+	if (not self.squad_ai:IsReinforcing()) then
+	
+		-- Upgrade if possible
+		if (self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetNumTroopers() > 0) then
+			local class_type = cpu_manager:GetFirstEnemyPlayer():GetMajorityClassType()
+			self.squad_ai:DoBestUpgrade( class_type )
+		end
+	end
+end
+
+function HeavyWeaponsTeamTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+
+	-- State machine
+	if (not InfantryTactic.Update( self )) then
+		return
+	end
+end
+

@@ -1,0 +1,85 @@
+----------------------------------------
+-- File: 'sisterscelestiantactic.ai'
+-- Edited by Thudmeizer @ 22.03.2008
+
+class 'SistersCelestianTactic' (SistersInfantryTactic)
+
+SistersCelestian = {}
+
+function SistersCelestianTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Celestian Tactic")
+end
+
+function SistersCelestianTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (SistersCelestian.krak_id == nil) then
+		SistersCelestian.krak_id = cpu_manager.stats:GetAbilityID( "sisters_krak_grenades" )
+	end
+end
+
+function SistersCelestianTactic:DoAbilities()
+
+	Ability.DoAbilityTarget( self.squad_ai, SistersCelestian.krak_id, Ability.Filters.CloseVehicleEnemy, 1 )
+    Ability.DoAbilityTargetEntity( self.squad_ai, SistersCelestian.krak_id, Ability.EntityFilters.CloseBaseEntityEnemy, 1)
+	
+	-- Call basic DoAbilities methods
+	SistersInfantryTactic.DoAbilities(self)
+end
+
+function SistersCelestianTactic:Reinforce()
+
+	-- Check if we are reinforcing
+	if (not self.squad_ai:IsReinforcing()) then
+
+		-- try for different types of squad members
+		local superiorIndex = 0
+		local imagiferIndex = 1
+	
+		local numSuperiors = self.squad_ai:GetLeaderCount( superiorIndex )
+		local numImagifers = self.squad_ai:GetLeaderCount( imagiferIndex )
+
+		-- Desired number of each leader type
+		local desiredSuperiors = 1
+		local desiredImagifers = 1 
+
+		-- Desired order of reinforcing
+		if (numSuperiors < desiredSuperiors) then
+			if (self.squad_ai:CanReinforce( true, superiorIndex )) then
+				self.squad_ai:DoReinforce( true, superiorIndex )
+			end
+		elseif (numImagifers < desiredImagifers) then
+			if (self.squad_ai:CanReinforce( true, imagiferIndex )) then
+				self.squad_ai:DoReinforce( true, imagiferIndex )
+			end
+		else
+			if (self.squad_ai:CanReinforce( false, 0 )) then
+				self.squad_ai:DoReinforce( false, 0 )
+			end			
+		end
+	end
+end
+
+function SistersCelestianTactic:Upgrade()
+
+	-- Check if I can upgrade
+	if (self.squad_ai:IsReinforcing() or not self.squad_ai:HasUpgradableTrooper()) then
+		return
+	end
+
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+	
+	-- Only upgrade if not reinforcing
+	if (not self.squad_ai:IsUnderAttack() and self.squad_ai:GetNumTroopers() >= 3) then
+	
+		-- Figure out my enemy's favourite class
+		local oEnemy = cpu_manager:FindClosestEnemyPlayer()
+		if (oEnemy ~= nil) then
+			self.squad_ai:DoBestUpgrade(oEnemy:GetMajorityClassType())
+		end
+	end
+end

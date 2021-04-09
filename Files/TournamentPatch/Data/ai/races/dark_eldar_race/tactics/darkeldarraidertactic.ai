@@ -1,0 +1,14 @@
+----------------------------------------
+-- File: 'darkeldarraidertactic.ai'
+-- Edited by Thudmeizer @ 15.11.2007
+
+class 'DarkEldarRaiderTactic' (DarkEldarVehicleTactic)
+
+function DarkEldarRaiderTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Dark Eldar Raider Tactic")
+	
+	-- Vehicle is a light transport
+	self.m_iTransportVehicle = 1
+	self.m_iTransportSlots = 1
+end

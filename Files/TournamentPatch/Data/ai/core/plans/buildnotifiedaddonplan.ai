@@ -1,0 +1,141 @@
+----------------------------------------
+-- File: 'buildnotifiedaddonplan.ai'
+-- Edited by Thudmeizer @ 08.02.2005
+-- Edited by LarkinVB   @ 15.08.2005
+-- Created by Corsix    @ 04.02.2005
+
+import ("Plans/BuildPlan.ai")
+
+class 'BuildNotifiedAddOnPlan' (BuildPlan)
+
+function BuildNotifiedAddOnPlan:__init( addon_id , notify_code , awayfromtable ) super(  CpuPlayer.CT_BuildAddOns )
+
+   BuildPlan.SetItemID( self, addon_id )
+   BuildPlan.SetItemName( self, cpu_manager.stats:GetAddOnName( addon_id ) )
+   
+   Plan.SetNeeds( self, "Asking for builder", BuildNotifiedAddOnPlan.ObtainBuilder )
+   Plan.SetState( self, "Wanting to build: "..self.item_name, BuildNotifiedAddOnPlan.BuildAddOn )
+
+   Plan.SetName( self, "Build NotifiedAddOn Plan" )
+   
+   self.notify = notify_code
+   if awayfromtable ~= nil then
+	  self.buildawayfrom = awayfromtable
+	  if table.getn(awayfromtable) == 0 then
+		 self.dobuildaway = false
+	  else
+		 self.dobuildaway = true
+	  end
+   else
+	  self.buildawayfrom = {}
+	  self.dobuildaway = false
+   end
+
+   --build addon towards enemy, higher priority than old self.dobuildaway 
+   self.face_enemy = true
+   --End
+end
+
+-- Corsix modified (added buildawayfrom code)
+function BuildNotifiedAddOnPlan:ObtainBuilder()
+   
+   local bestchannel = nil
+   local bestchanneldist = 0
+   local gotchannel = false
+   local bias_pos = nil
+
+   local enemy = cpu_manager:FindClosestEnemyPlayer()
+	dbAssert( enemy ~= nil )
+	local bias_pos = enemy:GetStartingPosition()   
+   dbAssert ( bias_pos ~= nil )
+   
+   for build_channel in build_manager:GetUnlockedBuildChannelAIs() do
+	  
+	  -- Don't queue
+	  if (build_channel:IsBuilding() == 0) then
+		 
+		 --now build something!
+		 local item_index  = build_channel:GetItemIndexFromID(BuildChannelAI.PQ_AddOn, self.item_id )
+		 
+		 if( item_index ~= BuildChannelAI.INVALID_INDEX ) then
+			
+			if( build_channel:CanAddToQueue( BuildChannelAI.PQ_AddOn, self.item_id ) == BuildChannelAI.CANBUILD_Ok ) then
+			   
+			   if self.face_enemy then
+				  
+				  local build_pos = build_channel:GetEntity():GetPosition()
+				  dbAssert ( build_pos ~= nil )
+				  local bias_build = cpu_manager:GetShortestPathingDistance( bias_pos, build_pos, true )
+				  if (bestchannel == nil or bias_build < bestchanneldist) then
+					 bestchannel = build_channel
+					 bestchanneldist = bias_build
+					 gotchannel = true
+				  end
+				  
+			   --we did not find a valid channel towards bias, fallback to old code
+			   elseif self.dobuildaway then
+
+				  local thisdist = 0
+				  local build_pos = build_channel:GetEntity():GetPosition()
+				  dbAssert( build_pos ~= nil )
+				  for table_itr in self.buildawayfrom do
+					 thisdist = thisdist + distance_sqr( self.buildawayfrom[table_itr] , build_pos )
+				  end
+				  if gotchannel then
+					 if thisdist > bestchanneldist then
+						bestchannel = build_channel
+						bestchanneldist = thisdist
+					 end
+				  else
+					 bestchannel = build_channel
+					 bestchanneldist = thisdist
+					 gotchannel = true
+				  end
+
+			   else
+				  --lock and save it!
+				  BuildPlan.SetBuilder( self, build_channel )
+				  
+				  --no needs
+				  Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )
+				  
+				  return
+			   end			   
+			end			
+		 end  		 
+	  end	  
+   end
+   
+   if (self.face_enemy or self.dobuildaway) and gotchannel then
+	  --lock and save it!
+	  BuildPlan.SetBuilder( self, bestchannel )
+	  
+	  --no needs
+	  Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )	  
+   end
+   
+end
+--End
+
+function BuildNotifiedAddOnPlan:Retry()
+   if( self.builder:CanAddToQueue( BuildChannelAI.PQ_AddOn, self.item_id ) == BuildChannelAI.CANBUILD_Ok ) then
+	  self.builder:BuildAddOn( self.item_id )
+   end
+end
+
+function BuildNotifiedAddOnPlan:BuildAddOn()
+   
+   if self.builder ~= nil then
+	  --build it!
+	  self.builder:BuildAddOn( self.item_id )
+	  
+	  --change state
+	  Plan.SetState( self, "Building a "..self.item_name, BuildPlan.BuildingState )
+	  
+	  cpu_manager.build_base_strategy:AddOnNotify(self.item_id, self.notify, self.builder)
+	  
+	  return
+   end
+   
+   aitrace( "can't build "..self.item_name )
+end

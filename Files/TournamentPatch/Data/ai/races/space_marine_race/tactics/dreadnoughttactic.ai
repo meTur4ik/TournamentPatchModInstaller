@@ -1,0 +1,15 @@
+----------------------------------------
+-- File: 'dreadnoughttactic.ai'
+-- Created by Arkhan		@ 18.03.2008
+
+class 'DreadnoughtTactic' (SpaceMarineVehicleTactic)
+
+function DreadnoughtTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Dreadnought Tactic")
+end
+
+-- Don't upgrade
+function DreadnoughtTactic:Upgrade()
+
+end

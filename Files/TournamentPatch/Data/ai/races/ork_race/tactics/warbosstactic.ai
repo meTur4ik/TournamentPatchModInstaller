@@ -1,0 +1,57 @@
+----------------------------------------
+-- File: 'warbosstactic.ai'
+-- Edited by Thudmeizer @ 09.03.2005
+-- Edited by LarkinVB   @ 31.07.2005
+
+class 'WarBossTactic' (OrkInfantryTactic)
+
+WarBoss = {}
+
+function WarBossTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("WarBoss Tactic")
+end
+
+function WarBossTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function WarBossTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function WarBossTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (WarBoss.waagh == nil) then
+		WarBoss.waagh = cpu_manager.stats:GetAbilityID( "ork_power_of_waagh" )
+	end
+end
+
+function WarBossTactic:DoAbilities()
+
+	Ability.DoAbility( self.squad_ai, WarBoss.waagh, Ability.Filters.IsInCombat ) 
+end
+
+function WarBossTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update( self )) then
+		return
+	end
+	
+	-- Attach to melee
+    if (self.squad_ai:GetMeleeStance() == SquadAI.MSTANCE_Assault) then
+         
+        if (self.squad_ai:IsInCombat() or self.squad_ai:WasRecentlyHurt()) then
+        
+            if (self:TryAttachSquad(false, true, 50, 150, self.m_fCommanderAttachHealth) == nil) then
+                self:TryAttachSquadMelee()
+            end
+        end
+    end
+end

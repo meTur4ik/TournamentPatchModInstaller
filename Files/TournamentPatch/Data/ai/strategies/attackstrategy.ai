@@ -1,0 +1,146 @@
+class 'AttackStrategy' (Strategy)
+
+function AttackStrategy:__init( info, defensiveAttack ) super( info )
+
+	self.enemy = nil
+	self.enemy_pos = nil
+	self.attack_plan = nil
+
+	self.bDefensiveAttack = defensiveAttack
+end
+
+
+function AttackStrategy:GetName()
+	return "AttackStrategy"
+end
+
+
+function AttackStrategy:TryTarget( enemy )
+
+	local start_pos = cpu_manager.cpu_player:GetStartingPosition()
+	dbAssert( start_pos ~= nil )
+
+	local has_base_threat = function( base )		
+		return base:GetThreatRating() > 0 
+	end
+	local has_so_threat = function( strat_ai )
+		return strat_ai:IsStrategicObjective() and cpu_manager.terrain_analyzer:HasThreat( strat_ai:GetPosition(), 25 )
+	end
+	
+	-- may be either BaseAI or StrategicPointAI
+	local enemy_base = nil
+	
+	if (self.counter_victory_obj) then
+		enemy_base = cpu_manager:FindClosestStrategicPoint( start_pos, 0, enemy, has_so_threat )
+	else
+		enemy_base = cpu_manager:FindClosestBase( start_pos, 0, enemy, has_base_threat )	
+	end
+	if enemy_base == nil then
+		aipushtrace("AttackStrategy")
+		aitrace( "no enemy base to attack!" )
+		aitrace( "start_pos: "..vec2str(start_pos) )
+		aipoptrace("End AttackStrat")
+		return false
+	end
+	
+	self.enemy_pos = enemy_base:GetPosition()
+
+	local min_units = self.info.min_units
+	
+	--if I'm trying to take back a strategic objective, I don't have a minimum amount of units to attack -- simply attack!
+	if self.counter_victory_obj then
+		min_units = 1
+	end
+	
+	self.attack_plan = AttackPlan( self.bDefensiveAttack, enemy, self.enemy_pos, start_pos, min_units, self.info.max_army_percentage )
+	self:AddPlan( self.attack_plan )
+	return true
+end
+
+
+function AttackStrategy:ChooseTarget()
+
+	self.enemy = nil
+	local enemy = nil 
+	
+	--prefer player is used for SP, where you only want to attack player 1
+	if self.info.prefer_player then
+		
+		for player in cpu_manager.stats:GetPlayerStats() do
+			if player:GetPlayerID() == self.info.prefer_player and cpu_manager.player_stats:IsEnemy( player ) and not player:IsPlayerDead() then
+				enemy = player
+				break
+			end
+		end
+	end
+	
+	if enemy == nil then
+		enemy = cpu_manager:FindClosestEnemyPlayer()
+	end
+	
+	if enemy == nil then
+		aitrace( "no targets!" )
+		return
+	end
+	
+	if self:TryTarget( enemy ) then
+		self.enemy = enemy
+	end
+end
+
+
+function AttackStrategy:SetVOFlag()
+	self.counter_victory_obj = true
+end
+
+
+function AttackStrategy:Retreat()
+
+	if self.attack_plan and not self.attack_plan:IsComplete() then
+		--move my guys to the closest base
+		self.attack_plan:Retreat()
+	end
+
+	--pass control over to defend strategy
+	self:PostEvent( Strategy.Events.OnFailure )
+end
+
+
+function AttackStrategy:Update()
+	
+	if self.attack_plan == nil or self.attack_plan:IsComplete() then
+		self.attack_plan = nil
+		self:ChooseTarget()
+	end
+	
+	if self.enemy == nil then
+		--nothing to do
+		self:PostEvent( Strategy.Events.OnFailure )
+		return
+	end
+	
+	dbAssert( self.enemy_pos ~= nil )
+	
+	--retreat if my army size isn't too big, the opponent is WAY bigger than my army, and I'm not countering a victory objective
+	if (self.info.max_army_size ==nil or self.player_stats:GetArmyCost() < self.info.max_army_size ) and
+		not self.counter_victory_obj and 
+		cpu_manager:RateAgainstPlayer( self.enemy ) < self.info.stop_attack_rating then
+		--move all my dudes to the closest base
+		self:Retreat()
+	end
+	
+	--check for success
+	if not cpu_manager.terrain_analyzer:HasThreat( self.enemy_pos, 25 ) then
+	
+		if self.attack_plan then
+			self.attack_plan:SetComplete(true)
+		end
+		
+		self:PostEvent( Strategy.Events.OnFailure )
+		return
+	end
+	
+	-- superclass
+	Strategy.Update(self)
+end
+

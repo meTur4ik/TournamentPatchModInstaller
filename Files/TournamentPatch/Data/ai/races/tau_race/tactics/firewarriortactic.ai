@@ -1,0 +1,82 @@
+----------------------------------------
+-- File: 'firewarriortactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'FirewarriorTactic' (TauInfantryTactic)
+
+Firewarrior = {}
+
+function FirewarriorTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Firewarrior Tactic")
+end
+
+function FirewarriorTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Firewarrior.photon == nil) then
+		Firewarrior.photon = cpu_manager.stats:GetAbilityID( "tau_photon_grenade" )
+	end
+	if (Firewarrior.shield == nil) then
+		Firewarrior.shield = cpu_manager.stats:GetAbilityID( "tau_personal_shield" )
+	end
+end
+
+function FirewarriorTactic:DoAbilities()
+
+	Ability.DoAbilityTarget(self.squad_ai, Firewarrior.photon, Ability.Filters.CloseSquadEnemy, 1)
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.8) then
+		Ability.DoAbility( self.squad_ai, Firewarrior.shield, Ability.PredicateFilters.IsInCombat ) 
+	end
+	
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end
+
+function FirewarriorTactic:Reinforce()
+
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+	
+	-- If there are no ressources available, don't upgrade!
+	local iRequisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	if (iRequisition < 800 and not Tactic.Options.can_reinforce) then
+		return
+	end
+
+	--always try for the actual leader first
+	if (not self.squad_ai:IsReinforcing()) then
+		if (self.squad_ai:CanReinforce( false, 0 )) then
+			self.squad_ai:DoReinforce( false, 0 )
+		end
+	end
+
+	if (not self.squad_ai:IsReinforcing()) then
+
+		-- try for different types of squad members
+		local shasuiIndex = 0
+		local shieldIndex = 1
+	
+		local numShasui = self.squad_ai:GetLeaderCount( shasuiIndex )
+		local numShield = self.squad_ai:GetLeaderCount( shieldIndex )
+
+		-- Desired number of each leader type
+		local desiredShasui = 1 
+		local desiredShield = 1
+
+		-- Desired order of reinforcing
+		if (numShasui < desiredShasui) then
+		
+			if (self.squad_ai:CanReinforce( true, shasuiIndex )) then
+				self.squad_ai:DoReinforce( true, shasuiIndex )
+			end
+		elseif (numShield < desiredShield) then
+		
+			if (self.squad_ai:CanReinforce( true, shieldIndex )) then
+				self.squad_ai:DoReinforce( true, shieldIndex )
+			end
+		end
+	end
+end

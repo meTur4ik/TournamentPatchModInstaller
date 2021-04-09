@@ -1,0 +1,33 @@
+----------------------------------------
+-- File: 'meganobztactic.ai'
+-- Edited by Thudmeizer @ 26.09.2005
+
+class 'MegaNobzTactic' (OrkInfantryTactic)
+
+MegaNobz = {}
+
+function MegaNobzTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("MegaNobz Tactic")
+end
+
+function MegaNobzTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (MegaNobz.surge == nil) then
+		MegaNobz.surge = cpu_manager.stats:GetAbilityID( "ork_power_surge" )
+	end
+end
+
+function MegaNobzTactic:DoAbilities()
+
+	-- Mega nobz charge if in combat and enemy is not adjacent or while broken
+	-- Don't surge if health is too low or we are not moving !
+	local squad_pos = self.squad_ai:GetPosition()
+	if (((self.squad_ai:IsInCombat() and Ability.Filters.CloseEnemy( squad_pos, 20, 1 ) == nil) or
+	   	self.squad_ai:IsBroken()) and self.squad_ai:GetHealthPercentage() > 0.8 and self:IsMoving()) then 
+		if (self.squad_ai:CanDoAbility(MegaNobz.surge)) then
+			self.squad_ai:DoSpecialAbility(MegaNobz.surge)
+		end
+	end
+end

@@ -1,0 +1,64 @@
+----------------------------------------
+-- File: 'darkeldarinfantrytactic.ai'
+-- Edited by Thudmeizer		@ 26.10.2008
+
+class 'DarkEldarInfantryTactic' (InfantryTactic)
+
+function DarkEldarInfantryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Dark Eldar Infantry Tactic")
+
+	-- Set infantry options
+	local sSquadName = squad_ai:GetSquadName()
+	if (sSquadName == "dark_eldar_squad_mandrake" or
+		sSquadName == "dark_eldar_squad_warrior" or
+		sSquadName == "dark_eldar_squad_archon" or
+		sSquadName == "dark_eldar_squad_haemonculus") then
+		
+		-- Squads are transportable
+		self.m_iTransportable = 1
+	end
+end
+
+function DarkEldarInfantryTactic:AddTargetAbilities()
+	table.insert(InfantryTactic.TargetAbilities, { nil, "dark_eldar_terrorfex_grenade", Ability.Filters.CloseSquadEnemy, 1, 0 })
+end
+
+function DarkEldarInfantryTactic:AddCommanders()
+	table.insert(self.commander, { "dark_eldar_squad_archon", true })
+	table.insert(self.commander, { "dark_eldar_squad_haemonculus", false })
+end
+
+function DarkEldarInfantryTactic:DoAbilities()
+
+	-- I might have these attached
+	if (self.squad_ai:IsAttached()) then
+
+		if (self.squad_ai:HasSquadAttached("dark_eldar_squad_haemonculus")) then
+			DarkEldarHaemonculusTactic.InitAbilities( self )
+			DarkEldarHaemonculusTactic.DoAbilities( self )
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end
+
+function DarkEldarInfantryTactic:CheckDance(oSquad)
+
+	-- Check opponent
+	if (oSquad == nil) then
+		return false
+	end
+	
+	-- Compare opponents
+	local sSquadName = self.squad_ai:GetSquadName()
+	if (sSquadName == "dark_eldar_squad_warrior" or sSquadName == "dark_eldar_squad_scourge") then
+		
+		-- Check opponent
+		if (oSquad:GetSquadName() == "chaos_squad_cultist") then
+			return false
+		end
+	end
+	return true
+end

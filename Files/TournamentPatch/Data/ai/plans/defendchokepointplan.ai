@@ -1,0 +1,58 @@
+class 'DefendChokePointPlan' (Plan)
+
+function DefendChokePointPlan:__init( choke_pt_pos ) super( CpuPlayer.CT_Defending )
+
+	dbAssert( choke_pt_pos ~= nil )
+	
+	self.waypoint_pos = choke_pt_pos
+
+	
+	Plan.SetName( self, "Defend Choke Point Plan" )	
+
+	Plan.SetState( self, "Defending Choke Point "..vec2str(self.waypoint_pos), DefendChokePointPlan.Defending )
+	
+	self.proximity = 50
+
+end
+
+function DefendChokePointPlan:IsEqual( plan_name, plan_id )
+	--check if we're defending the same place
+	return self:GetName() == plan_name and
+		distance_sqr( plan_id, self.waypoint_pos ) < 100
+end
+
+function DefendChokePointPlan:Defending()
+
+	--grab an idle dude
+	for squadai in military_manager:GetUnlockedSquads() do
+	
+		if squadai:IsValid() then
+			local pos = squadai:GetSquad():GetPosition()
+	
+			--check idling and proximity
+			if squadai:IsIdle() and squadai:GetTactic():IsDefender() and not squadai:WasRecentlyHurt() then
+				if not self:InProximity( pos ) then
+					--ok, move and find a new waypoint to use
+					squadai:DoAttackMove( self.waypoint_pos )
+--				else
+					--go into cover
+--					squadai:DoMoveToClosestCover( self.waypoint_pos, self.proximity )
+				end
+			end
+			
+		end
+		
+	end
+	
+end
+
+function DefendChokePointPlan:InProximity( pos )
+
+	--check within proximity
+	if( distance_sqr( self.waypoint_pos, pos ) <= self.proximity*self.proximity ) then
+		return true
+	end
+		
+	return false
+
+end

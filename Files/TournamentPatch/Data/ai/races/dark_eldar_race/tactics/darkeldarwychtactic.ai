@@ -1,0 +1,48 @@
+----------------------------------------
+-- File: 'darkeldarwychtactic.ai'
+-- Edited by Thudmeizer @ 23.10.2008
+
+class 'DarkEldarWychTactic' (DarkEldarInfantryTactic)
+
+DarkEldarWych = {}
+
+function DarkEldarWychTactic:__init( squad_ai ) super( squad_ai )
+	
+	self:SetName("Dark Eldar Wych Tactic")
+end
+
+function DarkEldarWychTactic:InitAbilities()
+
+	if (DarkEldarWych.combatdrugs_id == nil) then
+		DarkEldarWych.combatdrugs_id = cpu_manager.stats:GetAbilityID( "dark_eldar_combat_drugs" )	
+	end
+end
+
+function DarkEldarWychTactic:DoAbilities()
+
+	--Ability.DoAbilityArea( self.squad_ai, DarkEldarWych.combatdrugs_id, Ability.Filters.CloseInfantryEnemy, 10, 5 )
+
+	-- Check if I can use combat drugs (Wyches) (Bugged!!! Unit freezes.) --SS 1.10 check if unbugged
+	if (self.squad_ai:IsInCombat()) then
+
+		-- Use drugs!
+		if (self.squad_ai:CanDoAbility( DarkEldarWych.combatdrugs_id )) then
+			self.squad_ai:DoSpecialAbility( DarkEldarWych.combatdrugs_id )
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	DarkEldarInfantryTactic.DoAbilities(self)
+end
+
+function DarkEldarWychTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update( self )) then
+		return
+	end
+end

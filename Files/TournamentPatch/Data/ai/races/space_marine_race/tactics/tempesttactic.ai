@@ -1,0 +1,32 @@
+----------------------------------------
+-- File: 'tempesttactic.ai'
+-- Edited by Thudmeizer @ 01.11.2007
+
+class 'TempestTactic' (SpaceMarineInfantryTactic)
+
+function TempestTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Tempest Tactic")
+end
+
+function TempestTactic:Upgrade()
+
+	-- Check if we have free resources
+	if (not Tactic.Options.can_reinforce) then
+		return
+	end
+	
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+
+	if (not self.squad_ai:IsReinforcing()) then
+	
+		-- Upgrade if possible
+		if (self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetNumTroopers() > 0) then
+			local class_type = cpu_manager:GetFirstEnemyPlayer():GetMajorityClassType()
+			self.squad_ai:DoBestUpgrade( class_type )
+		end
+	end
+end

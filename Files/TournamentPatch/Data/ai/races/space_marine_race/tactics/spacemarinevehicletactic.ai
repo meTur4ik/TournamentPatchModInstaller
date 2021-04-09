@@ -1,0 +1,56 @@
+----------------------------------------
+-- File: 'spacemarinevehicletactic.ai'
+-- Edited by Thudmeizer		@ 08.08.2006
+
+class 'SpaceMarineVehicleTactic' (VehicleTactic)
+
+function SpaceMarineVehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Space Marine Vehicle Tactic")
+	
+	-- Dreadnoughts and Hellfire Dreadnoughts can enter deepstrike buildings
+	local sName = squad_ai:GetSquadName()
+	if (sName == "space_marine_squad_dreadnought" or
+		sName == "space_marine_squad_dreadnought_hellfire") then
+		self.m_iDeepStrikeBlueprintID = cpu_manager.stats:GetBuildingID("space_marine_orbital_relay")
+	end
+end
+
+-- Check if the vehicle should dance away in melee
+function SpaceMarineVehicleTactic:CheckVehicleDance(sName)
+
+	if (sName == "space_marine_squad_whirlwind" or
+		sName == "space_marine_squad_land_speeder" or
+		sName == "space_marine_squad_predator" or
+		sName == "space_marine_squad_dreadnought_hellfire" or
+		sName == "space_marine_squad_land_raider" or
+		sName == "space_marine_squad_rhino") then
+		return true
+	end
+	return false
+end
+
+function SpaceMarineVehicleTactic:DoAbilities()
+
+	-- Check for SearchLight (Combat = On, No Combat = On, Retreating = Off)
+	if playing_night_map == 1 then
+
+		local light1_id = cpu_manager.stats:GetAbilityID( "marines_searchlight_rhino" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light1_id, " vehicle" )
+	
+		local light2_id = cpu_manager.stats:GetAbilityID( "marines_searchlight_dreadnought" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light2_id, " vehicle" )
+	
+		local light3_id = cpu_manager.stats:GetAbilityID( "marines_searchlight_whirlwind" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light3_id, " vehicle" )
+	
+		local light4_id = cpu_manager.stats:GetAbilityID( "marines_searchlight_predator" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light4_id, " vehicle" )
+	
+		local light5_id = cpu_manager.stats:GetAbilityID( "marines_searchlight_landraider" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light5_id, " vehicle" )
+	end
+
+	-- Call standard method
+	VehicleTactic.DoAbilities(self)
+end

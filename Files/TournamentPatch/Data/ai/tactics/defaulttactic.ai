@@ -1,0 +1,81 @@
+class 'DefaultTactic' (Tactic)
+
+function DefaultTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.AssignStateFunction( self, Tactic.States.Hold, DefaultTactic.BeginHoldState )
+	Tactic.AssignStateFunction( self, Tactic.States.Retreat, DefaultTactic.BeginRetreatState )
+	Tactic.AssignStateFunction( self, Tactic.States.Attack, DefaultTactic.BeginAttackState )
+	
+	self.safe_tolerance = 100 
+
+	self:SetName("Default Tactic")
+	
+end
+
+function DefaultTactic:BeginHoldState()
+
+	if( self.target == nil ) then
+		return
+	end
+
+	if( self.variant_type == Tactic.Variant.Vector ) then
+		self.squad_ai:DoAttackMove( self.target )
+	end
+	
+	Tactic.SetSubState( self, DefaultTactic.HoldState, "Holding" )
+end
+
+
+function DefaultTactic:BeginRetreatState()
+
+	dbAssert( self.target ~= nil )
+	
+	if( self.variant_type == Tactic.Variant.Vector ) then
+		self.squad_ai:DoMove( self.target )
+	end
+	
+	Tactic.SetSubState( self, DefaultTactic.HoldState, "Holding" )
+end
+
+
+function DefaultTactic:HoldState()
+
+	if( self.target == nil ) then
+		return
+	end
+end
+
+
+function DefaultTactic:BeginAttackState()
+	
+	if( self.target == nil ) then
+		return
+	end
+
+	if( self.variant_type == Tactic.Variant.Vector ) then
+		self.squad_ai:DoAttackMove( self.target )
+	end
+	
+	Tactic.SetSubState( self, DefaultTactic.AttackingState, "Attacking" )
+end
+
+
+function DefaultTactic:AttackingState()
+
+	--if I'm idle, restart
+	if self.squad_ai:IsIdle() then		
+		Tactic.SetState( self, self:GetState() )
+	end
+end
+
+
+function DefaultTactic:Update()
+
+	-- state machine
+	if not Tactic.Update( self ) then
+		return false
+	end
+
+	self:UpdateStance()
+	return true
+end

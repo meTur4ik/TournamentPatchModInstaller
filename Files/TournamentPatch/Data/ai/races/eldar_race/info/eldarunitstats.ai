@@ -1,0 +1,759 @@
+----------------------------------------
+-- File: 'eldarunitstats.ai'
+-- Edited by Thudmeizer @ 08.03.2008
+-- Edited by Arkhan	@ 05.11.2006
+
+-- Campaign
+UnitStrengths.eldar_squad_avatar_stronghold_sp = 1000
+UnitStrengths.eldar_squad_falcon_grav_tank_advance_sp = 300
+UnitStrengths.eldar_squad_farseer_advance_sp = 320
+UnitStrengths.eldar_squad_farseer_sp = 320
+UnitStrengths.eldar_squad_farseer_stronghold_sp = 320
+UnitStrengths.eldar_squad_grav_platform_brightlance_advance_sp = 200
+UnitStrengths.eldar_squad_rangers_advance_sp = 40
+UnitStrengths.eldar_squad_seer_council_advance_sp = 130
+UnitStrengths.eldar_squad_vypers_advance_sp = 210
+UnitStrengths.eldar_squad_warp_spider_stronghold_sp = 75
+UnitStrengths.eldar_squad_wraithlord_advance_sp = 360
+
+-- Skirmish
+UnitStrengths.eldar_squad_bonesinger = 0
+UnitStrengths.eldar_guardian_squad = 30
+UnitStrengths.eldar_squad_rangers = 40
+UnitStrengths.eldar_squad_banshees = 50
+UnitStrengths.eldar_squad_dark_reapers = 70
+UnitStrengths.eldar_squad_fire_dragon = 65
+UnitStrengths.eldar_squad_warp_spider = 75
+UnitStrengths.eldar_harlequin_squad = 250
+UnitStrengths.eldar_squad_seer_council = 130
+UnitStrengths.eldar_squad_farseer = 320
+UnitStrengths.eldar_squad_grav_platform = 200
+UnitStrengths.eldar_squad_grav_platform_brightlance = 200
+UnitStrengths.eldar_squad_falcon_grav_tank = 300
+UnitStrengths.eldar_squad_nightwing = 310
+UnitStrengths.eldar_squad_vypers = 210
+UnitStrengths.eldar_squad_wraithlord = 360
+UnitStrengths.eldar_squad_fire_prism = 465
+UnitStrengths.eldar_squad_avatar = 1000
+
+LeaderStrengths.eldar_guardian_squad = 75
+LeaderStrengths.eldar_squad_banshees = 75
+LeaderStrengths.eldar_squad_dark_reapers = 75
+LeaderStrengths.eldar_squad_fire_dragon = 75
+LeaderStrengths.eldar_squad_warp_spider = 75
+
+Attachments.eldar_guardian_squad = { "eldar_squad_farseer" }
+Attachments.eldar_squad_rangers = { "eldar_squad_farseer" }
+Attachments.eldar_squad_banshees = { "eldar_squad_farseer" }
+Attachments.eldar_squad_dark_reapers = { "eldar_squad_farseer" }
+Attachments.eldar_squad_seer_council = { "eldar_squad_farseer" }
+
+EldarUnitStats =
+{
+	race = "eldar_race",
+	{
+		name = "Bonesinger",
+		sbp_name = "eldar_squad_bonesinger",
+		ebp_name = "eldar_bonesinger",
+		class = UnitStatsAI.UC_LightInfantryLow,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "eldar_sword_bonesinger",
+				effectiveness = GenerateUnitEffectiveness(3.4,3.9,3.1,2.4,0.0,0.0,0.0,0.0,2.2,0.0,1.1,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Guardian",
+		sbp_name = "eldar_guardian_squad",
+		ebp_name = "eldar_guardian",
+		class = UnitStatsAI.UC_LightInfantryMed,
+		rating = 3,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_catapult_guardian",
+				effectiveness = GenerateUnitEffectiveness(3.2,3.9,3.5,3.4,0.0,0.0,0.0,0.0,2.4,0.0,2.4,2.2,0.9,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_knife_guardian",
+				effectiveness = GenerateUnitEffectiveness(2.2,2.5,2.5,1.7,0.0,0.0,0.0,0.0,1.7,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Ranger",
+		sbp_name = "eldar_squad_rangers",
+		ebp_name = "eldar_rangers",
+		class = UnitStatsAI.UC_LightInfantryMed,
+		rating = 3,
+		potential =
+		{
+			{
+				name = "eldar_long_rifle_tier_2",
+				effectiveness = GenerateUnitEffectiveness(3.6,3.9,3.9,2.1,0.0,0.0,0.0,0.0,2.1,0.0,1.3,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_long_rifle_tier_3",
+				effectiveness = GenerateUnitEffectiveness(2.7,5.0,4.5,4.3,3.6,0.0,0.0,0.0,4.2,0.0,2.6,3.4,1.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_long_rifle",
+				effectiveness = GenerateUnitEffectiveness(1.8,3.9,3.4,3.2,2.6,0.0,0.0,0.0,3.2,0.0,1.7,2.4,1.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_knife_ranger",
+				effectiveness = GenerateUnitEffectiveness(2.8,3.1,2.0,2.2,0.0,0.0,0.0,0.0,2.2,0.0,1.4,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Dark Reaper",
+		sbp_name = "eldar_squad_dark_reapers",
+		ebp_name = "eldar_dark_reapers",
+		class = UnitStatsAI.UC_LightInfantryHigh,
+		rating = 4,
+		potential =
+		{
+			{
+				name = "eldar_reaper_launcher",
+				effectiveness = GenerateUnitEffectiveness(4.7,4.5,4.5,4.4,3.7,3.7,2.9,2.0,3.7,0.0,3.5,3.4,2.1,2.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_knife_darkreaper",
+				effectiveness = GenerateUnitEffectiveness(3.6,3.5,2.8,3.0,0.0,0.0,0.0,0.0,3.0,0.0,2.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Howling Banshee",
+		sbp_name = "eldar_squad_banshees",
+		ebp_name = "eldar_banshees",
+		class = UnitStatsAI.UC_LightInfantryHigh,
+		rating = 4,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_pistol_banshee",
+				effectiveness = GenerateUnitEffectiveness(4.6,3.9,3.9,3.3,3.2,4.4,4.3,4.0,2.1,0.0,1.3,3.0,3.0,3.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_ShortRanged,
+			},
+			{
+				name = "eldar_power_sword_banshee",
+				effectiveness = GenerateUnitEffectiveness(5.3,5.3,5.1,5.1,5.0,4.3,3.4,0.0,4.6,2.3,2.9,3.4,3.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Fire Dragon",
+		sbp_name = "eldar_squad_fire_dragon",
+		ebp_name = "eldar_fire_dragon",
+		class = UnitStatsAI.UC_HeavyInfantryMed,
+		rating = 5,
+		potential =
+		{
+			{
+				name = "eldar_fusion_gun",
+				effectiveness = GenerateUnitEffectiveness(3.2,3.5,3.1,4.6,5.7,7.6,7.1,8.1,3.8,3.7,3.5,7.9,6.3,6.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_ShortRanged,
+			},
+		}
+	},
+	{
+		name = "Warp Spider",
+		sbp_name = "eldar_squad_warp_spider",
+		ebp_name = "eldar_warp_spider",
+		class = UnitStatsAI.UC_HeavyInfantryMed,
+		rating = 5,
+		potential =
+		{
+			{
+				name = "eldar_deathspinner",
+				effectiveness = GenerateUnitEffectiveness(5.7,5.6,5.4,5.2,5.0,7.3,7.0,8.0,7.2,6.2,3.9,5.9,5.0,5.6,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Harlequin",
+		sbp_name = "eldar_harlequin_squad",
+		ebp_name = "eldar_harlequins",
+		class = UnitStatsAI.UC_Commander,
+		rating = 6,
+		potential =
+		{
+			{
+				name = "eldar_shrieker_cannon",
+				effectiveness = GenerateUnitEffectiveness(3.7,4.6,3.4,3.7,3.7,3.9,2.9,0.0,3.6,2.2,3.6,3.4,2.5,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_ShortRanged,
+			},
+			{
+				name = "eldar_riveblade",
+				effectiveness = GenerateUnitEffectiveness(6.3,6.3,6.3,6.3,6.3,5.1,4.0,3.0,6.3,0.0,9.7,4.0,4.0,4.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Seer Council",
+		sbp_name = "eldar_squad_seer_council",
+		ebp_name = "eldar_warlock_seer",
+		class = UnitStatsAI.UC_Commander,
+		rating = 7,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_pistol_seer_council",
+				effectiveness = GenerateUnitEffectiveness(3.5,3.8,2.6,2.9,0.0,0.0,0.0,0.0,2.9,0.0,1.9,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_ShortRanged,
+			},
+			{
+				name = "eldar_witchblade_seer_council",
+				effectiveness = GenerateUnitEffectiveness(7.2,8.1,7.6,7.7,7.4,6.4,6.1,5.2,6.8,5.2,5.1,7.1,5.6,5.7,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Farseer (Commander Unit)",
+		sbp_name = "eldar_squad_farseer",
+		ebp_name = "eldar_farseer",
+		class = UnitStatsAI.UC_Commander,
+		rating = 8,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_pistol_farseer",
+				effectiveness = GenerateUnitEffectiveness(3.7,4.6,3.4,3.7,3.7,3.9,2.9,0.0,3.6,2.2,3.6,3.4,2.5,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_ShortRanged,
+			},
+			{
+				name = "eldar_witchblade_farseer",
+				effectiveness = GenerateUnitEffectiveness(6.2,6.9,6.2,7.0,6.5,4.9,5.0,7.3,6.5,7.3,7.0,5.6,3.5,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Shuriken Cannon Platform",
+		sbp_name = "eldar_squad_grav_platform",
+		ebp_name = "eldar_grav_platform",
+		class = UnitStatsAI.UC_VehicleLow,
+		rating = 5,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_cannon_grav_platform",
+				effectiveness = GenerateUnitEffectiveness(6.9,6.4,6.2,6.4,5.8,5.1,3.6,2.3,5.6,2.4,3.6,4.2,3.2,4.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Brightlance Platform",
+		sbp_name = "eldar_squad_grav_platform_brightlance",
+		ebp_name = "eldar_grav_platform_brightlance",
+		class = UnitStatsAI.UC_VehicleLow,
+		rating = 5,
+		potential =
+		{
+			{
+				name = "eldar_brightlance_grav_platform",
+				effectiveness = GenerateUnitEffectiveness(6.2,6.2,6.1,6.2,6.8,6.0,6.1,6.7,6.8,3.7,4.5,6.6,4.8,4.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Falcon Grav Tank",
+		sbp_name = "eldar_squad_falcon_grav_tank",
+		ebp_name = "eldar_falcon_grav_tank",
+		class = UnitStatsAI.UC_VehicleLow,
+		rating = 6,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_catapult_grav_tank",
+				effectiveness = GenerateUnitEffectiveness(6.9,6.4,6.2,6.3,5.7,5.1,3.6,2.3,5.6,2.3,3.6,4.2,3.2,4.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_starcannon_grav_tank",
+				effectiveness = GenerateUnitEffectiveness(7.0,7.1,6.7,7.5,7.3,5.8,2.8,0.3,5.6,0.6,4.1,0.9,1.0,0.4,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Vyper",
+		sbp_name = "eldar_squad_vypers",
+		ebp_name = "eldar_vypers",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 6,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_catapult_vyper",
+			        effectiveness = GenerateUnitEffectiveness(6.3,6.5,6.0,6.5,5.6,5.2,4.0,3.0,5.2,2.1,4.5,4.5,3.9,4.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_missile_launcher_vyper",
+				effectiveness = GenerateUnitEffectiveness(3.1,3.0,2.2,2.8,2.1,7.4,7.9,6.5,2.8,4.5,2.1,7.0,5.5,5.7,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Nightwing",
+		sbp_name = "eldar_squad_nightwing",
+		ebp_name = "eldar_nightwing",
+		class = UnitStatsAI.UC_AirMed,
+		rating = 6,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_cannon_nightwing",
+				effectiveness = GenerateUnitEffectiveness(6.1,6.4,5.9,6.7,5.5,6.0,5.1,6.7,6.5,3.7,4.3,6.9,4.8,4.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_brightlance_nightwing",
+				effectiveness = GenerateUnitEffectiveness(2.1,3.3,1.5,2.8,1.3,7.4,8.2,6.5,2.9,4.5,2.1,7.0,5.5,5.7,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Wraithlord",
+		sbp_name = "eldar_squad_wraithlord",
+		ebp_name = "eldar_wraithlord",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 7,
+		potential =
+		{
+			{
+				name = "eldar_heavy_flamer_wraithlord",
+				effectiveness = GenerateUnitEffectiveness(6.2,6.2,6.1,6.2,6.8,6.0,6.1,6.7,6.8,3.7,4.5,6.6,4.8,4.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_ShortRanged,
+			},
+			{
+				name = "eldar_brightlance_wraithlord",
+				effectiveness = GenerateUnitEffectiveness(2.6,2.0,2.1,2.1,2.0,8.8,9.5,8.2,5.3,5.3,3.0,7.7,6.3,6.9,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Fire Prism",
+		sbp_name = "eldar_squad_fire_prism",
+		ebp_name = "eldar_fire_prism",
+		class = UnitStatsAI.UC_VehicleHigh,
+		rating = 9,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_catapult_fireprism",
+				effectiveness = GenerateUnitEffectiveness(7.2,7.9,7.7,7.5,7.3,6.2,6.1,4.8,7.4,4.4,4.0,7.7,5.9,5.6,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_prism_cannon",
+				effectiveness = GenerateUnitEffectiveness(4.1,5.2,5.0,5.3,4.5,8.5,9.6,7.6,6.1,6.5,4.4,6.2,4.5,4.2,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Avatar of Khaine",
+		sbp_name = "eldar_squad_avatar",
+		ebp_name = "eldar_avatar",
+		class = UnitStatsAI.UC_MonsterHigh,
+		rating = 10.0,
+		potential =
+		{
+			{
+				name = "eldar_wailing_doom",
+				effectiveness = GenerateUnitEffectiveness(9.0,9.9,9.6,10.0,10.0,9.6,9.8,9.2,10.0,9.0,6.8,9.1,7.7,8.2,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Avatar Stronghold Sp",
+		sbp_name = "eldar_squad_avatar_stronghold_sp",
+		ebp_name = "eldar_avatar_stronghold_sp",
+		class = UnitStatsAI.UC_MonsterHigh,
+		rating = 10.0,
+		potential =
+		{
+			{
+				name = "eldar_wailing_doom_stronghold_sp",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Dark Reapers",
+		sbp_name = "eldar_squad_dark_reapers_base",
+		ebp_name = "eldar_dark_reapers",
+		class = UnitStatsAI.UC_LightInfantryHigh,
+		rating = 1.5,
+		potential =
+		{
+			{
+				name = "eldar_reaper_launcher",
+				effectiveness = GenerateUnitEffectiveness(3.3,3.1,3.1,2.9,2.2,1.5,0.9,0.4,2.2,0.8,2.0,1.2,0.5,0.4,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_knife_darkreaper",
+				effectiveness = GenerateUnitEffectiveness(1.6,1.5,1.0,1.2,0.3,0.0,0.0,0.0,1.1,0.3,0.7,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Falcon Grav Tank",
+		sbp_name = "eldar_squad_falcon_grav_tank_advance_sp",
+		ebp_name = "eldar_falcon_grav_tank",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 5.6,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_catapult_grav_tank",
+				effectiveness = GenerateUnitEffectiveness(9.1,8.5,7.8,7.2,5.9,3.7,1.4,0.6,5.9,1.9,2.7,2.0,1.1,1.8,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_scatter_laser_grav_tank",
+				effectiveness = GenerateUnitEffectiveness(8.4,7.9,7.3,6.8,5.7,3.6,1.6,0.5,5.7,2.5,3.2,5.9,1.0,1.7,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_brightlance_grav_tank",
+				effectiveness = GenerateUnitEffectiveness(2.6,3.2,3.0,3.2,3.4,4.9,3.2,1.6,4.5,2.7,2.4,5.1,1.8,1.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_starcannon_grav_tank",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,1.6,0.8,0.0,10.0,9.7,10.0,0.1,0.2,0.1,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Farseer Advance Sp",
+		sbp_name = "eldar_squad_farseer_advance_sp",
+		ebp_name = "eldar_farseer_advance_sp",
+		class = UnitStatsAI.UC_Commander,
+		rating = 2.9,
+		potential =
+		{
+			{
+				name = "eldar_las_pistol_farseer",
+				effectiveness = GenerateUnitEffectiveness(2.4,3.7,3.2,2.8,2.2,2.0,1.5,0.0,2.3,0.9,2.3,2.1,1.1,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_shuriken_pistol_farseer_advance_sp",
+				effectiveness = GenerateUnitEffectiveness(4.6,7.3,6.1,5.4,4.3,5.7,3.0,0.0,4.5,1.7,4.4,4.2,2.2,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_twin_shuriken_pistol_farseer",
+				effectiveness = GenerateUnitEffectiveness(6.6,10.0,8.7,7.8,6.1,8.2,4.3,0.0,6.4,2.4,6.3,6.0,3.2,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_power_sword_farseer",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,3.5,1.8,1.2,10.0,9.4,10.0,3.5,2.3,2.3,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "eldar_witchblade_farseer_advance_sp",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,5.4,5.7,10.0,10.0,10.0,10.0,7.9,2.1,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "eldar_singing_spear_farseer",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,7.7,8.1,10.0,10.0,10.0,10.0,10.0,3.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_wargear_07",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_farseer_rune_witnessing",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_farseer_ghosthelm",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_wargear_06",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_wargear_08",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_wargear_10",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Farseer Sp",
+		sbp_name = "eldar_squad_farseer_sp",
+		ebp_name = "eldar_farseer_sp",
+		class = UnitStatsAI.UC_Commander,
+		rating = 5.4,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_pistol_farseer",
+				effectiveness = GenerateUnitEffectiveness(1.4,2.6,1.2,1.4,1.4,1.7,0.9,0.0,1.4,0.6,1.4,1.2,0.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_witchblade_farseer",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,3.3,3.5,10.0,10.0,10.0,10.0,4.8,1.3,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Farseer Stronghold Sp",
+		sbp_name = "eldar_squad_farseer_stronghold_sp",
+		ebp_name = "eldar_farseer_stronghold_sp",
+		class = UnitStatsAI.UC_Commander,
+		rating = 5.4,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_pistol_farseer",
+				effectiveness = GenerateUnitEffectiveness(1.4,2.6,1.2,1.4,1.4,1.7,0.9,0.0,1.4,0.6,1.4,1.2,0.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_witchblade_farseer",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,3.3,3.5,10.0,10.0,10.0,10.0,4.8,1.3,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Fire Dragon Exarch Advance Sp",
+		sbp_name = "eldar_squad_fire_dragon_exarch_council",
+		ebp_name = "eldar_fire_dragon_exarch_advance_sp",
+		class = UnitStatsAI.UC_HeavyInfantryHigh,
+		rating = 2.4,
+		potential =
+		{
+			{
+				name = "eldar_fusion_gun_exarch",
+				effectiveness = GenerateUnitEffectiveness(1.2,1.2,1.2,1.2,1.2,9.6,8.9,4.4,1.2,2.0,1.2,6.0,3.4,2.1,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_knife_warpspider",
+				effectiveness = GenerateUnitEffectiveness(1.6,1.5,1.0,1.2,0.3,0.0,0.0,0.0,1.1,0.3,0.7,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Grav Platform Brightlance",
+		sbp_name = "eldar_squad_grav_platform_brightlance_advance_sp",
+		ebp_name = "eldar_grav_platform_brightlance",
+		class = UnitStatsAI.UC_HeavyInfantryHigh,
+		rating = 8.4,
+		potential =
+		{
+			{
+				name = "eldar_brightlance_grav_platform",
+				effectiveness = GenerateUnitEffectiveness(5.3,6.2,3.6,6.4,3.3,10.0,10.0,6.7,7.0,4.5,3.1,10.0,7.1,9.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Rangers Advance Sp",
+		sbp_name = "eldar_squad_rangers_advance_sp",
+		ebp_name = "eldar_rangers_advance_sp",
+		class = UnitStatsAI.UC_LightInfantryHigh,
+		rating = 3.5,
+		potential =
+		{
+			{
+				name = "eldar_long_rifle_tier_2",
+				effectiveness = GenerateUnitEffectiveness(4.6,6.5,5.8,5.7,5.1,0.0,0.0,0.0,5.6,4.1,4.6,1.0,0.3,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_long_rifle_tier_2",
+				effectiveness = GenerateUnitEffectiveness(4.6,6.5,5.8,5.7,5.1,0.0,0.0,0.0,5.6,4.1,4.6,1.0,0.3,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_long_rifle_tier_3",
+				effectiveness = GenerateUnitEffectiveness(6.7,9.1,8.2,8.0,7.3,0.0,0.0,0.0,8.0,6.0,6.7,1.2,0.3,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_knife_ranger",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.2,0.7,0.8,0.3,0.0,0.0,0.0,0.8,0.3,0.5,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Warlock Seer Advance Sp",
+		sbp_name = "eldar_squad_seer_council_advance_sp",
+		ebp_name = "eldar_warlock_seer_advance_sp",
+		class = UnitStatsAI.UC_Commander,
+		rating = 5.1,
+		potential =
+		{
+			{
+				name = "eldar_shuriken_pistol_seer_council",
+				effectiveness = GenerateUnitEffectiveness(1.3,1.6,0.8,0.9,0.1,0.0,0.0,0.0,0.9,0.1,0.5,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_witchblade_seer_council",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,7.9,6.7,3.8,9.4,4.0,3.9,10.0,5.0,5.2,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Vypers Advance Sp",
+		sbp_name = "eldar_squad_vypers_advance_sp",
+		ebp_name = "eldar_vypers_advance_sp",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 5.4,
+		potential =
+		{
+			{
+				name = "eldar_missile_launcher_vyper",
+				effectiveness = GenerateUnitEffectiveness(2.9,2.8,2.4,2.7,2.4,7.8,5.9,2.4,2.7,4.1,2.4,10.0,4.6,5.1,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_shuriken_catapult_vyper_advance_sp",
+				effectiveness = GenerateUnitEffectiveness(7.8,9.1,8.4,7.8,6.8,0.7,0.0,0.0,6.9,2.8,5.3,3.5,1.2,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Warp Spider",
+		sbp_name = "eldar_squad_warp_spider_stronghold_sp",
+		ebp_name = "eldar_warp_spider",
+		class = UnitStatsAI.UC_HeavyInfantryMed,
+		rating = 1.9,
+		potential =
+		{
+			{
+				name = "eldar_deathspinner",
+				effectiveness = GenerateUnitEffectiveness(5.4,5.0,4.6,4.3,3.7,2.2,0.9,0.0,4.3,0.9,2.3,0.9,0.4,0.3,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_knife_warpspider",
+				effectiveness = GenerateUnitEffectiveness(1.2,1.4,0.8,0.9,0.3,0.0,0.0,0.0,0.9,0.3,0.6,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Wraithlord",
+		sbp_name = "eldar_squad_wraithlord_advance_sp",
+		ebp_name = "eldar_wraithlord",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 6.9,
+		potential =
+		{
+			{
+				name = "eldar_starcannon_wraithlord",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,3.5,3.6,0.8,10.0,10.0,10.0,8.7,3.1,2.6,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_brightlance_wraithlord",
+				effectiveness = GenerateUnitEffectiveness(4.4,5.0,3.2,5.1,2.9,10.0,10.0,6.9,5.6,5.6,2.8,10.0,7.7,10.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_heavy_flamer_wraithlord",
+				effectiveness = GenerateUnitEffectiveness(2.6,3.2,3.0,3.2,2.8,0.4,0.6,0.4,2.6,2.3,2.2,0.9,0.5,0.8,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "eldar_wraithlord_close_combat",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,10.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "eldar_heavy_flamer_wraithlord",
+				effectiveness = GenerateUnitEffectiveness(2.6,3.2,3.0,3.2,2.8,0.4,0.6,0.4,2.6,2.3,2.2,0.9,0.5,0.8,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+}

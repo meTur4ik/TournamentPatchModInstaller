@@ -1,0 +1,10 @@
+----------------------------------------
+-- File: 'attackscarabtactic.ai'
+-- Edited by Arkhan @ 02.11.2006
+
+class 'AttackScarabTactic' (NecronInfantryTactic)
+
+function AttackScarabTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Attack Scarab Tactic")
+end

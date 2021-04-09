@@ -1,0 +1,33 @@
+----------------------------------------
+-- File: 'sistersrepentiatactic.ai'
+-- Created by Arkhan		@ 23.03.2008
+
+class 'SistersRepentiaTactic' (SistersInfantryTactic)
+
+SistersRepentia = {}
+
+function SistersRepentiaTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Repentia Tactic")
+end
+
+function SistersRepentiaTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (SistersRepentia.fervor_id == nil) then
+		SistersRepentia.fervor_id = cpu_manager.stats:GetAbilityID( "sisters_righteous_fervor" )
+	end
+end
+
+function SistersRepentiaTactic:DoAbilities()
+
+	if (self.squad_ai:IsAttacking() and self.squad_ai:WasRecentlyHurt() and	self.squad_ai:GetHealthPercentage() > 0.4 and
+		self.squad_ai:CanDoAbility(SistersRepentia.fervor_id) and not self.squad_ai:IsCapturing() and not self.squad_ai:IsBroken()) then
+
+		-- Increases Speed and Damage but kills squad overtime (Repentia)
+		self.squad_ai:DoSpecialAbility(SistersRepentia.fervor_id)
+	end
+	
+	-- Call basic DoAbilities methods
+	SistersInfantryTactic.DoAbilities(self)
+end

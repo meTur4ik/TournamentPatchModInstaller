@@ -1,0 +1,659 @@
+
+3.1 Changes
+===========
+===========
+
+1.) Replace core folder
+
+2.) Replace files in SCAR folder
+
+3.) Changes in race AI folder
+
+a.) Eldar tactic changes
+
+b.) Dark eldar tactic and build program changes
+
+c.) Necron build program changes
+
+d.) Slight tactic changes with Tau, Orcs, Marines, Guard and Chaos
+
+
+3.0 Changes
+===========
+===========
+
+1.) Replace core folder
+
+2.) Replace files in SCAR folder (The previous folder \SCAR\AISupport is not needed anymore an can be deleted)
+
+3.) Changes in all race folders:
+
+a.) Add the following lines to the GetInfo(sType) function in the loader.ai file: (Example)
+
+	elseif (sType == "HarassingLeader") then
+		return "chaos_squad_lord"
+	elseif (sType == "AutoConstructBuildings") then
+		return false
+
+AutoConstructBuildings is only true for Dark Eldar. HarassingLeader should always be the T1 commander unit.
+
+
+b.) Replace the ForceTech() functions in the race specific buildbasestrategy.ai files
+
+Remark: Chaos and SM have a special condition for build program 2. You might have to modify this part if your build programs are different from the original ones.
+
+
+c.) Add HQEmergency() function in necronbuildbasestrategy.ai file.
+
+
+d.) There are lots of race optimizations. If you have a look on the updated files, you might get some ideas how to optimize your own AI files.
+    If your mod AI isn't too different from the original, it might be wise to copy the delivered race AI's completely.
+
+
+2.6 Changes
+===========
+===========
+
+1.) Replace core folder
+
+2.) Replace AISCARSupport_local.lua file in the Data\scar\winconditions directory
+
+3.) Replace aisupport_manager.scar file in the Data\scar\AISupport\core directory
+
+
+2.5 Changes
+===========
+===========
+
+1.) Replace core folder
+
+2.) Replace every instance of cpu_manager:InSubState(self.squad_ai:GetID()) in your race AI folders with self:IsInSubState()
+
+3.) Replace every instance of cpu_manager:InSubState(squad_ai:GetID()) in your race AI folders with squad_ai:GetTactic():IsInSubState()
+
+
+2.4 Changes
+===========
+===========
+
+1.) Replace core folder and AIControlPanel.exe
+
+2.) Slight changes in ForceTech() method of all race specific buildbasestrategy.ai files
+
+3.) Necron build program changes + added HasResourceOverflow() method to NecronBuildBaseStrategy.ai
+
+4.) Eldar build base strategy changes
+
+5.) Fixed a bug in TauInfantryTactic.ai
+
+6.) Replace SCAR AI support folder
+
+
+2.3 Changes
+===========
+===========
+
+1.) Replace core folder and AIControlPanel.exe
+
+2.) Ability rework to fix save bug (Note: Alreday done for DOWXP)
+
+In order to fix the save bug, all ability ID's have to be moved from the constructors of the tactic files to a
+method called InitAbilities() which is called by the AI each time before DoAbilities() is called to prevent
+invalid ID's. Have a look at the Necron Lord for an example.
+Further Timer functions have to be called this way (TombSpyder example):
+
+-- Try to spawn harvest units
+if (self.timedHarvestAbility ~= nil) then
+	self.timedHarvestAbility:Call()
+else
+	TombSpyderTactic.DoHarvestAbility(self)
+end
+
+This also applies to building abilities!
+
+
+3.) Retreat ratio of Necron loader.ai file should be reduced to 1/2:
+
+elseif (sType == "RetreatRatio") then
+	return 1 / 2
+	
+	
+4.) Replace scar folder since AISCARSupport was changed
+
+
+5.) Add OrkBuildBaseStrategy:BuildFreeSlugga() in OrkBuildBaseStrategy and self:BuildFreeSlugga() call in BuildFlexible()
+
+
+6.) Various balancing adjustments in the build programs for DC 1.2 patch changes
+
+
+2.2 Changes
+===========
+===========
+
+1.) Replace core folder and AIControlPanel.exe
+
+2.) Replace SCAR folder
+
+a.) If you don't want to include the Heroes Special mod, then just delete the heroes folder and the heroes win condition files
+If you want to include Heroes Special, then you have to add the localization folders and adjust the race scripts in the
+scar/heroes/races folder. Check the modding doc in the scar/heroes/doc folder for further instruction
+
+b.) For the SCAR support options AI donations, IG bunkering and transport support, you have to modify the the race scripts
+in the scar/AISupport/races folder. That's piece of cake since the files are tiny with only about 10 - 20 lines. If you want
+to add a new race, just add a new info file with the name of the new race.
+
+3.) Race changes
+
+a) loader.ai files:
+
+New entry in GetInfo(sType) method. Just add
+
+elseif (sType == "InvisibleBuildings") then
+		return false
+		
+Further, increase the MinArmyStrengthPerTier value to 750.
+
+You might have to add new tactic files for buildings and units if you want to support the bunkering, transport and enter
+deepstrike building features.
+
+
+b) Buildbasestrategy.ai files:
+
+The ForceTech() method was heavily modified to allow force techs in tier 3 and 4
+
+
+c) strategyinfo.ai files:
+
+Increase MinArmyStrength to 750 at the end of the file. The build programs were also optimized, so if you use the basic
+DC settings/gameplay you might just copy them.
+
+
+d) Transport vehicles
+
+If you want support for transport vehicles, you have to create a tactic file for that vehicle. There are two parameters
+required in the constructor:
+
+self.m_iTransportVehicle = 1	=>  Value 1 for Light transport vehicles like Chimeras and Rhinos
+								=>  Value 2 for heavy transport vehicles like the Land Raider
+								
+self.m_iTransportSlots = 3		=>  The amount of transport slots
+
+If you have a transport vehicle with weapons, that's all you have to do for the vehicle. If you have a transport vehicle
+without weapons, you should copy the Rhino transport code, since they require their own movement scripts.
+Further, you have to mark the squads which are able to enter a transport vehicle. Just add the self.m_iTransportable
+parameter to the constructor of the tactic file. The value describes the transport category of the squad.
+self.m_iTransportable = 1 describes light squads which can enter light and heavy transport vehicles, self.m_iTransportable = 2
+describes squads which can only enter heavy transport vehicles. Just have a look at the spacemarineinfantrytactic.ai file to get
+an example.
+
+Note:
+The transport code is not very good, since it's realized by AI code and SCAR code which cannot communicate with each other.
+It's more a bonus. Don't expect too much from it.
+
+
+e) IG garrison support
+You need to add tactic files for the bunker buildings. Further, you have to mark the squads which can enter a bunker. Just have
+a look at the IG files to check the changes.
+
+
+f) Support for units, entering deepstrike buildings
+You just have to mark the units with the ID of the deepstrike building they should enter. Have a look at the SM infantry and
+vehicle tactics to get an example.
+
+
+g) Necron dancing bug
+They don't retreat because they try to jump. Therefore they need a special modified MoveToDisengage() method. Have a look at
+necroninfantrytactic.ai for that.
+
+
+h) Tactic file improvements
+
+I order to gain more performance, most spell caster units have been reworked a bit. Those changes are simple and adviced but
+not necessary. Further, lots of small improvements and fixes to various tactic files were done. Just have a look at the
+modfication date to find the modified tactic files. 2007 is new, 2006 shouldn't have any interesting changes.
+
+
+2.1 Changes
+===========
+===========
+
+1.) Replace core and scar folder
+
+2.) Race changes
+
+a) Changes in ModifySquadDemand(iUnitID) method of the buildbasestrategy.ai files of all races.
+
+b) Placementtype of marine sacred artifact in marinebuildbasestrategy.ai file removed (Use "basic" now)
+
+c) Slight changes in heavyweaponstactic.ai, broadsidebattlesuittactic.ai, eldarinfantrytactic.ai, eldarvehicletactic.ai and necronlordtactic.ai
+
+d) Unit rating changes in all unitstats files
+
+e) Improved allround buildprograms for Chaos, Space Marines and Eldar
+
+f) Necron Lord randomized researches improved
+
+g) Fixed a serious bug in the Eldar loader.ai (Attack/Retreat Ratio values)
+
+
+
+
+2.0 Changes
+===========
+===========
+
+The good news is, that we've streamlined some things and therefore some race AI files got obsolete and were removed.
+The bad new is, that Relic screwed up the unit strength system and we therefore have to manage our own one.
+
+Customstats.ai:
+---------------
+
+Removed!
+
+
+Unitstats.ai:
+-------------
+
+In the unitstats.ai file, you'll find some new entries like:
+
+UnitStrengths.chaos_squad_cultist = 20
+
+LeaderStrengths.chaos_squad_cultist = 75
+
+Attachments.chaos_squad_cultist = { "chaos_squad_lord", "chaos_squad_sorcerer" }
+
+The UnitStrengths entry is quiet obvious and represents the strength of the unit. This should be kept very close
+to the resource cost of the unit.
+The LeaderStrengths entry sets the unit strength of the leader of a squad, and the Attachments entries must contain
+all possible attachments to the squad.
+
+
+Buildstrategyinfo.ai:
+---------------------
+
+The three files buildstrategyinfo_hard.ai, buildstrategyinfo_standard.ai and buildstrategyinfo_easy.ai were
+merged into buildstrategyinfo.ai. The various AI difficulties are now handled exclusively by the AI control panel.
+
+If you define a rush with { 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" }, unit building is restricted but
+reinforcing is allowed. With { 1, 0, 0, 0, 1,	 "Rush", 	"Prepare" }, you can also restrict reinforcing.
+
+
+<Race>BuildBaseStrategy.ai:
+---------------------------
+
+AddDetectorUnit("unit_name"):
+Since DC offers a new infiltration system you should add the valid detectors of your race in the constructor with
+the new method AddDetectorUnit("unit_name"). If you've more than one unit just call it several times. Make sure to
+add the best detector first and the worst last. The AI will favor the best available detectors.
+
+GetPlacementType(iBuildingID):
+We've also a new improved building placement system. With the inherited method GetPlacementType(iBuildingID), you
+can adjust the placement of the buildings of your race individually.
+The following placement types exist:
+"HQ" => First built at start point, second at ally (You can modify this with the self.m_iNumHQAtStartPos variable in the constructor. Used with Necrons.)
+"Military" => First at start point, further ones at front posts
+"Front1" => Build 1 instance at the closest listening post / bigger generator / HQ to the enemy.
+"Front2" => Build 2 instances at the closest listening post / bigger generator / HQ to the enemy.
+"Mine" => Built at criticals and front posts
+"Baseback" => Build at the back of the base if possible
+
+RelicRequired(sName):
+You should add all your Relic troops/researches/addons to this method. The build controller checks if the AI owns a Relic and will ignore this item in this
+case.
+
+
+loader.ai:
+----------
+
+LoadRace( eDifficulty ):
+Since there's only one buildbasestrategyinfo.ai file left the LoadRace( eDifficulty ) was cleaned up a bit for that.
+
+LoadGlobalInfo():
+import('customstats') entry removed
+
+CreateBaseTactic(): (Important!!!)
+This method is new and adds tactic files for the buildings of your race. For example the IG HQ and the Eldar Webwaygate have special tactic files.
+
+GetBuildingType(sBuildingName)
+This method is new and returns the 'type' of a building and its threat rating.
+
+
+tactic.ai files:
+----------------
+With the new inherited method IsSupportDetector(), you can define a non combat support detector which will join attack and defend forces if necessary.
+Look at scarabbuilders and skull probes for an example.
+
+You can now define tactic files for buildings. Look at eldar webwaygatetactic.ai for an example.
+
+'Assassinate Gamemode' Commanders got some adjusments to keep them away from combat. Look at one of the commanders for an example.
+
+
+
+Older Changes
+=============
+=============
+
+
+Strategy.ai:
+------------
+
+Prereqs aren't built any more in the TryBuild() method (important)
+
+
+BuildBaseStrategy.ai:
+---------------------
+
+ComputeBuildProgram(...)	=> Important method that computes a build program. Also allows reinforcing in tier 1 only at squad cap >= 8
+GetAddonBuilding(...)		=> Abstract method. Used by the ComputeBuildProgram method to get the building for an addon
+GetBuildingName(...)		=> Abstract method. Used to get the race specific key strings for common buildings like generators
+DynamicResearch(...)		=> Allows the dynamic research based on certain conditions. Only called from the inherited race files
+DynamicBuild(...)		=> Allows the dynamic build of buildings based on certain conditions. Only called from the inherited race files
+BuildFlexible(...)		=> Abstract method. Allows race specific dynamic researches, builds and other stuff
+HasBuilding(...)		=> Simplified to one method used by all races
+CheckSquadCap(...)		=> Calculates the current squad cap requirement. Used by all races.
+CheckSupportCap(...)		=> Calculates the current support cap requirement. Used by all races.
+ChooseBuildProgram(...)		=> Virtual method. Chooses a random build program. (Normally overwritten by race specific method)
+GetUnitStats(...)		=> Abstract method. Returns support cap and squad cap of a unit.
+
+Touched methods:	Update(), DoBuildGenerators(), DoBuildUnits(), DefensiveStance(), Constructor(), CalculateSquadDemand(...)
+Comment:		Moved all race specific code to the accompanying race files to fit the object oriented concept
+
+
+BuildOrderStrategy.ai:
+---------------------
+Removed the build order modification for small maps in the constructor
+
+
+Chaos- /Ork- /Eldar- /Guard- /MarineBuildBaseStrategy.ai
+--------------------------------------------------------
+
+Drastical code reduction. The only methods are now:
+
+EvaluateSquadCap(...)
+GetBuildingName(...)
+GetAddonBuilding(...)
+UpdateTierLevel(...)
+BuildFlexible(...)
+DevalueUnitByTier(...)
+ChooseBuildProgram(...)
+GetUnitStats(...)
+
+Flensers skirmish code was also moved to the Eldar file. (Skirmish code not used at the moment)
+
+
+BuildBaseStrategyInfo.ai
+------------------------
+
+The build programs are located in this file. Every race may have as much build programs as needed.
+
+Removed:
+ResearchOrder	=> Merged with build programs
+Turrets		=> Also defined in build programs
+
+Added:
+Buildprograms	=> Contains complete build tree: Buildings, research, addons, specific units and special commands like rush and restrict
+Techbreak	=> Used for lower difficulty levels to slow down the teching
+
+
+Buildorderstrategyinfo.ai
+-------------------------
+
+Build orders are reduced to barracks, workers and scouts. The rest is defined by the buildprograms
+
+
+BuildBuildingPlan.ai
+--------------------
+
+Fixed the building bug by adding a deviation to the build position
+
+
+---------------------------------------------------------------
+Syntax of a build program
+---------------------------------------------------------------
+
+Example:
+
+BuildPrograms =
+{
+	-- Banshee strategy
+	{
+		{ 1, 0, 0, 0, 0, 1,		"Rush", 	"Prepare" },
+		{ 1, 240, 80, 0, 0, 1,		"Unit",		"eldar_squad_farseer" },
+		{ 1, 200, 0, 2, 0, 6,		"Unit",		"eldar_squad_banshees" },
+		{ 1, 560, 200, 0, 0, 1,		"Building",	"eldar_hq" },
+		{ 1, 100, 0, 0, 0, 1,		"Building",	"eldar_aspect_portal" },
+		{ 1, 165, 0, 0, 0, 1,		"Building",	"eldar_warp_generator" },
+		{ 1, 100, 75, 0, 0, 100,	"TurretAddon",  "eldar_list_post_addon_1" },
+		{ 1, 50, 0, 0, 0, 50,		"Addon",	"eldar_aspect_stone_banshees" },
+		{ 1, 165, 0, 6, 0, 2,		"Building",	"eldar_warp_generator" },
+		{ 1, 50, 50, 6, 0, 1,		"Research", 	"eldar_fleet_of_foot_research" },
+		{ 1, 165, 0, 8, 0, 3,		"Building",	"eldar_warp_generator" },
+		...
+	}
+}
+
+Every race must have at least one build program in the buildbasestrategyinfo.ai file.
+If a race has more than one build program, one of them is selected by random or
+alternativley by an opponent specific choice.
+
+A build program is computed each round from the first to the last build item by the
+ComputeBuildProgram() method in the buildbasestrategy.ai file. The 8 entries of a
+build item have the following meaning.
+
+Entry1: The tier level that is required to build the object
+Entry2: The min req cost that is required to build the object (Normally the actual req cost)
+Entry3: The min power cost that is required to build the object (Normally the actual power cost)
+Entry4: The min army power that is required until the object is allowed to be built.
+Entry5: The amount of objects that should be built (if not already existing)
+Entry6: The object type to be built 
+Entry7: The key string / name of the object to be built
+
+Each build item profits from an economic feature. If the army power conditions are
+fullfilled, it will restrict unit building and reinforcing if it hasn't enough ressources to
+build the item. You should also know that a build item counts as finished if the production has
+started, not when it is finished.
+There are several build types available. Some of them actually don't build anything, but instead
+define a specific behaviour. Some build types have entries that may differ from the common
+declaration. The following build types are available:
+
+
+"Building"
+----------
+This is pretty obvious. It will build the required amount of buildings. The next item in the
+build program is only allowed to be built, if at least one of the demanded buildings is in production.
+
+Note:	Generators are also built by the DoBuildGenerators() method. Therefore you don't have to build them
+		with the build program. Same applies for webway gates and waagh banners which are also built by the
+		EvaluateSquadCap() method. Buildings can be built either in the build program or by the
+		DynamicBuild(...) method in the race files.
+
+"Research"
+----------
+Also pretty obvious. It starts a research. The build count must be always 1.
+
+Note:	Research can be made either in the build program or by the DynamicResearch(...) method in the race files.
+		Dynamic reseach is adviced for researches that aren't always needed or available like researches for relic
+		units.
+
+"Addon"
+-------
+A building addon like an eldar aspect stone or an HQ. The build count is a percentage number from 0 - 100
+which defines, how many of the available upgradeable buildings will be upgraded. There's always a minimum of
+one building asumed. Therefore 30% is 1 with 1 - 5 buildings and 2 with 6 buildings. Doesn't block tech
+tree, even if not all addons are finished.
+
+Note: Each addon must have its building mentioned in the race specific GetAddonBuilding(...) method
+
+"TurretAddon"
+-------------
+Works exactly the same like the Addon type, with the exception that the notified buildplan is used which
+picks the building with the best location available for defensive purposes. This is used for turret addons
+and listening post addons.
+
+"Unit"
+------
+Builds a specific amount of units of the type mentioned in the name entry. This works only for the current
+tier. It is ignored in higher or lesser tiers. Doesn't stop tech tree.
+If the unit build item is between a "Rush-Prepare" and "Rush-Unleash" pair, ONLY these units are built, no
+other units until the rush is unleashed.
+The army strength indicates, that the unit is only built if the current army power is BELOW this value.
+
+Note:	Each unit must have an entry in the race specific GetUnitStats(...) method, which returns the squad and
+		support cap of the unit
+
+"Rush"
+------
+If the name entry is "Prepare", then a defensive behaviour is enforced. The defensive behaviour ends as soon
+as another "Rush" build item with the name "Unleash" is computed. At this point, an immediate attack is
+started. Further, if one or more "Unit" items are inbetween the rush-pair, then only those units are built.
+A rush works only for the given tier level. In higher tiers, it is deactivated immediately.
+Normally this should be used for a tier1 rush, but it is also a tier 2 - 4 rush possible. A count of 0 restricts
+squad reinforcing while a count of greater zero allows it.
+
+Note:	The min requisition is used here as min squad cap and the min power as min support cap.
+
+"Restrict"
+----------
+Sets the squad limit of a unit given by the name entry to a new value, given in the count entry. This is used
+if a unit gets obsolete/useless in higher tiers, like chaos marines for example. The value is reset and set
+each round, because it may happen that the AI looses half of its base and can't build the elite units any more.
+In this case the squad limit isn't set any more and the old squad limit is used.
+
+
+Quick guide for build program modification
+------------------------------------------
+The best thing is probably to modify an existing build program. If you want more troops at a specific point,
+increase the squad or support limit. If you want the AI to build specific units, you can use the "Unit" build
+type or alternativly set the squad limits with the "Restrict" type.
+If you don't like some researches you can use the DynamicResearch(...) method instead in the FlexibleBuild()
+section of a race file. If the AI tends to sacrifice too much troops, because it attacks too early, you may
+use a "Rush" type to force a defensive troop gathering period followed by a huge assault.
+Be carefull with researches with long duration that are built in the same building. They can block your entire
+tech tree. Therefore separate them with some other builds.
+Modifying the build order is pretty easy, though you shouldn't forget that some items require others to be
+built. Therefore make sure that you stick to the rules of the race.
+
+
+
+###############################################################
+#
+#	Changes for jump attack (by Arkhan 11.2005)
+#
+###############################################################
+
+---------------------------------------------------------------
+Important file changes:
+---------------------------------------------------------------
+
+Tactic.ai:
+----------
+
+JumpAttackMelee()
+
+The changes improved the cooperative behaviour of the jump squads. There's now a difference between a short jump
+and a long jump.
+
+Short jumps are only allowed if the enemy forces aren't much more powerfull than the allies
+in the area. As allies in the area count all friendly units in a certain area around the start pos and the
+target pos. Therfore if a jump squad attacks from the center of an army it will know that they can support it,
+and will try to attack the most dangerous ranged squad in the enemy forces.
+
+Long jumps are only allowed if the squad is not part of a large force or alternativley, the enemy forces are so
+strong that the squad better leaves this area. The squad also nows, that if it will make a long jump, then all
+the allies at the start pos are too far away to help him. Therefore the only help he gets is from allied forces
+in the target area. It will try to attack worthy ranged squads up to its own strength in ressource costs. It will
+also attack stronger enemies if an allied squad in the target area is in urgent need.
+
+Note: Restricted to target area!
+
+DefendPlan.ai:
+--------------
+
+The jump attack is used even in combat and/or attack move
+
+
+
+###############################################################
+#
+#	Changes for attack strategy (by Arkhan 11.2005)
+#
+###############################################################
+
+The new concept of the attack strategy allows a semi intelligent attack behaviour by analysing the situation of
+every player and calculating the best operation according to the situation analysis. Each possible target is
+evaluated by a set of important criterions like distance, threat, etc. and gets a point value. The target
+with the highest point value is finally chosen.
+The choice of a target is modified by a race behaviour. Eldar are very supportive and have a good chance to even
+abort an attack to save an ally. Chaos on the other side will never break an attack to support an ally. They will
+only support if there's nothing better to do. The other races are inbetween.
+A big change to the old behaviour is that the attack is evaluated by the situation at the target position and not
+a simple 'MyArmy > EnemyArmy => Attack' decision.
+
+
+---------------------------------------------------------------
+Important file changes:
+---------------------------------------------------------------
+
+PlayerInfo.ai:
+--------------
+
+The playerinfo.ai file collects all necessary information of a player, to allow an analysis for the best location to
+attack or support. For this purpose, the main base and all posts are taken as key positions and the amount of turrets,
+enemy threat, allied support, position, etc is calculated for them. The playerinfo class is used only by the
+ChooseTarget() method in the attackstrategy.ai file.
+
+InitRoadMap()				=> Independent method. Initializes a roadmap that stores distances between strategic points and bases
+TerrainDistance(...)		=> Independent method. Retrieves the terrain distance by using the roadmap or an average of terrainanalyzer and airline distance
+FastDistance(...)			=> Independent method. Calculates the squared by 3 divided distance (Note: mapdistance / 3 ~ DOW game distance)
+SetDistances(...)			=> Set distances of all posts and bases to the given position (position must be a valid terrain position!)
+AddAlliedSquadInfo(...)		=> Measures distance from the base and all posts to the squad and stores its power as support information
+AddEnemySquadInfo(...)		=> Measures distance from the base and all posts to the squad and stores its power as threat information
+AddSquadToArmyPos(...)		=> Calculates an army position by taking the average position of all player squads 
+ValidateArmyPosition()		=> The calculated army position may be invalid and can crash the terrainanalyzer. The closest squad position is taken for validation.
+InitBuildingInformation()	=> Inits all information about the HQ, posts, turrets and generators of the player
+GetTurretPower()			=> Returns the typical turret power of a specific race
+TraceInfo()					=> Makes an AITrace of all the player information. Used for debug purposes only.
+
+
+AttackStrategy.ai:
+------------------
+
+ResetAttack()				=> Resets an attack plan to allow the choice of a new target
+CheckAttackSituation()		=> Checks the situation of a battle, by comparing allied power, enemy power and army strength
+CheckSuccess()				=> Checks if an attack was successfull accomplished
+HelpAllyInNeed()			=> Checks if an ally is in need and might retreat. (Probability is race dependent)
+ChooseTarget()				=> Uses the an instance of the playerinfo class for each player to calculate the best attack / support action
+Evaluate()					=> Used by ChooseTarget() to evaluate a situation and retrieve a point value for it
+GetBestSupportPosition()	=> If the the best choice is a support operation, the closest enemy in the target area is returned
+GetMaxThreatOnPath()		=> Uses a heuristic approach to figure out the maximum threat on the path to a target
+AnalyseBattleField()		=> Used by ChooseTarget to create a playerinfo class for every player
+UpdateStrategicObjective()	=> Checks for too much critical locations in enemy hands and if necessary tries to attack a critical location
+
+Touched methods: Update(), Retreat()
+
+
+AttackPlan.ai:
+--------------
+
+GetBestAttackPosition()		=> Gets the closest enemy unit to a specific position
+
+The following methods had to be reworked to fit the new requirements of the attack strategy. Forces are now obtained
+considering the army power and not (only) the amount of units. In addition the gathering of troops had to be fixed to
+allow a more tolerant gathering range. This was necessary to avoid the AI getting stuck in a gathering loop because
+the gathering area was too small.
+
+Constructor, ObtainForce(), ObtainMoreForce(), GatherForces()
+
+
+BuildBaseStrategy.ai
+--------------------
+
+It was necessary to rework the OffensiveStance() method to fit the new requirements of the attack strategy concept.
+Inits attack strategy dependent on the current army power. The requirements increase with the tier level.
+
+
+CPU_Manager.ai
+--------------
+
+Added only one code line in the Initialize() method to init the roadmap in the playerinfo.ai file

@@ -1,0 +1,799 @@
+----------------------------------------
+-- File: 'strategy.ai'
+-- Edited by Thudmeizer @ 23.02.2006
+-- Edited by LarkinVB   @ 21.08.2005
+-- Edited by Flenser    @ 30.05.2005
+-- Edited by Arkhan     @ 22.10.2005
+-- Edited by Dark40k    @ 14.10.2008
+
+--? @module AI
+--? @group Strategy
+class 'Strategy'
+
+Strategy.Events = 
+{
+	OnStart = "OnStart",
+	OnSuccess = "OnSuccess",
+	OnFailure = "OnFailure",
+	OnAttack = "OnAttack"
+}
+
+--? @shortdesc Ctor
+--? @args 
+--? @result void
+function Strategy:__init( info )
+
+	self.player_stats = cpu_manager.stats:GetPlayerStatsFromID( cpu_manager.player_id )
+	dbAssert( self.player_stats ~= nil )
+
+	if info ~= nil then
+		self.info = info[ self.player_stats:GetPlayerRaceName() ] 
+		dbAssert( self.info ~= nil )
+	end
+	
+	self.plans = {}
+	self:ResetDemand()
+
+	self.now = 0
+	
+	self.status = "Normal"
+
+	self.can_build_military = true
+	
+	self.m_iNumHQAtStartPos = 1
+	
+	self.m_aBuildingCounts = {}
+end
+
+function Strategy:GetStatus( status )
+	return self.status
+end
+
+function Strategy:SetStatus( status )
+	self.status = status
+end
+
+--? @shortdesc Reset all the demand tables
+--? @args 
+--? @result void
+function Strategy:ResetDemand()
+
+	self.unit_class_demand = {}
+	self.effectiveness_demand = {}
+	self.squad_demand = {}
+	
+	for i = 0, UnitStatsAI.UC_Count - 1 do
+		self.unit_class_demand[ i ] = 0
+		self.effectiveness_demand[ i ] = 0
+	end
+	
+end
+
+--? @shortdesc Adpot control of all the plans that the strategy is running
+--? @args Strategy strategy
+--? @result void
+function Strategy:AdoptStrategy( strategy )
+
+	for i in strategy.plans do
+		self:AddPlan( strategy.plans[i] )
+	end
+	
+	strategy.plans = {}
+end
+
+--? @args float priority
+--? @result void
+function Strategy:SetPriority( priority )
+	self.priority = priority
+end
+
+--? @args 
+--? @result float
+function Strategy:GetPriority()
+	dbAssert( self.priority ~= nil )
+	return self.priority
+end
+
+--? @shortdesc Get the name of the strategy
+--? @args 
+--? @result string
+function Strategy:GetName()
+	return "Invalid Strategy"
+end
+
+function Strategy:DoNeeds()
+	foreach_bind( self.plans, self.DoPlanNeeds, self )
+end
+
+function Strategy:DoWants()
+	foreach_bind( self.plans, self.DoPlanWants, self )
+end
+
+--? @shortdesc Update the current state of the strategy
+--? @args 
+--? @result void
+function Strategy:Update()
+
+	--reset demands
+	self:ResetDemand()
+	
+	-- Update building count
+	self:UpdateBuildingCount()
+end
+
+function Strategy:DoDeleteOldPlans()
+
+	--remove the finished plans
+	local num_items = table.getn( self.plans )
+	for i = num_items, 1, -1 do
+		if( self.plans[i]:IsComplete() == true ) then
+			self.plans[i]:UnlockAll() -- release resources
+			table.remove( self.plans, i ) --erase from table
+		end
+	end
+	
+end
+
+function Strategy:DoPlans()
+
+	--update the currently running plans
+	foreach_bind( self.plans, self.DoPlan, self )
+end
+
+--? @shortdesc Adds a plan to the strategy
+--? @args Plan plan
+--? @result void
+function Strategy:AddPlan( plan )
+
+	table.insert( self.plans, plan )
+end
+
+function Strategy:PostEvent( event )
+
+	cpu_manager:OnStrategicEvent( self, event )
+end
+
+--? @shortdesc Updates a plan
+--? @args Plan plan
+--? @result void
+function Strategy:DoPlan( plan )
+	plan:Update()
+end
+
+function Strategy:DoPlanNeeds( plan )
+	plan:Needs()
+end
+
+function Strategy:DoPlanWants( plan )
+	plan:Wants()
+end
+
+--? @shortdesc Returns the name of the plan if plan is equal to the name and id passed in (nil otherwise)
+--? @args string plan_name, int id, Plan plan
+--? @result string
+function Strategy:FindPlan( plan_name, plan_id, plan )
+	
+	if plan:IsEqual( plan_name, plan_id ) then
+		return plan_name
+	end
+	return nil
+end
+
+--? @shortdesc Returns true if this plan already exists
+--? @args Plan plan, int id
+--? @result bool
+function Strategy:PlanExists( plan_name, plan_id )
+	if (foreach_bind( self.plans, self.FindPlan, self, plan_name, plan_id ) == nil) then
+		return false
+	end
+	
+	return true
+end
+
+function Strategy:GetPlan(sPlanName, iPlanID)
+
+	-- Compute all plans
+	for iLoop1 in self.plans do
+	
+		-- Check plan
+		if (self.plans[iLoop1]:IsEqual(sPlanName, iPlanID)) then
+			return self.plans[iLoop1]
+		end
+	end
+	return nil
+end
+
+function Strategy:PlanCount(sPlanName, iPlanID)
+
+	local count = 0
+	if (iPlanID ~= nil) then
+	
+		-- Check plan name and ID
+		for iLoop1 in self.plans do
+
+			-- Check plan
+			if (self.plans[iLoop1]:IsEqual(sPlanName, iPlanID)) then
+				count = count + 1
+			end
+		end	
+	else
+		
+		-- Check only plan name
+		for iLoop1 in self.plans do
+
+			-- Check plan
+			if (self.plans[iLoop1]:GetName() == sPlanName) then
+				count = count + 1
+			end
+		end
+	end
+	return count
+end
+
+function Strategy:GetBuildingCountByName(sName, bFinished)
+
+	-- Return building count
+	return self:GetBuildingCountByBPID(cpu_manager.stats:GetBuildingID(sName), bFinished)
+end
+
+function Strategy:GetBuildingCountByBPID(iBPID, bFinished)
+	
+	-- Check if building entry exists
+	if (self.m_aBuildingCounts[iBPID] == nil) then
+		return 0
+	end
+	
+	-- Return building count
+	if (bFinished) then
+		return self.m_aBuildingCounts[iBPID][1]
+	end
+	return self.m_aBuildingCounts[iBPID][1] + self.m_aBuildingCounts[iBPID][2]
+end
+
+function Strategy:UpdateBuildingCount()
+	
+	-- Create building list and validate start point
+	self.m_aBuildingCounts = {}
+	for oBuilding in military_manager:GetBases() do
+	
+		-- Check for valid building
+		if (oBuilding:IsValid()) then
+		
+			-- Check if building entry exists
+			local iBPID = oBuilding:GetBlueprintID()
+			if (self.m_aBuildingCounts[iBPID] == nil) then
+			
+				-- Create new entry
+				if (oBuilding:IsConstructionDone()) then
+					self.m_aBuildingCounts[iBPID] = { 1, 0 }
+				else
+					self.m_aBuildingCounts[iBPID] = { 0, 1 }
+				end
+			else
+			
+				-- Increase building count
+				if (oBuilding:IsConstructionDone()) then
+					self.m_aBuildingCounts[iBPID][1] = self.m_aBuildingCounts[iBPID][1] + 1
+				else
+					self.m_aBuildingCounts[iBPID][2] = self.m_aBuildingCounts[iBPID][2] + 1
+				end
+			end
+		end
+	end
+end
+
+--? @shortdesc Builds creates a plan to build a prerequisite
+--? @args CpuPrerequisites.BuildType build_type
+--? @result void
+function Strategy:BuildPrereq( build_type )
+
+	-- Check build type
+	if (build_type.btype == CpuPrerequisites.BT_Squad) then
+
+		-- Used to nerf the AI if the AI is getting too strong
+		if cpu_manager:RestrictMilitary() then
+			return
+		end
+		
+		-- Check build unit components
+		if (not cpu_manager.components[CpuPlayer.CT_BuildUnits]) then
+			return
+		end
+		
+		-- Add unit plan
+		local id = cpu_manager.stats:GetSquadID( build_type.name )
+		self.AddPlan(self, BuildUnitPlan(id))
+	  
+	elseif (build_type.btype == CpuPrerequisites.BT_Building) then
+	  
+		-- Check build building components
+		if (not cpu_manager.components[CpuPlayer.CT_BuildBuildings]) then
+			return
+		end
+		
+		-- Add building plan
+		local id = cpu_manager.stats:GetBuildingID( build_type.name )
+		if (self:PlanExists("Build Building Plan", id) == false) then
+		
+			local start_pos = cpu_manager.start_pos
+			local build_pos = nil
+			
+			-- Check placement
+			local sPlacement = self:GetPlacementType(id)
+			if (sPlacement == "HQ") then
+			
+				-- Check placement
+				local num_hq = self:GetBuildingCountByName(build_type.name)
+				if (num_hq < self.m_iNumHQAtStartPos and not cpu_manager:HQThreat()) then
+				
+					-- Rebuild HQ at home
+					self:DeepStrikeBuilder(start_pos)
+					self.AddPlan(self, BuildBuildingPlan(id, start_pos))
+				else
+				
+					-- Build at allied base
+					local friend = cpu_manager:FindClosestFriendPlayer()
+					if (friend ~= nil) then
+						build_pos = friend:GetStartingPosition()
+					end
+					
+					-- Add building plan
+					if (build_pos ~= nil) then
+						self:DeepStrikeBuilder(build_pos)
+						self.AddPlan( self, BuildBuildingPlan( id, build_pos ) )
+					else
+						self:DeepStrikeBuilder(start_pos)
+						self.AddPlan( self, BuildBuildingPlan( id, start_pos ) ) 
+					end
+				end
+				
+			elseif (sPlacement == "Military") then
+			
+				-- Check HQs
+				local sName = self:GetBuildingName("HQ")
+				build_pos = cpu_manager:GetFrontBuildPosition(sName, build_type.name, 1, 10)
+				if (build_pos ~= nil and distance_sqr(build_pos, start_pos) > sqr(50)) then
+					build_pos = nil
+				end 
+			
+				-- Check posts
+				if (build_pos == nil) then
+					sName = self:GetBuildingName("ListeningPost")
+					build_pos = cpu_manager:GetFrontBuildPosition(sName, build_type.name, 1, -5)
+				end
+				
+				-- Add building plan
+				if (build_pos ~= nil) then
+					self:DeepStrikeBuilder(build_pos)
+					self.AddPlan(self, BuildBuildingPlan( id, build_pos ))
+				else
+					self:DeepStrikeBuilder(start_pos)
+					self.AddPlan(self, BuildBuildingPlan( id, start_pos ))
+				end
+
+			elseif (sPlacement == "Front1" or sPlacement == "Front2") then
+			
+				-- Set building count
+				local iCount = 1
+				if (sPlacement == "Front2") then
+					iCount = 2
+				end
+				local fClosestDistance = 0
+			
+				-- Check bigger generators
+				local sName = self:GetBuildingName("BiggerGenerator")
+				local vPos, fDistance = cpu_manager:GetFrontBuildPosition(sName, build_type.name, iCount, 5)
+				if (vPos ~= nil) then
+					build_pos = vPos
+					fClosestDistance = fDistance
+				end
+				
+				-- Check posts
+				sName = self:GetBuildingName("ListeningPost")
+				vPos, fDistance = cpu_manager:GetFrontBuildPosition(sName, build_type.name, iCount, -5)
+				if (vPos ~= nil and (build_pos == nil or fDistance < fClosestDistance)) then
+					build_pos = vPos
+					fClosestDistance = fDistance
+				end	
+				
+				-- Check HQs
+				sName = self:GetBuildingName("HQ")
+				vPos, fDistance = cpu_manager:GetFrontBuildPosition(sName, build_type.name, iCount, 10)
+				if (vPos ~= nil and (build_pos == nil or fDistance < fClosestDistance)) then
+					build_pos = vPos
+					fClosestDistance = fDistance
+				end
+				
+				-- Add building plan
+				if (build_pos ~= nil) then
+					self:DeepStrikeBuilder(build_pos)
+					self.AddPlan(self, BuildBuildingPlan( id, build_pos ))
+				else
+					self:DeepStrikeBuilder(start_pos)
+					self.AddPlan(self, BuildBuildingPlan( id, start_pos ))
+				end
+				
+			elseif (sPlacement == "Safeplace") then
+			
+				-- Set building count
+				local iCount = math.random( 2,4 )
+				local fClosestDistance = 0
+			
+				-- Check posts
+				local sName = self:GetBuildingName("ListeningPost")
+				local vPos, fDistance = cpu_manager:GetSafeBuildPosition(sName, build_type.name, iCount, 10)
+				if (vPos ~= nil) then
+					build_pos = vPos
+					fClosestDistance = fDistance
+				end
+				
+				-- Check HQs
+				sName = self:GetBuildingName("HQ")
+				vPos, fDistance = cpu_manager:GetSafeBuildPosition(sName, build_type.name, iCount, 10)
+				if (vPos ~= nil and (build_pos == nil or fDistance > fClosestDistance)) then
+					build_pos = vPos
+					fClosestDistance = fDistance
+				end
+				
+				-- Add building plan
+				if (build_pos ~= nil) then
+					self:DeepStrikeBuilder(build_pos)
+					self.AddPlan(self, BuildBuildingPlan( id, build_pos ))
+				else
+					self:DeepStrikeBuilder(start_pos)
+					self.AddPlan(self, BuildBuildingPlan( id, start_pos ))
+				end
+				
+			elseif (sPlacement == "Mine") then
+
+				-- Try to build at a good critical or the closest LP to the enemy
+				build_pos = cpu_manager:GetMinePlacing()
+
+				-- Add building plan
+				if (build_pos ~= nil) then
+					self:DeepStrikeBuilder(build_pos)
+					self.AddPlan(self, BuildBuildingPlan( id, build_pos ))
+				else
+					self:DeepStrikeBuilder(start_pos)
+					self.AddPlan(self, BuildBuildingPlan( id, start_pos ))
+				end
+
+			elseif (sPlacement == "BaseBack") then
+			
+				-- Set building count
+				local iCount = 6
+				local fClosestDistance = 0
+			
+				-- Check posts
+				local sName = self:GetBuildingName("ListeningPost")
+				local vPos, fDistance = cpu_manager:GetSafeBuildPosition(sName, build_type.name, iCount, 10)
+				if (vPos ~= nil) then
+					build_pos = vPos
+					fClosestDistance = fDistance
+				end
+				
+				-- Check HQs
+				sName = self:GetBuildingName("HQ")
+				vPos, fDistance = cpu_manager:GetSafeBuildPosition(sName, build_type.name, iCount, 10)
+				if (vPos ~= nil and (build_pos == nil or fDistance > fClosestDistance)) then
+					build_pos = vPos
+					fClosestDistance = fDistance
+				end
+			
+				-- Try to build at closest post behind the base
+				--build_pos = cpu_manager:FindClosestPostToBase(120, true)
+				if (build_pos ~= nil) then
+					self:DeepStrikeBuilder(build_pos)
+					self.AddPlan(self, BuildBuildingPlan(id, build_pos))
+				else
+					self:DeepStrikeBuilder(start_pos)
+					self.AddPlan(self, BuildBuildingPlan(id, start_pos))
+				end
+			else
+				self:DeepStrikeBuilder(start_pos)
+				self.AddPlan(self, BuildBuildingPlan(id, start_pos))
+			end
+		end
+  
+	elseif (build_type.btype == CpuPrerequisites.BT_Research) then
+
+		-- Check build research components
+		if (not cpu_manager.components[CpuPlayer.CT_BuildResearch]) then
+			return
+		end
+		
+		-- Add research plan
+		local id = cpu_manager.stats:GetResearchID( build_type.name )
+		if (self:PlanExists("Build Research Plan", id) == false) then 
+			self.AddPlan(self, BuildResearchPlan(id))
+		end
+	  
+	elseif (build_type.btype == CpuPrerequisites.BT_AddOn) then
+
+		-- Check build addon components
+		if (not cpu_manager.components[CpuPlayer.CT_BuildAddOns]) then
+			return
+		end
+		
+		-- Add addon plan
+		local id = cpu_manager.stats:GetAddOnID( build_type.name )
+		if (self:PlanExists("Build AddOn Plan", id) == false) then 
+			self.AddPlan(self, BuildAddOnPlan(id))
+		end
+	else
+		
+		-- Unknown build type
+		aitrace( "foobar"..build_type.name )
+	end
+end
+
+-- Arkhan 03.2006: Return placement type for buildings
+function Strategy:GetPlacementType(iBuildingID)
+	
+	-- Check building
+	if (cpu_manager:IsHQ(iBuildingID)) then
+		return "HQ"		
+	elseif (cpu_manager:IsTurret(iBuildingID)) then
+		return "Front2"
+	elseif (cpu_manager:IsMine(iBuildingID)) then
+		return "Mine"
+	elseif (cpu_manager:IsGenerator(iBuildingID)) then
+		return "BaseBack"
+	end
+	return "Basic"
+end
+
+-- Arkhan 03.2006: Abstract method to allow races to deepstrike builder to build positions
+function Strategy:DeepStrikeBuilder(vBuildPosition)
+
+end
+
+-- Thudmeizer 06.2007: Abstract method to allow races to deepstrike specific units to build positions not using the usual deepstriking
+function Strategy:DeepStrikeSpecialUnit(vDeepstrikePos)
+
+end
+
+--? @shortdesc Forces the release of all resources the strategy owns
+--? @args
+--? @result void
+function Strategy:ForceReleaseAll()
+
+	for i in self.plans do
+		self.plans[i]:UnlockAll()
+	end
+	
+	self.plans = {}
+
+end
+
+--? @shortdesc Forces the release of a resource if the strategy owns it
+--? @args int id AIResource res_type
+--? @result void
+function Strategy:ForceReleaseResource( id, res_type )
+
+	--find the plan that has it locked, and remove it
+	for i in self.plans do
+		if( self.plans[i]:HasResource( id, res_type ) == true ) then
+			self.plans[i]:UnlockAll() -- release resources
+			self.plans[i]:SetComplete( true )
+			table.remove( self.plans, i ) --erase from table
+			return
+		end
+	end
+
+end
+
+--? @shortdesc Tries to build the squad, or it's prerequisites (may fail)
+--? @args int id
+--? @result void
+-- Arkhan 10.2005: No prerequisites are built any more
+function Strategy:TryBuild( build_type )
+
+	-- Dark40k 10.2008 : replaced CpuPrerequisites by CpuPrerequisites2
+	local prereq = CpuPrerequisites2( cpu_manager.cpu_player, build_type.name, build_type.btype )
+	
+	if prereq:PrerequisitesFulfilled() then
+		self:BuildPrereq( build_type )
+		return true
+	else
+		--notify
+		cpu_manager:OnEvent( CpuManager.Events.TryBuildPrereq, id )
+
+		--build prereqs
+		aipushtrace("prereqs for "..build_type.name..":")
+		--blg( nil, "Want to build prereq for: "..build_type.name)
+		for i in prereq:GetUnfulfilledPrerequisites() do
+			
+			aitrace( i.name.." (unfulfillable)" )
+			
+			-- if i.prereq_fulfilled  then
+			--	self:BuildPrereq( i )
+			--	blg( nil, "Build "..i.name)
+			--	aitrace( i.name )
+			-- else
+			--	blg( nil, "Can't build "..i.name)
+			--	aitrace( i.name.." (unfulfillable)" )
+			-- end
+		end
+		aipoptrace( "end prereqs" )
+		return false
+	end
+
+end
+
+function Strategy:IncClassDemand( class, inc )
+	self.unit_class_demand[class] = self.unit_class_demand[class] + inc
+end
+
+function Strategy:IncEffectivenessDemand( class, inc )
+	dbAssert( class < UnitStatsAI.UC_Count )
+	self.effectiveness_demand[class] = self.effectiveness_demand[class] + inc
+end
+
+function Strategy:SetSquadDemand( sbpid, demand )
+	if (sbpid == 0) then
+		return
+	end
+	table.insert(self.squad_demand, { sbpid, demand, false })
+end
+
+function Strategy:GetSquadDemand(sbpid)
+
+	-- Compute all units
+	for iLoop1 in self.squad_demand do
+	
+		-- Check unit ID
+		if (sbpid == self.squad_demand[iLoop1][1]) then
+			return self.squad_demand[iLoop1][2]
+		end
+	end
+	return 0
+end
+
+function Strategy:GetClassDemand( class )
+	dbAssert( self.unit_class_demand[class] ~= nil )
+	return self.unit_class_demand[class]
+end
+
+function Strategy:GetEffectivenessDemand( class )
+	dbAssert( self.effectiveness_demand[class] ~= nil )
+	return self.effectiveness_demand[class]
+end
+
+function Strategy:GetHighestDemandedSquad(bBuildNow)
+
+	-- Remove units with unfulfilled prerequisites or caps
+	local iUnitCount = table.getn(self.squad_demand)
+	for iLoop1 = iUnitCount, 1, -1 do
+	
+		-- Check prerequisites
+		local sUnitName = cpu_manager.stats:GetSquadName(self.squad_demand[iLoop1][1])
+		-- dark40k 10.2008 : changed call from CpuPrerequisites to CpuPrerequisites2
+		local oPrerequisites = CpuPrerequisites2(cpu_manager.cpu_player, sUnitName, CpuPrerequisites.BT_Squad)
+		if (oPrerequisites:GetNumUnfulfilledPrerequisites() > 0) then	
+			table.remove(self.squad_demand, iLoop1)
+		else
+		
+			-- Get unit stats
+			local oUnitStats = cpu_manager.stats:GetUnitStatsFromBPID(self.squad_demand[iLoop1][1])
+			if (oUnitStats == nil) then
+				table.remove(self.squad_demand, iLoop1)
+			else
+			
+				-- Check caps
+				local iSquadCapRequirement = oUnitStats:GetSquadCapReq()
+				local iSupportCapRequirement = oUnitStats:GetSupportCapReq()
+				if ((iSquadCapRequirement > 0 and build_manager:GetSquadCapLeft() - iSquadCapRequirement < 0) or 
+					(iSupportCapRequirement > 0 and build_manager:GetSupportCapLeft() - iSupportCapRequirement < 0)) then
+					table.remove(self.squad_demand, iLoop1)
+				end
+			end
+		end
+	end
+		
+	-- Check build channels
+	for oBuildChannel in build_manager:GetUnlockedBuildChannelAIs() do
+	
+		-- Make sure the building is complete
+		if (oBuildChannel:ConstructionDone()) then
+		
+			-- Check all units
+			for iLoop1 in self.squad_demand do
+			
+				-- Check if I can produce this unit
+				local iItemIndex = oBuildChannel:GetItemIndexFromID(BuildChannelAI.PQ_Squad, self.squad_demand[iLoop1][1])
+				if (iItemIndex ~= BuildChannelAI.INVALID_INDEX) then
+					
+					-- Check if the building is already building
+					if (oBuildChannel:IsBuilding() == 0 or not bBuildNow) then
+						self.squad_demand[iLoop1][3] = true
+					end
+				end
+			end
+		end
+	end
+	
+	-- Get highest demanded unit
+	local iUnitID = nil
+	local iHighestDemand = 0
+	for iLoop1 in self.squad_demand do
+	
+		-- Check if unit can be built and demand is higher than last one
+		if (self.squad_demand[iLoop1][3] and self.squad_demand[iLoop1][2] > iHighestDemand) then
+			iUnitID = self.squad_demand[iLoop1][1]
+			iHighestDemand = self.squad_demand[iLoop1][2]
+		end
+	end
+	return iUnitID, iHighestDemand
+end
+
+--begin Project QuickStart code
+--begin Project Mapsize code
+--added by Flenser 12 May 2005
+function Strategy:GetMapSize()
+
+    local strat_pts = resource_manager:GetTotalNumStrategicPoints()
+    local strat_objs = resource_manager:GetTotalNumStrategicObjectives()
+
+    local players = 0
+    for i in cpu_manager.stats:GetPlayerStats() do
+        players = players + 1
+    end
+
+    local map_resources = strat_pts + strat_objs
+    local resources_per_player = math.ceil(map_resources/ players)
+
+    --get closest enemy distance
+    local closest_enemy = nil
+    local this_enemy_dist = 0
+    -- scan enemies
+    for enemy in cpu_manager.stats:GetPlayerStats() do
+        if cpu_manager.player_stats:IsEnemy( enemy ) then
+            -- distance from us
+            this_enemy_dist = cpu_manager:GetShortestPathingDistance( cpu_manager.player_stats:GetStartingPosition(), enemy:GetStartingPosition() )
+            if (closest_enemy == nil) or (this_enemy_dist < closest_enemy) then
+                closest_enemy = this_enemy_dist
+                aitrace("Distance to enemy.."..closest_enemy)
+            end
+        end
+    end
+    
+    if (closest_enemy < 150 or resources_per_player <= 4) then
+       return "small", closest_enemy
+    elseif (closest_enemy < 300 or resources_per_player <= 8) then
+        return "medium", closest_enemy
+    else
+        return "large", closest_enemy
+    end
+end
+--end Project Mapsize code
+
+function Strategy:IsQuickStart()
+
+	-- Check ressources
+	local iRequisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	local iPower = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Power)
+    if (iRequisition > 9999 or iPower > 9999) then
+        return true
+    end
+    return false
+end
+--end Project QuickStart code
+
+--begin Project Skirmishplan code
+--added by Flenser
+--27 May 2005
+--? @shortdesc Forces the unlocking of a resource if the strategy owns it without using UnlockAll()
+--? @args int id AIResource res_type
+--? @result void
+function Strategy:ForceUnlockResource( resource, res_type )
+
+	--find the plan that has it locked, and unlock it
+    local id = resource:GetID()
+	for i in self.plans do
+		if( self.plans[i]:HasResource( id, res_type ) == true ) then
+			self.plans[i]:UnlockResource( self, resource ) -- release resources
+			return
+		end
+	end
+end

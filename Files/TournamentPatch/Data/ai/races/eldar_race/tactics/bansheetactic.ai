@@ -1,0 +1,29 @@
+----------------------------------------
+-- File: 'bansheetactic.ai'
+-- Edited by Thudmeizer		@ 26.10.2008
+
+class 'BansheeTactic' (EldarInfantryTactic)
+
+Banshee = {}
+
+function BansheeTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Banshee Tactic")
+end
+
+function BansheeTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Banshee.warshout_id == nil) then
+		Banshee.warshout_id = cpu_manager.stats:GetAbilityID( "eldar_warshout" )
+	end
+end
+
+function BansheeTactic:DoAbilities()
+
+	-- Check if I can warshout
+	Ability.DoAbilityArea( self.squad_ai, Banshee.warshout_id, Ability.Filters.CloseInfantryEnemy, 10, 5 )
+	
+	-- Call basic DoAbilities methods
+	EldarInfantryTactic.DoAbilities(self)
+end

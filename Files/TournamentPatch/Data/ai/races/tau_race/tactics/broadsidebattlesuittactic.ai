@@ -1,0 +1,80 @@
+----------------------------------------
+-- File: 'broadsidebattlesuittactic.ai'
+-- Edited by Thudmeizer @ 13.10.2006
+
+class 'BroadsideBattlesuitTactic' (TauInfantryTactic)
+
+function BroadsideBattlesuitTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Broadside Battlesuit Tactic")
+	
+	-- Assume squad just entrenched/retrenched
+	self.m_iLastEntrenchTime = g_iGMT
+end
+
+function BroadsideBattlesuitTactic:DoAbilities()
+
+	-- Try to entrench
+	self:DoEntrenchAbility()
+end
+
+function BroadsideBattlesuitTactic:DoEntrenchAbility()
+
+	-- Don't entrench/retrench too fast after a retrench/entrench
+	if (g_iGMT < self.m_iLastEntrenchTime + 5) then
+		return
+	end
+
+	-- Calculate distance to target position
+	local iDistance = distance_sqr(self.target, self.squad_ai:GetPosition())
+	
+	-- Check unit state
+	local bAttackState = (self:GetState() == Tactic.States.Attack)
+	
+	-- Check if we can entrench
+	if (self.squad_ai:CanEntrench(true)) then
+	
+		-- Check situation
+		local bDoEntrench = false
+		if (self.squad_ai:IsInCombat()) then
+		
+			-- Check state
+			if (bAttackState or iDistance < sqr(35)) then
+				bDoEntrench = true
+			end
+		 
+		elseif (not bAttackState and iDistance < sqr(20) and not cpu_manager.terrain_analyzer:HasThreat(self.target, 35)) then
+			bDoEntrench = true
+		end
+		
+		-- Try to entrench
+		if (bDoEntrench) then
+			self.squad_ai:DoEntrench(true)
+			self.m_iLastEntrenchTime = g_iGMT
+		end
+	end
+	
+	-- Check if we can retrench
+	if (self.squad_ai:CanEntrench(false)) then
+	
+		-- Check situation
+		local bDoRetrench = false
+		if (self.squad_ai:IsAttacking()) then
+		
+			-- Check state
+			if (not bAttackState and iDistance > sqr(35)) then
+				bDoRetrench = true
+			end
+			self.m_iLastEntrenchTime = g_iGMT
+	
+		elseif (bAttackState or iDistance > sqr(20) or cpu_manager.terrain_analyzer:HasThreat(self.target, 35)) then
+			bDoRetrench = true
+		end
+	
+		-- Try to retrench
+		if (bDoRetrench) then
+			self.squad_ai:DoEntrench(false)
+			self.m_iLastEntrenchTime = g_iGMT
+		end
+	end
+end

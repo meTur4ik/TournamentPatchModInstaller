@@ -1,0 +1,37 @@
+----------------------------------------
+-- File: 'marinesquadtactic.ai'
+-- Edited by Thudmeizer	@ 26.10.2008
+
+class 'MarineSquadTactic' (ChaosMarineInfantryTactic)
+
+MarineSquad = {}
+
+function MarineSquadTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Marine Squad Tactic")
+end
+
+function MarineSquadTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (MarineSquad.rage_id == nil) then
+		MarineSquad.rage_id = cpu_manager.stats:GetAbilityID( "chaos_furious_rage" )	
+	end
+end
+
+function MarineSquadTactic:DoAbilities()
+
+	if (self.squad_ai:IsInCombat() and not self.squad_ai:IsCapturing() and not self.squad_ai:IsBroken()) then
+	  
+		-- Check if I can go berserk while stationary
+		if (not self:IsMoving()) then
+
+			if (self.squad_ai:CanDoAbility( MarineSquad.rage_id )) then
+				self.squad_ai:DoSpecialAbility( MarineSquad.rage_id )
+			end
+		end		
+	end
+	
+	-- Call basic DoAbilities methods
+	ChaosMarineInfantryTactic.DoAbilities(self)
+end

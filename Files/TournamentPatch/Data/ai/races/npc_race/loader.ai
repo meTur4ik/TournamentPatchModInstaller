@@ -1,0 +1,47 @@
+----------------------------------------
+-- File: 'loader.ai'
+-- Created by Arkhan	@ 20.11.2006
+
+
+class 'npc_race'
+
+-- Constructor
+function npc_race:__init()
+
+end
+
+-- Returns the name of the race
+function npc_race:GetRaceName()
+	return "npc_race"
+end
+
+-- This function is called if space marines are the race being played
+function npc_race:LoadRace( eDifficulty )
+	return true
+end
+
+-- This function is called even if space marines are not the race being played
+function npc_race:LoadGlobalInfo()
+
+	-- Import info files
+	import('Races/npc_race/Info/NPCUnitStats.ai')
+	
+	-- Add Npc unit stats
+	table.insert(UnitStats, NPCUnitStats)
+	return true
+end
+
+-- Creates build base strategy
+function npc_race:CreateBuildBaseStrategy()
+	return nil
+end
+
+-- Creates a special tactic for a space marine unit
+function npc_race:CreateTactic(oSquadAI)
+	return nil
+end
+
+-- Returns a specific information
+function npc_race:GetInfo(sType)
+	return nil
+end

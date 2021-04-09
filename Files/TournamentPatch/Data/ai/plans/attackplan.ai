@@ -1,0 +1,575 @@
+class 'AttackPlan' (Plan)
+
+function AttackPlan:__init( defensiveAttack, enemy, attack_pos, start_pos, min_units, max_percentage ) super( CpuPlayer.CT_Attacking )
+
+	dbAssert( attack_pos ~= nil )
+	dbAssert( start_pos ~= nil )
+	dbAssert( enemy ~= nil )
+	
+	self.bDefensiveAttack = defensiveAttack
+	self.attack_pos = attack_pos
+	self.gather_pos = Vector3f()
+	self.start_pos = start_pos
+	self.enemy = enemy
+	
+	-- set true if the attack point requires detector units
+	self.detector_required = false
+	
+	-- max percentage of opponents army to attack with
+	self.max_percentage = max_percentage 
+		
+	self:GenerateSafePoint()
+	
+	Plan.SetNeeds( self, "Obtain Force", AttackPlan.ObtainForce )
+	Plan.SetWants( self, "Obtain More Force", AttackPlan.ObtainMoreForce )
+
+	Plan.SetName( self, "Attack Plan" )	
+
+	Plan.SetState( self, 	"Gather: "..vec2str(self.gather_pos)..
+									" Attack: "..vec2str(self.attack_pos).." ("..self.enemy:GetPlayerID()..")",
+									AttackPlan.GatherForces )
+	
+	self.num_units = 4
+	
+	--minimum number of units before I can start attacking
+	self.min_units = min_units 
+	
+	self.attack_units = {}
+	
+--	self.timerCaptureFlags = Timer( AttackPlan.ForwardCapture, self, 5 )
+	
+end
+
+function AttackPlan:GetArmyCost()
+
+	local cost = 0
+	for i in self.attack_units do
+		local squad = self.attack_units[i] 
+		if not squad:GetTactic():AlwaysAttack() then
+			cost = cost + squad:GetProRatedCost()
+		end
+	end
+	
+	return cost
+end
+
+--? @shortdesc Determine if one of the locked units is a detector
+--? @args
+--? @result bool (true if a least one unit is a detector)
+function AttackPlan:HasDetector()
+
+	for i in self.attack_units do
+		local squad = self.attack_units[i] 
+		if (squad:IsDetector()) then
+			return true
+		end
+	end
+	
+	return false
+end
+
+
+function AttackPlan:GenerateSafePoint()
+
+	local bFound = false
+	
+	if self.bDefensiveAttack == true then
+		local base = cpu_manager:FindClosestBase( self.attack_pos, 0 )
+		if base ~= nil then
+			bFound = true
+			self.gather_pos = base:GetPosition()
+		end
+	end
+
+	if bFound == false then
+		cpu_manager.terrain_analyzer:GetSafePointBeforeDest( self.gather_pos, self.start_pos, self.attack_pos )
+	end
+end
+
+
+function AttackPlan:IsEqual( plan_name, plan_id )
+	return self:GetName() == plan_name
+end
+
+
+function AttackPlan:ObtainMoreForce()
+
+	--get cost of percentage amount of opponent's army
+	local max_cost = 0
+	local army_cost = 0
+	if self.max_percentage ~= nil then
+		local enemy_army_cost = self.enemy:GetArmyCost()
+		max_cost = enemy_army_cost * self.max_percentage
+		army_cost = self:GetArmyCost()
+	end
+	
+	local attack_units = {}
+	
+	local has_detector = nil
+	if (self.detector_required) then
+		has_detector = self:HasDetector()
+	else
+		--release an engineer detector (assume we only have one)
+		for i in self.attack_units do
+			local squad = self.attack_units[i] 
+			if (squad:IsDetector() and squad:IsEngineer()) then
+				Plan.UnlockResource( self, squad )
+				table.remove( self.attack_units, i )
+				local tactic = squad:GetTactic()
+				tactic:SetState( Tactic.States.Idle )
+				tactic:SetTarget( self.gather_pos, Tactic.Variant.Vector )
+				break
+			end
+		end
+	end
+	
+	-- find the forces and gather them at your own base
+	for squad_ai in military_manager:GetUnlockedSquads() do
+		
+		if (self.detector_required and squad_ai:IsDetector() and not has_detector)  then
+			table.insert( attack_units, squad_ai )
+			army_cost = army_cost + squad_ai:GetProRatedCost()
+			has_detector = true
+		elseif squad_ai:GetTactic():IsAttacker()  then
+
+			if not squad_ai:IsEngineer() then
+			
+				local new_army_cost = army_cost + squad_ai:GetProRatedCost()
+				if self.max_percentage == nil or new_army_cost <= max_cost or squad_ai:GetTactic():AlwaysAttack() then
+				
+					table.insert( attack_units, squad_ai )
+					army_cost = new_army_cost
+					if (self.detector_required and squad_ai:IsDetector()) then
+						has_detector = true
+					end
+				end
+			end
+		end
+	end
+
+	--lock the forces (must be done AFTER the loop inside GetUnlockedSquads!)
+	for i in attack_units do
+		
+		--assign a tactic to it
+		local tactic = attack_units[i]:GetTactic()
+		if tactic ~= nil then
+			Plan.LockResource( self, attack_units[i] )
+			table.insert( self.attack_units, attack_units[i] )
+			
+			local name, state = self:GetState()
+			
+			if state == AttackPlan.Attacking then
+				tactic:SetState( Tactic.States.Attack )
+				tactic:SetTarget( self.attack_pos, Tactic.Variant.Vector )
+			else
+				tactic:SetState( Tactic.States.Hold )
+				tactic:SetTarget( self.gather_pos, Tactic.Variant.Vector )
+			end
+			
+		end
+	end
+end
+
+
+function AttackPlan:ForwardCapture()
+
+	for i in self.attack_units do
+
+		local squad_ai = self.attack_units[i]
+		if squad_ai:CanCapture() and not squad_ai:IsCapturing() and not squad_ai:IsInStateMove() then
+		
+			for strat_ai in resource_manager:GetUnlockedStrategicPointAIs() do
+	
+				local id = strat_ai:Owner()
+				
+				--no one around and it's not owned
+				if id == 0 and not cpu_manager.terrain_analyzer:HasThreat( strat_ai:GetEntity(), 15 ) then
+
+					--check i'm close to flag
+					local distance_to_flag = cpu_manager.terrain_analyzer:GetPathingDistance( strat_ai:GetPosition(), squad_ai:GetPosition() )
+					
+					if distance_to_flag < 15 then
+						
+						--go capture it
+						local tactic = squad_ai:GetTactic()
+						tactic:SetSubState( InfantryTactic.CaptureFlag, "Forward capture" )
+						tactic.strat_ai = strat_ai;
+						
+						squad_ai:DoCapture( strat_ai:GetEntity() )
+						
+						return
+					end
+				end
+			end
+		end
+	end
+end
+
+
+function AttackPlan:ObtainForce()
+
+	--get cost of percentage amount of opponent's army
+	local max_cost = 0
+	local army_cost = 0
+	if self.max_percentage ~= nil then
+		aipushtrace("Attack Plan")
+		
+		local enemy_army_cost = self.enemy:GetArmyCost()
+		max_cost = enemy_army_cost * self.max_percentage
+		army_cost = self:GetArmyCost()
+		aitrace( "max army cost: "..tostring( max_cost ) )
+		aitrace( "my army cost: "..tostring( army_cost ) )
+		aitrace( "enemy army cost: "..tostring( enemy_army_cost ) )
+		aitrace( "max percentage:"..tostring(self.max_percentage) )
+		
+		if army_cost > max_cost then
+			aitrace( "too strong -- back off" )
+			
+			self:Retreat()
+		end
+		
+		aipoptrace("End")
+	end
+	
+	local attack_units = {}
+	local num_forces = table.getn( self.attack_units )
+	
+	if num_forces >= self.num_units then
+		return
+	end
+	
+	--find the forces and gather them at your own base
+	for squad_ai in military_manager:GetUnlockedSquads() do
+		local tactic = squad_ai:GetTactic()
+		if tactic:IsAttacker()  then
+
+			--check that adding this unit doesn't put us over the max cost we're allowed
+			local new_army_cost = army_cost + squad_ai:GetProRatedCost()
+			if self.max_percentage == nil or new_army_cost <= max_cost or tactic:AlwaysAttack() then
+			
+				table.insert( attack_units, squad_ai )
+				army_cost = new_army_cost
+
+			else
+				aitrace("cannot add: "..squad_ai:GetSquadName() )
+			end
+				
+		end
+
+		if( ( num_forces + table.getn(attack_units) ) >= self.num_units ) then
+			
+			break
+			
+		end
+
+	end
+
+	--lock the forces (must be done AFTER the loop inside GetUnlockedSquads!)
+	for i in attack_units do
+		Plan.LockResource( self, attack_units[i] )
+		table.insert( self.attack_units, attack_units[i] )
+
+		--assign a tactic to it
+		local tactic = attack_units[i]:GetTactic()
+
+		local name, state = self:GetState()
+			
+		aitrace("attackplan: reseting state for tactic")
+		if state == AttackPlan.Attacking then
+			tactic:SetState( Tactic.States.Attack )
+			tactic:SetTarget( self.attack_pos, Tactic.Variant.Vector )
+		else
+			tactic:SetState( Tactic.States.Hold )
+			tactic:SetTarget( self.gather_pos, Tactic.Variant.Vector )
+		end
+		
+	end
+	
+	if table.getn( self.attack_units ) == 0 then
+		aitrace("attackplan cannot lock any forces... ")
+		self:SetComplete( true )
+	end
+
+end
+
+
+function AttackPlan:GatherForces()
+
+	--scale tolerance to number of units and size of units
+	local max_tolerance = 30;
+
+	for i in self.attack_units do
+		local tolerance = 3 * self.attack_units[i]:GetSquad():GetTightPackedSize() * self.num_units
+		if max_tolerance < tolerance then
+			max_tolerance = tolerance
+		end
+	end
+		
+	if cpu_manager.debug then
+		dr_drawCircle( "aidebug"..player_id, self.gather_pos.x, self.gather_pos.y, self.gather_pos.z, max_tolerance, 255, 255, 255 )
+	end
+	
+	--enough people gathered
+	--NOTE: previous version more closely matches 'strengths' since it captures other entities such as buildings in the radius
+	--however, it is less 'correct' and the current version would attack with a larger force.
+	-- local army_cost = cpu_manager.player_stats:GetArmyCostAt( self.gather_pos, max_tolerance )
+	local army_cost = self:GetArmyCost()
+	local enemy_cost = self.enemy:GetArmyCostAt( self.attack_pos, 30 )
+	
+	local is_squad_infiltrated = function(squad_ai)
+		return squad_ai:IsInfiltrating()
+	end
+	
+	self.detector_required = cpu_manager:FindClosestEnemy( self.attack_pos, 40, is_squad_infiltrated ) ~= nil
+	
+	local has_detector = nil
+	if (self.detector_required) then
+		has_detector = self:HasDetector()
+	end
+
+	local may_attack = not self.detector_required or has_detector
+	
+	aipushtrace("Attack Plan")
+	aitrace( "Army Cost: "..tostring(army_cost) )
+	aitrace( "Enemy Army Cost: "..tostring(enemy_cost) )
+	aipoptrace("End Attack Plan")
+	
+	--attack if my min units is one and I have at least one squad
+	if self.min_units == 1 and table.getn(self.attack_units) > 0 then
+	
+		if (may_attack) then
+			Plan.SetState( self, "Attack!", AttackPlan.Attack )
+		end
+		
+		return
+
+	--attack if I'm stronger
+	elseif army_cost >= enemy_cost then
+	
+		--they are at the gather point
+		local num_at_gather_pt = 0
+		
+		for i in self.attack_units do
+			
+			local tolerance_sqr = max_tolerance*max_tolerance
+			local squad_ai = self.attack_units[i]
+
+			--check I'm in proximity of the target
+			if distance_sqr( squad_ai:GetSquad():GetPosition(), self.gather_pos ) < tolerance_sqr and 
+				not squad_ai:IsInCombat() and not squad_ai:IsInStateAttackMove() then
+				
+				squad_ai:DoAttackMove( self.gather_pos )
+			
+			end
+		
+			local dist_sqr = distance_sqr( self.attack_units[i]:GetSquad():GetPosition(), self.gather_pos )
+
+			if dist_sqr <=  max_tolerance*max_tolerance then
+				num_at_gather_pt = num_at_gather_pt + 1
+			end
+		end
+		
+		--attack if I have enough people
+		if num_at_gather_pt >= self.min_units then
+			if (may_attack) then
+				Plan.SetState( self, "Attack!", AttackPlan.Attack )
+			end
+			return
+		end
+	
+	end
+
+	for i in self.attack_units do
+		
+		local tolerance_sqr = max_tolerance*max_tolerance
+		local squad_ai = self.attack_units[i]
+
+		--check I'm in proximity of the target
+		if distance_sqr( squad_ai:GetSquad():GetPosition(), self.gather_pos ) < tolerance_sqr and 
+			not squad_ai:IsInCombat() and not squad_ai:IsInStateAttackMove() and not squad_ai:IsCapturing() then
+			
+			squad_ai:DoAttackMove( self.gather_pos )
+		
+		end
+	
+	end
+	
+	--if I engage, retreat
+	for i in self.attack_units do
+		if cpu_manager.terrain_analyzer:GetThreatAtPos( self.attack_units[i]:GetPosition(), 0, false ) > 0 or 
+			self.attack_units[i]:WasRecentlyHurt() then
+		
+			aitrace("need to back off a bit")
+			--new safe point
+			self:GenerateSafePoint()
+			
+			--move everyone there
+			for i in self.attack_units do
+			
+				local tactic = self.attack_units[i]:GetTactic()
+		
+				tactic:SetState( Tactic.States.Retreat )
+				tactic:SetTarget( self.gather_pos, Tactic.Variant.Vector )
+			end
+			
+			return
+			
+		end
+	end
+
+--	self.timerCaptureFlags:Call()
+	
+end
+
+function AttackPlan:HoldArea()
+
+	self:SetComplete(true)
+
+end
+
+
+function AttackPlan:Attacking()
+
+	if not cpu_manager.terrain_analyzer:HasThreat( self.attack_pos, 25 ) then
+		-- hold area
+		Plan.SetState( self, "Hold Area", AttackPlan.HoldArea )
+
+		for i in self.attack_units do
+		
+			local tactic = self.attack_units[i]:GetTactic()
+			
+			tactic:SetState( Tactic.States.Hold )
+			tactic:SetTarget( self.attack_pos, Tactic.Variant.Vector )
+		
+		end
+	end
+
+	--check if we need detector units (only if we cannot attack something)
+	self.detector_required = false
+	for i in self.attack_units do
+		local unit = self.attack_units[i]
+		
+		if 	unit:IsUnderAttack()  and not unit:IsAttacking() then
+			--check detectors
+			local is_squad_infiltrated = function(squad_ai)
+				return squad_ai:IsInfiltrating()
+			end	
+			self.detector_required = cpu_manager:FindClosestEnemy( self.attack_pos, 40, is_squad_infiltrated ) ~= nil
+			if self.detector_required then		
+				break
+			end
+		end
+	end
+	
+	--check if any of my units are under attack -- if so, get idle guys rest of my guys to attack
+	local attack_now_pos = nil
+	for i in self.attack_units do
+		if self.attack_units[i]:IsInCombat() or self.attack_units[i]:WasRecentlyHurt() then
+		
+			local attack_squad = cpu_manager.cpu_player:FindFirstEnemy(self.attack_units[i]:GetPosition(),35,1)
+			
+			if attack_squad ~= nil then
+				attack_now_pos = attack_squad:GetPosition()
+				break
+			end
+		end	
+	end
+	
+	if attack_now_pos ~= nil then
+	
+		--in addition, deepstrike if I can! funfunfun
+		for build_channel in build_manager:GetBuildChannelAIs() do
+		
+			if build_channel:CanDeepStrike() then
+			
+				if build_channel:CanOnlyDeepStrikeToEntity() then
+					
+					--find someone who can summon
+					local can_summon = function( squad_ai )
+						return squad_ai:CanSummon()
+					end
+					
+					local attacking_unit = cpu_manager:GetClosestSquad( attack_now_pos, 100, can_summon )
+					
+					if attacking_unit then
+						build_channel:DoDeepStrikeToSquad( attacking_unit:GetSquad() )
+					end
+					
+				else
+					aitrace("deepstriking to position")
+					build_channel:DoDeepStrikeToPos( attack_now_pos )
+				end
+			
+			end
+		
+		end
+	
+		for i in self.attack_units do
+			local unit = self.attack_units[i]
+			if not unit:IsInCombat() and not unit:IsInStateAttackMove() and not unit:IsBroken() and not unit:IsCapturing() then
+				aitrace( "sbpid: "..unit:GetID().." ordered attackmove" )
+				unit:DoAttackMove( attack_now_pos )
+			end
+		end
+	end
+	
+	if table.getn( self.attack_units ) == 0 or 
+		(attack_now_pos == nil and self.detector_required and not self:HasDetector()) then
+		self:SetComplete( true )
+	end
+
+end
+
+function AttackPlan:Attack()
+	
+	for i in self.attack_units do
+	
+		local tactic = self.attack_units[i]:GetTactic()
+
+		tactic:SetState( Tactic.States.Attack )
+		tactic:SetTarget( self.attack_pos, Tactic.Variant.Vector )
+		
+	end
+
+	Plan.SetState( self, "Attacking!  at <"..self.attack_pos.x..","..self.attack_pos.y..","..self.attack_pos.z..">", AttackPlan.Attacking )
+	
+end
+
+function AttackPlan:Retreat()
+
+	local not_in_threat = function( base )
+		return not cpu_manager.terrain_analyzer:HasThreat( base:GetPosition(), 20 ) 
+	end	
+	--retreat: move all my dudes to the closest base
+	local base = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint( self.attack_pos, 25 ,not_in_threat,not_in_threat)
+	if base ~= nil then
+	
+		local retreat_pos = base:GetPosition() 
+		for i in self.attack_units do
+			self.attack_units[i]:DoMove( retreat_pos )
+		end
+		
+	end
+	
+	self:SetComplete( true )
+	
+end
+
+function AttackPlan:Update()
+	
+	if self:IsComplete() then
+		return
+	end
+
+	--run through units and remove those that are complete
+	local num_items = table.getn( self.attack_units )
+	for i = num_items, 1, -1 do
+		if not self.attack_units[i]:IsValid() then
+			Plan.UnlockResource( self, self.attack_units[i] )
+			table.remove( self.attack_units, i )
+		end
+	end
+		
+	--run superclass update
+	Plan.Update( self )
+end

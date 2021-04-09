@@ -1,0 +1,455 @@
+----------------------------------------
+-- File: 'Necronbuildbasestrategy.ai'
+-- Edited by Thudmeizer @ 26.10.2006
+-- Edited by Arkhan     @ 05.11.2006
+
+class 'NecronBuildBaseStrategy' (BuildBaseStrategy)
+
+function NecronBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+
+	-- Add detector units (Best first, worst last)
+	self:AddDetectorUnit("necron_wraith_squad")
+
+	-- Build first two HQ's at start pos
+	self.m_iNumHQAtStartPos = 2
+	
+	-- Don't modify unit demand if we've excess ressources
+	self.m_bModifyUnitDemand = false
+	
+	-- Maximum amount of generators to build
+	self.m_iMaxGenerators = 18
+	
+	-- Choose one of three research patterns for the necron lord
+	self.m_iNecronLordResearchPattern = math.random(1, 4)
+end
+
+function NecronBuildBaseStrategy:ChooseBuildProgram()
+
+	-- Check build program count
+	if (table.getn(self.info.BuildPrograms) ~= 4) then
+		return BuildBaseStrategy.ChooseBuildProgram(self)
+	end
+
+	-- Get map size and closest enemy distance
+	local sMapSize, iClosestEnemyDistance = Strategy:GetMapSize()
+		
+	-- Set probabilities of the strategies according to the map size
+	local iBuildProgram1	-- Basic strategy
+	local iBuildProgram2	-- Necron warrior rush
+	local iBuildProgram3	-- Double monolith build
+	local iBuildProgram4	-- Destroyer / Warrior rush
+	if (sMapSize == "small" or iClosestEnemyDistance <= 70 or cpu_manager.iPlayerCount == 2) then
+	
+		iBuildProgram1 = 50
+		iBuildProgram2 = 30
+		iBuildProgram3 = 20
+		iBuildProgram4 = 0
+		
+	elseif (sMapSize == "large" and cpu_manager.iPlayerCount >= 6) then
+	
+		iBuildProgram1 = 40
+		iBuildProgram2 = 25
+		iBuildProgram3 = 15
+		iBuildProgram4 = 20
+	else
+	
+		iBuildProgram1 = 50
+		iBuildProgram2 = 30
+		iBuildProgram3 = 20
+		iBuildProgram4 = 0
+	end
+	
+	-- Modify probabilities according to the closest enemy player
+	local oEnemy = cpu_manager:FindClosestEnemyPlayer(false)
+	local sEnemy = oEnemy:GetPlayerRaceName()	
+	if (sEnemy == "tau_race") then
+		iBuildProgram2 = iBuildProgram2 - 10
+		iBuildProgram3 = iBuildProgram3 + 10
+	end
+		
+	-- Now choose a program
+	iBuildProgram2 = iBuildProgram1 + iBuildProgram2
+	iBuildProgram3 = iBuildProgram2 + iBuildProgram3
+	iBuildProgram4 = iBuildProgram3 + iBuildProgram4
+	local iRandom = math.random(1, 100)
+	if (iRandom <= iBuildProgram1) then
+		return 1
+	elseif (iRandom <= iBuildProgram2) then
+		return 2
+	elseif (iRandom <= iBuildProgram3) then
+		return 3
+	elseif (iRandom <= iBuildProgram4) then
+		return 4
+	end
+	return 1
+end
+
+function NecronBuildBaseStrategy:GetBuildingName( sType )
+
+	-- Return race specific object string
+	if (sType == "HQ") then
+		return "monolith"
+		
+	elseif (sType == "Generator") then
+		return "necron_plasma_generator"
+		
+	elseif (sType == "BiggerGenerator") then
+		return "necron_thermoplasma_generator"
+		
+	elseif (sType == "VehicleBuilding") then
+		return "monolith"
+		
+	elseif (sType == "ListeningPost") then
+		return "necron_listening_post"
+		
+	elseif (sType == "Turret") then
+		return "necron_turret"
+
+	elseif (sType == "Mine") then
+		return nil
+	end
+	return nil
+end
+
+function NecronBuildBaseStrategy:GetAddonBuilding( sType )
+
+	if (sType == "addon_necron_hq_1") then
+		return "monolith"
+		
+	elseif (sType == "addon_necron_hq_2") then
+		return "monolith"
+	
+	elseif (sType == "addon_necron_list_post_1") then
+		return "necron_listening_post"
+		
+	elseif (sType == "addon_necron_list_post_2") then
+		return "necron_listening_post"
+		
+	elseif (sType == "addon_necron_turret") then
+		return "necron_turret"
+	end	
+
+	return nil
+end
+
+-- Arkhan 11.2005: Returns the squad cap and support cap of the given squad
+function NecronBuildBaseStrategy:GetUnitStats(sSquadName)
+
+	if (sSquadName == "necron_basic_warrior_squad") then
+		return 3, 0
+	elseif (sSquadName == "necron_flayed_one_squad") then
+		return 3, 0
+	elseif (sSquadName == "necron_immortal_squad") then
+		return 2, 0
+	elseif (sSquadName == "necron_wraith_squad") then
+		return 2, 0
+	elseif (sSquadName == "necron_pariah_squad") then
+		return 4, 0
+	elseif (sSquadName == "necron_scarab_squad") then
+		return 0, 1
+	elseif (sSquadName == "necron_tomb_spyder_squad") then
+		return 0, 2
+	elseif (sSquadName == "necron_destroyer_squad") then
+		return 0, 3
+	elseif (sSquadName == "necron_heavy_destroyer_squad") then
+		return 0, 3
+	elseif (sSquadName == "necron_lord_destroyer_squad") then
+		return 0, 3
+	end
+	return 0, 0
+end
+
+-- Arkhan 01.2006: Inherited method to check if an addon is a tier addon
+function NecronBuildBaseStrategy:IsTierAddon( sName, iTargetTier )
+
+	-- Check addon name and target tier
+	if (sName == "addon_necron_hq_1" and iTargetTier == 2) then
+		return true
+	elseif (sName == "addon_necron_hq_2" and iTargetTier == 3) then
+		return true
+	end
+	return false
+end
+
+function NecronBuildBaseStrategy:UpdateTierLevel()
+
+	-- Reset tier level
+	self.tierLevel = 1
+	
+	-- Prepare
+	local iHQAddon1ID = cpu_manager.stats:GetAddOnID("addon_necron_hq_1")
+	local iHQAddon2ID = cpu_manager.stats:GetAddOnID("addon_necron_hq_2")
+	local oStats = cpu_manager.stats:GetPlayerStatsFromID( cpu_manager.player_id )
+	
+	-- Check HQ's for addons
+	for oBase in oStats:GetBases() do
+
+		-- Check for valid building
+		if (oBase:IsValid() and not oBase:IsListeningPost()) then
+
+			-- Check for HQ addon 2
+			if (oBase:HasAddOn(iHQAddon2ID)) then
+			
+				-- We still have the proper add-on
+				if (self:GetBuildingCountByName("necron_energy_core") > 0) then
+					self.tierLevel = 4
+					return
+				else
+					self.tierLevel = 3
+					return
+				end
+			
+			-- Check for HQ addon 1 
+			elseif (oBase:HasAddOn(iHQAddon1ID)) then
+				self.tierLevel = 2
+			end
+		end
+	end
+end
+
+-- Arkhan 01.2006: Method to check if force tech should be computed
+function NecronBuildBaseStrategy:ForceTech()
+
+	-- Check time
+	if (g_iGMT < 60 * CpuManager.ForceTech.StartTier1) then
+		return false
+	end
+	
+	-- Check ressources
+	local iPower = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power )
+
+	-- Check tier
+	local iTierLevel = self:GetTierLevel()
+	if (iTierLevel == 1) then
+	
+		-- Check resources
+		if (iPower > 600) then
+			return false
+		end
+		return not self.m_bHQAddon1
+		
+	elseif (iTierLevel == 2) then
+
+		-- Check buildings for greater summoning core
+		if (self:GetBuildingCountByName("necron_greater_summoning_core", false) < 1) then
+			return true
+		end
+		
+		-- Check time
+		if (g_iGMT > 60 * CpuManager.ForceTech.StartTier2 and iPower < 1000) then
+			return true
+		end
+		
+	elseif (iTierLevel == 3) then	
+
+		-- Check time
+		if (g_iGMT > 60 * CpuManager.ForceTech.StartTier3 and iPower < 1000) then
+			return true
+		end
+	end
+	return false
+end
+
+function NecronBuildBaseStrategy:BuildFlexible()
+  
+	-- Dynamic research
+	-- Item-Syntax: ResearchName, MinTier, RequisitionCost, PowerCost, MinSquadCap, MinSupportCap, SquadName, SquadMinCount
+	
+	-- Necron Lord research pattern
+	if (self.m_iNecronLordResearchPattern == 1) then
+	
+		-- Timed: Necron units advance normally while their opponents move in slow motion.
+		self:DynamicResearch("necron_chronometron_research", 1, 0, 100, 0, 0, "necron_lord_squad", 1)
+		
+		-- Passive: Reduces damage from ranged attacks while slowly healing Necron Lord.
+		self:DynamicResearch("necron_phylactery_research", 2, 0, 150, 0, 0, "necron_lord_squad", 1)
+		
+		-- Timed / Passive: Mass Resurrection / Necron units in the Necron Lord's vicinity have a chance of returning to life.
+		self:DynamicResearch("necron_resurrection_orb_research", 2, 0, 275, 0, 0, "necron_lord_squad", 1)
+
+	elseif (self.m_iNecronLordResearchPattern == 2) then
+		
+		-- Passive: Units attacking Necron Lord in melee take large amounts of damage.
+		self:DynamicResearch("necron_lightning_field_research", 1, 0, 100, 0, 0, "necron_lord_squad", 1)
+		
+		-- Passive: Reduces damage from ranged attacks while slowly healing Necron Lord.
+		self:DynamicResearch("necron_phylactery_research", 2, 0, 150, 0, 0, "necron_lord_squad", 1)
+		
+		-- Passive: Cloak nearby friendly units unless Necron Lord gets injured.
+		self:DynamicResearch("necron_veil_of_darkness_research", 3, 0, 325, 0, 0, "necron_lord_squad", 1)
+		
+	elseif (self.m_iNecronLordResearchPattern == 3) then
+	
+		-- Target Pos: Infiltrated units revealed, blinds units causing them firing inaccuracies.
+		self:DynamicResearch("necron_solar_pulse_research", 1, 0, 125, 0, 0, "necron_lord_squad", 1)
+	
+		-- Timed: Lord and phase-shifted units are immune to all forms of damage, but cannot attack.	
+		self:DynamicResearch("necron_phase_shifter_research", 1, 0, 75, 0, 0, "necron_lord_squad", 1)
+
+		-- Passive: Reduces damage from ranged attacks while slowly healing Necron Lord.
+		self:DynamicResearch("necron_phylactery_research", 2, 0, 150, 0, 0, "necron_lord_squad", 1)
+
+	else
+		
+		-- Target Pos: Infiltrated units revealed, blinds units causing them firing inaccuracies.
+		self:DynamicResearch("necron_solar_pulse_research", 1, 0, 125, 0, 0, "necron_lord_squad", 1)
+		
+		-- Passive: Reduces damage from ranged attacks while slowly healing Necron Lord.
+		self:DynamicResearch("necron_phylactery_research", 2, 0, 150, 0, 0, "necron_lord_squad", 1)
+		
+		-- Passive: Cloak nearby friendly units unless Necron Lord gets injured.
+		self:DynamicResearch("necron_veil_of_darkness_research", 3, 0, 325, 0, 0, "necron_lord_squad", 1)
+	end
+
+	-- Restrict dynamic builds to hard difficulty or higher
+	if (CpuManager.AISettings.bMultiBuildings) then
+	
+		-- Dynamic buildings
+		-- Item-Syntax: BuildingName, BuildingCount, MinTier, MinRequisition, MinPower, MinSquadCap, MinSupportCap
+		self:DynamicBuild("monolith", 2, 1, 0, 1000, 0, 0)
+		self:DynamicBuild("monolith", 3, 2, 0, 2000, 0, 0)
+	end
+	
+	-- Spam Necron warriors
+	self:BuildFreeNecronWarriors()
+end
+
+function NecronBuildBaseStrategy:BuildFreeNecronWarriors()
+
+	-- Desired Necron Warrior squads
+	local iDesiredNecronWarriorSquads = 4
+
+	-- Check if we have two monoliths
+	if (self:GetBuildingCountByName("monolith", true) < 2) then
+		iDesiredNecronWarriorSquads = 3
+	end
+	
+	-- Check number of Necron Warrior squads
+	local iUnitID = cpu_manager.stats:GetSquadID("necron_basic_warrior_squad")
+	if (cpu_manager.player_stats:GetNumSquadsByBPID(iUnitID) >= iDesiredNecronWarriorSquads) then
+		return
+	end
+	
+	-- Check if we have free squad cap
+	local iSquadCap = self:GetUnitStats("necron_basic_warrior_squad")
+	if (self:GetSquadCapLeft() < iSquadCap) then
+		return
+	end
+	
+	-- Check if a plan exists for a Necron Warrior squad
+	if (self:GetPlan("Build Unit Plan", iUnitID) ~= nil) then
+		return
+	end
+
+	-- Try to build free Necron Warrior squad
+	local tBuildType = CpuBuildType()
+	tBuildType.btype = CpuPrerequisites.BT_Squad
+	tBuildType.name = "necron_basic_warrior_squad"
+	if (self:TryBuild(tBuildType)) then
+		return
+	end
+end
+
+-- Return placement type for buildings
+function NecronBuildBaseStrategy:GetPlacementType(iBuildingID)
+	
+	-- Check building
+	if (cpu_manager:IsHQ(iBuildingID)) then
+		return "HQ"		
+	elseif (cpu_manager:IsTurret(iBuildingID)) then
+		return "Front2"
+	elseif (cpu_manager:IsGenerator(iBuildingID)) then
+		return "Safeplace"
+	elseif (iBuildingID == cpu_manager.stats:GetBuildingID("necron_summoning_core") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("necron_forbidden_archive") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("necron_greater_summoning_core") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("necron_energy_core")) then
+		return "BaseBack"
+	end
+	return "Basic"
+end
+
+-- Arkhan 11.2006: Always reinforce
+function NecronBuildBaseStrategy:CheckReinforce()
+	return true
+end
+
+-- Arkhan 11.2006: Virtual method for checking out relic units
+function NecronBuildBaseStrategy:RelicRequired(sName)
+
+	-- Check name
+	if (sName == "necron_restored_monolith_squad") then
+		return true
+	end
+	return false
+end
+
+-- Arkhan 03.2006: Inherited method to modify squad demand
+function NecronBuildBaseStrategy:ModifySquadDemand(iUnitID)
+
+	-- Check for tomb spyder
+	if (iUnitID == cpu_manager.stats:GetSquadID("necron_tomb_spyder_squad")) then
+	
+		-- Only build tomb spyders when we have a decent army size
+		local iArmyStrength = cpu_manager:GetArmyStrength()
+		if (iArmyStrength < 3000) then
+			return 0
+		end
+	end
+	return BuildBaseStrategy.ModifySquadDemand(self, iUnitID)
+end
+
+-- Arkhan 11.2006: Check if we have enough resources for a bigger generator
+function NecronBuildBaseStrategy:HasResourcesForBiggerGenerator(iRequisition, iPower)
+
+	-- Check requisition
+	if (iPower < 600) then
+		return false
+	end
+	return true
+end
+
+-- Arkhan 06.2007: Check if we have a resource overflow
+function NecronBuildBaseStrategy:HasResourceOverflow()
+
+	-- Don't reinforce if we've lots of power, rare requisition, and few vehicles
+	local iPower	= resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power ) / self.m_iTechBreak
+	local iTier		= self:GetTierLevel()
+	if ((iTier == 1 and iPower > 600) or (iTier > 1 and iPower > 1200)) then
+		return true
+	end
+	return false
+end
+
+function NecronBuildBaseStrategy:HQEmergency()
+
+	-- Check monolith count
+	local iMonolithCount = self:GetBuildingCountByName("monolith")
+	if (iMonolithCount >= 2) then
+		return false
+	end
+
+	-- Build a second monolith if first one is severly damaged
+	local bMonolithDamaged = false
+	for oBuilding in military_manager:GetBases() do
+	
+		-- Check for valid building
+		if (oBuilding:IsValid() and not oBuilding:IsListeningPost() and oBuilding:GetBaseName() == "monolith") then
+	  
+			-- Check health
+			if (oBuilding:GetHealthPercentage() < 0.6) then
+
+				-- Adjust current build program
+				for iLoop1 = 1, table.getn(self.info.BuildPrograms[self.m_iCurrentBuildProgram]) do
+				
+					-- Search monolith entry and set build count to two
+					if (self.info.BuildPrograms[self.m_iCurrentBuildProgram][iLoop1][7] == "monolith") then
+						self.info.BuildPrograms[self.m_iCurrentBuildProgram][iLoop1][5] = 2
+						return true
+					end
+				end
+			end
+		end
+	end
+	return false
+end

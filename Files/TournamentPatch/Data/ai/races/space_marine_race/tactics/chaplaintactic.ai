@@ -1,0 +1,62 @@
+----------------------------------------
+-- File: 'chaplaintactic.ai'
+-- Edited by Thudmeizer @ 20.03.2007
+
+class 'ChaplainTactic' (SpaceMarineInfantryTactic)
+
+Chaplain = {}
+
+function ChaplainTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Chaplain Tactic")
+end
+
+function ChaplainTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function ChaplainTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function ChaplainTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Chaplain.demoralize == nil) then
+		Chaplain.demoralize = cpu_manager.stats:GetAbilityID( "marines_demoralize" )
+	end
+end
+
+function ChaplainTactic:DoAbilities()
+	
+	-- If we are dying, lower requisites for attacks
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+		Ability.DoAbilityTarget( self.squad_ai, Chaplain.demoralize, Ability.Filters.CloseInfantryEnemy, 4 )
+	else
+		Ability.DoAbilityTarget( self.squad_ai, Chaplain.demoralize, Ability.Filters.CloseInfantryEnemy, 8 )
+	end
+end
+
+function ChaplainTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update(self)) then
+		return
+	end
+	
+	-- Attach to melee in tier2+
+    if (self.squad_ai:GetMeleeStance() == SquadAI.MSTANCE_Assault) then
+         
+        if (self.squad_ai:IsInCombat() or self.squad_ai:WasRecentlyHurt()) then
+        
+            if (self:TryAttachSquad(false, true, 50, 150, self.m_fCommanderAttachHealth) == nil) then
+                self:TryAttachSquadMelee()
+            end
+        end
+    end
+end
+

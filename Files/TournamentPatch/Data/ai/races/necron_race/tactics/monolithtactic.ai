@@ -1,0 +1,13 @@
+----------------------------------------
+-- File: 'monolithtactic.ai'
+-- Edited by Arkhan		@ 15.01.2007
+
+class 'MonolithTactic' (BaseTactic)
+
+function MonolithTactic:__init( base_ai ) super( base_ai )
+
+	self:SetName("Monolith Tactic")
+
+	-- Building can deepstrike troops
+	self.m_bCanDeepStrikeTroops = true
+end

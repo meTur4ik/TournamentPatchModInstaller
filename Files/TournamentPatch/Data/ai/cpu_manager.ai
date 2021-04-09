@@ -1,0 +1,1635 @@
+--utility
+import( 'utility.ai' )
+
+--debug display
+import( 'debug_display.ai' )
+
+--unit statistics
+import('unitstats.ai')
+
+--strategies
+import( 'Strategies/strategy.ai' )
+
+import( 'Strategies/BuildOrderStrategy.ai' )
+import( 'Strategies/BuildBaseStrategy.ai' )
+import( 'Strategies/ChaosBuildBaseStrategy.ai' )
+import( 'Strategies/EldarBuildBaseStrategy.ai' )
+import( 'Strategies/MarineBuildBaseStrategy.ai' )
+import( 'Strategies/OrkBuildBaseStrategy.ai' )
+import( 'Strategies/GuardBuildBaseStrategy.ai' )
+import( 'Strategies/TauBuildBaseStrategy.ai' )
+import( 'Strategies/NecronBuildBaseStrategy.ai' )
+import( 'Strategies/SistersBuildBaseStrategy.ai' )
+import( 'Strategies/DarkEldarBuildBaseStrategy.ai' )
+
+import( 'Strategies/DesignerStrategy.ai' )
+import( 'Strategies/AttackStrategy.ai' )
+import( 'Strategies/DefendStrategy.ai' )
+
+--plans
+import ("Plans/Plan.ai")
+
+import( 'Plans/ResourcePlan.ai' )
+import( 'Plans/CapturePlan.ai' )
+import( 'Plans/BuildAddOnPlan.ai' )
+import( 'Plans/BuildUnitPlan.ai' )
+import( 'Plans/BuildBuildingPlan.ai' )
+import( 'Plans/BuildResearchPlan.ai' )
+import( 'Plans/AttackPlan.ai' )
+import( 'Plans/DefendPlan.ai' )
+import( 'Plans/DefendChokePointPlan.ai' )
+
+--tactics
+import( 'Tactics/Ability.ai' )
+
+import( 'Tactics/Tactic.ai' )
+import( 'Tactics/DefaultTactic.ai' )
+import( 'Tactics/InfantryTactic.ai' )
+import( 'Tactics/VehicleTactic.ai' )
+
+import( 'Tactics/EngineerTactic.ai' )
+import( 'Tactics/HealerTactic.ai' )
+import( 'Tactics/LeaderTactic.ai' )
+import( 'Tactics/SpellCasterTactic.ai' )
+
+import( 'Tactics/SupportVehicleTactic.ai' )
+
+import( 'Tactics/ChaosMarines/BloodThirsterTactic.ai' )
+import( 'Tactics/ChaosMarines/DaemonPrinceTactic.ai' )
+import( 'Tactics/ChaosMarines/ChaosLordTactic.ai' )
+import( 'Tactics/ChaosMarines/CultistTactic.ai' )
+import( 'Tactics/ChaosMarines/SlaveTactic.ai' )
+
+import( 'Tactics/Guard/CommandSquadTactic.ai' )
+import( 'Tactics/Guard/CommissarTactic.ai' )
+import( 'Tactics/Guard/GuardInfantryTactic.ai' )
+import( 'Tactics/Guard/HeavyWeaponsTeamTactic.ai' )
+import( 'Tactics/Guard/PriestTactic.ai' )
+
+import( 'Tactics/Eldar/EldarHarlequinTactic.ai' )
+
+import( 'Tactics/Orks/GrotTactic.ai' )
+
+import( 'Tactics/Tau/TauCommanderTactic.ai' )
+import( 'Tactics/Tau/DroneHarbingerTactic.ai' )
+import( 'Tactics/Tau/HarbingerDronesTactic.ai' )
+import( 'Tactics/Tau/TauEtherealTactic.ai' )
+import( 'Tactics/Tau/BroadsideBattlesuitTactic.ai' )
+
+import( 'Tactics/Necron/NecronLordTactic.ai' )
+import( 'Tactics/Necron/NightBringerTactic.ai' )
+import( 'Tactics/Necron/BuilderScarabTactic.ai' )
+import( 'Tactics/Necron/TombSpyderTactic.ai' )
+
+--base tactics
+import( 'Tactics/BaseTactic.ai' )
+
+-- ILE DARK ELDAR
+import( 'Tactics/DarkEldar/TalosTactic.ai' )
+import( 'Tactics/DarkEldar/HaemonculusTactic.ai' )
+import( 'Tactics/DarkEldar/DarkEldarSlaveTactic.ai' )
+import( 'Tactics/DarkEldar/DarkEldarHQTactic.ai' )
+
+-- ILE SISTERS OF BATTLE
+import( 'Tactics/SistersOfBattle/MissionaryTactic.ai' )
+import( 'Tactics/SistersOfBattle/CanonessTactic.ai' )
+import( 'Tactics/SistersOfBattle/RepentiaTactic.ai' )
+import( 'Tactics/SistersOfBattle/ServitorTactic.ai' )
+
+ 
+
+VALUE_ALWAYS_ATTACK = -100000
+
+function StrategyLessThan( strategy1, strategy2 )
+	return (strategy1:GetPriority() < strategy2:GetPriority())
+end
+
+
+class 'CpuManager'
+
+-- enum for events
+CpuManager.Events =
+{
+	TryBuildPrereq = 0,	-- tried to build a prereq
+	BuildSquad = 1		-- started building a squad 	
+}
+
+--FSM for strategies
+CpuManager.StrategicTransitions =
+{
+	BuildOrderStrategy = 
+	{
+		OnSuccess = { "BuildBaseStrategy", 10, "adopt" },
+		OnFailure = { "BuildBaseStrategy", 10, "override" }
+	},
+	
+	BuildBaseStrategy =
+	{
+		OnStart = { "DefendStrategy", 1, "spawn" },
+		OnAttack = { "AttackStrategy", 1, "spawn" },
+	},
+	
+	AttackStrategy = 
+	{
+		OnFailure = { "DefendStrategy", 1, "adopt" }
+	}
+}
+
+function CpuManager:__init( cpu_player_id )
+
+	self.player_id 				= cpu_player_id
+	self.cpu_player 			= AI_GetCpuPlayerFromID( cpu_player_id )
+	
+	self.stats						= self.cpu_player:GetStats()
+	self.terrain_analyzer	= self.cpu_player:GetTerrainAnalyzer()
+	
+	-- currently running strategies
+	self.strategies = {}
+	
+	self.events = {}
+		
+	--modules that designers can turn on/off
+	self.components = {}
+	self.components[ CpuPlayer.CT_Attacking ]	 		= true
+	self.components[ CpuPlayer.CT_Defending ]	 		= true
+	self.components[ CpuPlayer.CT_Resourcing ] 		= true
+	self.components[ CpuPlayer.CT_BuildUnits ] 			= true
+	self.components[ CpuPlayer.CT_BuildBuildings ] 	= true
+	self.components[ CpuPlayer.CT_BuildResearch ] 	= true
+	self.components[ CpuPlayer.CT_BuildAddOns ] 		= true
+	self.components[ CpuPlayer.CT_Tactics ]		 		= true
+	
+	self.has_uncapped_strategic_points = true
+	
+	--call every three updates
+	self.update_strat_timer = Timer( self.DoStrategyUpdate, self, 3 )
+	
+	self.restrict_military = false
+	
+	self.designer_preference = false
+	
+	--flag to check if the assassinate win condition is set
+	self.assassinate = false
+	
+	print("*** Creating AI for player "..self.player_id )
+end
+
+
+function CpuManager:Initialize()
+
+	print("*** Initializing AI for player "..self.player_id )
+
+	--save my player stats pointer
+	self.player_stats = self.stats:GetPlayerStatsFromID( cpu_manager.player_id )
+	dbAssert( self.player_stats ~= nil )
+	
+	if 	not (self.player_stats:GetPlayerRaceName() == "space_marine_race" or
+		self.player_stats:GetPlayerRaceName() == "ork_race" or
+		self.player_stats:GetPlayerRaceName() == "chaos_marine_race" or
+		self.player_stats:GetPlayerRaceName() == "guard_race" or
+		self.player_stats:GetPlayerRaceName() == "eldar_race" or 
+		self.player_stats:GetPlayerRaceName() == "tau_race" or
+		self.player_stats:GetPlayerRaceName() == "necron_race" or
+		self.player_stats:GetPlayerRaceName() == "sisters_race" or
+		self.player_stats:GetPlayerRaceName() == "dark_eldar_race")	then
+
+		print( "unloading AI for: "..self.player_stats:GetPlayerRaceName() )
+		--bad race -- don't use this for the AI
+		self.cpu_player:Enable( false )
+		
+		return false
+	end
+	
+	--globals for easy access: must be loaded first
+	resource_manager 	= self.cpu_player:GetResourceManager()
+	build_manager 		= self.cpu_player:GetBuildManager()
+	military_manager 	= self.cpu_player:GetMilitaryManager()
+	debug_display = DebuggingDisplay()
+
+	-- designer plan -- used only to exclusively lock resources. Is never run.
+	self.designer_plan = Plan( CpuPlayer.CT_Resourcing )
+	
+	--load the stats
+	if not self.stats:LoadUnitStats(UnitStats) then
+		error("error loading stats")
+		return false
+	end
+	
+	--initial update
+	self:UpdateManagers()
+	self.stats:Update()
+	
+	--load difficulty settings
+	self:LoadStrategyInfo()
+	
+	local race = self.cpu_player:GetPlayerRace()
+	
+	--figure out what the ID of an engineer is
+	self.engineer_bp_id = nil
+	
+	for unit in self.stats:GetUnitStats(race) do
+		if unit:IsEngineer() then
+			self.engineer_bp_id = unit:GetID()
+			break
+		end
+	end
+	
+	-- always highest priority - this variable is bound in code!
+	self.designer_strategy = self:AddStrategy( "DesignerStrategy", 0 )
+	
+	--medium priority
+	self:AddStrategy( "BuildOrderStrategy", 10 )
+	
+	print( "gametime: "..self.cpu_player:GetGameTime() )
+	
+	if self.cpu_player:GetGameTime() > 0 then
+		self:StopBuildOrder()
+	end
+	
+	return true
+end
+
+
+function CpuManager:GetUncappedSPs()
+	return self.has_uncapped_strategic_points
+end
+
+
+function CpuManager:UpdateStrategicPoints()
+	-- having no SP is the same as all having LPs
+	self.has_uncapped_strategic_points = true
+
+	for strat_ai in resource_manager:GetUnlockedStrategicPointAIs() do
+
+		if strat_ai:Owner() == cpu_manager.player_id and strat_ai:IsStrategicObjective() == false then
+			-- Relic/SP that we own
+			if strat_ai:HasListeningPost() == false then
+				-- Doesn't have an LP
+				self.has_uncapped_strategic_points = true
+				break
+			else
+				-- we have at least 1 SP/Relic without a LP
+				self.has_uncapped_strategic_points = false
+			end
+		end
+	end
+end
+
+
+function CpuManager:LoadStrategyInfo()
+
+	local settings = self.cpu_player:GetDifficultyLevel()
+	
+	if settings == CpuPlayer.AD_Easy then
+		import( "Strategies/Easy/BuildBaseStrategyInfo.ai" )
+		import( "Strategies/Easy/AttackStrategyInfo.ai" )
+		import( "Strategies/Easy/BuildOrderStrategyInfo.ai" )
+		print( "loading easy AI" )
+	elseif settings == CpuPlayer.AD_Standard then
+		import( "Strategies/Standard/BuildBaseStrategyInfo.ai" )
+		import( "Strategies/Standard/AttackStrategyInfo.ai" )
+		import( "Strategies/Standard/BuildOrderStrategyInfo.ai" )
+		print( "loading standard AI" )
+	elseif settings == CpuPlayer.AD_Hard then
+		import( "Strategies/Hard/BuildBaseStrategyInfo.ai" )
+		import( "Strategies/Hard/AttackStrategyInfo.ai" )
+		import( "Strategies/Hard/BuildOrderStrategyInfo.ai" )
+		print( "loading hard AI" )
+	elseif settings == CpuPlayer.AD_Advanced then
+		import( "Strategies/Advanced/BuildBaseStrategyInfo.ai" )
+		import( "Strategies/Advanced/AttackStrategyInfo.ai" )
+		import( "Strategies/Advanced/BuildOrderStrategyInfo.ai" )
+		print( "loading advanced AI" )
+	elseif settings == CpuPlayer.AD_Insane then
+		--still uses advanced logic
+		import( "Strategies/Advanced/BuildBaseStrategyInfo.ai" ) 
+		import( "Strategies/Advanced/AttackStrategyInfo.ai" )
+		import( "Strategies/Advanced/BuildOrderStrategyInfo.ai" )
+		print( "loading insane AI" )
+	else
+		dbBreak()
+	end
+	
+end
+
+
+function CpuManager:SetLippy( enable )
+	-- empty, code doesn't work anyway
+end
+
+
+function CpuManager:NetSay( start_id, num, frequency, allied_talk )
+	-- empty, code doesn't work anyway
+end
+
+
+function CpuManager:StopBuildOrder()
+
+	local build_order = self:StrategyExists( "BuildOrderStrategy" )
+	if build_order ~= nil then
+		build_order:PostEvent( Strategy.Events.OnFailure )
+	end
+end
+
+
+function CpuManager:StrategyExists( strategy_name )
+
+	for i in self.strategies do
+		if self.strategies[i]:GetName() == strategy_name then
+			return self.strategies[i]
+		end
+	end
+	
+	return nil
+end
+
+
+function CpuManager:RateAgainstPlayer( enemy_stats )
+	
+	dbAssert( enemy_stats ~= nil )
+	
+	if self.player_stats:GetPlayerRaceName() == "guard_race" then
+		-- guard need "critical mass"
+		return( ( self.player_stats:GetArmyCost() * 0.60 ) - enemy_stats:GetArmyCost() )
+	else
+		return( self.player_stats:GetArmyCost() - enemy_stats:GetArmyCost() )
+	end
+end
+
+
+function CpuManager:GetEngineerBPID()
+	dbAssert( self.engineer_bp_id ~= nil )
+	return self.engineer_bp_id
+end
+
+
+function CpuManager:AddListener( event, strategy, func )
+	if( self.events[event] == nil ) then
+		self.events[event] = {}
+	end
+
+	table.insert( self.events[event], { strategy, func } )
+end
+
+
+function CpuManager:OnEvent( event, arg )
+
+	dbAssert( event ~= nil )
+
+	--no listeners
+	if( self.events[event] == nil ) then
+		return
+	end
+	
+	--broadcast
+	for i in self.events[event] do
+		self.events[event][i][2]( self.events[event][i][1], arg )
+	end
+end
+
+
+function CpuManager:OnStrategicEvent( strategy, event )
+
+	--get the transition functions
+	local transitions = CpuManager.StrategicTransitions[ strategy:GetName() ]
+	dbAssert( transitions ~= nil )
+	
+	local current_transition = transitions[ event ]
+	dbAssert( current_transition ~= nil )
+
+	--no new strategy -- just remove it
+	if current_transition[1] == nil then
+		strategy:ForceReleaseAll()
+		self:RemoveStrategy( strategy:GetName() ) 
+		return
+	end
+	
+	--i already have this strategy running -- don't spawn another one
+	local new_strategy = self:StrategyExists( current_transition[1] )
+
+	if new_strategy == nil then
+		new_strategy = self:AddStrategy( current_transition[1], current_transition[2] )
+	end
+
+	--creation policy
+	if current_transition[3] == "adopt" then
+	
+		new_strategy:AdoptStrategy( strategy )
+		self:RemoveStrategy( strategy:GetName() ) 
+		
+	elseif current_transition[3] == "spawn" then
+		--do nothing to the current strategy
+	elseif current_transition[3] == "override" then
+		
+		strategy:ForceReleaseAll()
+		self:RemoveStrategy( strategy:GetName() ) 
+		
+	else
+		dbAssert( false )
+	end
+
+end
+
+function CpuManager:GetTierLevel()
+	
+	if self.build_base_strategy == nil then
+		return 1
+	end
+	
+	return self.build_base_strategy:GetTierLevel()
+end
+
+
+function CpuManager:AddStrategy( strategy_name, priority )
+
+	local strategy = nil
+
+	if strategy_name == "BuildBaseStrategy" then
+		if self.player_stats:GetPlayerRaceName() == "space_marine_race" then
+			strategy = MarineBuildBaseStrategy( BuildBaseStrategyInfo )
+		elseif self.player_stats:GetPlayerRaceName() == "ork_race" then
+			strategy = OrkBuildBaseStrategy( BuildBaseStrategyInfo )
+		elseif self.player_stats:GetPlayerRaceName() == "chaos_marine_race" then
+			strategy = ChaosBuildBaseStrategy( BuildBaseStrategyInfo )
+		elseif self.player_stats:GetPlayerRaceName() == "eldar_race" then
+			strategy = EldarBuildBaseStrategy( BuildBaseStrategyInfo )
+		elseif self.player_stats:GetPlayerRaceName() == "guard_race" then
+			strategy = GuardBuildBaseStrategy( BuildBaseStrategyInfo )
+		elseif self.player_stats:GetPlayerRaceName() == "tau_race" then
+			strategy = TauBuildBaseStrategy( BuildBaseStrategyInfo )
+		elseif self.player_stats:GetPlayerRaceName() == "necron_race" then
+			strategy = NecronBuildBaseStrategy( BuildBaseStrategyInfo )
+		elseif self.player_stats:GetPlayerRaceName() == "sisters_race" then
+			strategy = SistersBuildBaseStrategy( BuildBaseStrategyInfo )
+		elseif self.player_stats:GetPlayerRaceName() == "dark_eldar_race" then
+			strategy = DarkEldarBuildBaseStrategy( BuildBaseStrategyInfo )
+		else
+			print ("invalid race: "..self.player_stats:GetPlayerRaceName())
+			dbBreak()
+		end
+
+		self.build_base_strategy = strategy
+	elseif strategy_name == "DesignerStrategy" then
+		strategy = DesignerStrategy()
+	elseif strategy_name == "BuildOrderStrategy" then
+		strategy = BuildOrderStrategy( BuildOrderStrategyInfo )
+	elseif strategy_name == "AttackStrategy" then
+		if self.player_stats:GetPlayerRaceName() == "guard_race" then
+			strategy = AttackStrategy( AttackStrategyInfo, true )
+		else
+			strategy = AttackStrategy( AttackStrategyInfo, false )
+		end
+	elseif strategy_name == "DefendStrategy" then
+		strategy = DefendStrategy()
+	end
+	
+	dbAssert( strategy ~= nil )
+	
+	strategy:SetPriority( priority)
+	table.insert(self.strategies, strategy)
+	table.sort( self.strategies, StrategyLessThan )
+	
+	return strategy
+	
+end
+
+function CpuManager:RemoveStrategy( strategy_name )
+
+	for i in self.strategies do
+		if self.strategies[i]:GetName() == strategy_name then
+			table.remove( self.strategies, i )
+			return
+		end
+	end
+	
+--	dbAssert( false )
+
+end
+
+function CpuManager:DoStrategyNeeds( strategy )
+	strategy:DoNeeds()
+end
+
+function CpuManager:DoStrategyWants( strategy )
+	strategy:DoWants()
+end
+
+
+function CpuManager:DoStrategyUpdate()
+
+	--make a local copy, since updating may invalidate my iterator!
+	local strat_copy = {}
+	
+	for i in self.strategies do
+		table.insert( strat_copy, self.strategies[i] )
+	end
+	
+	for i in strat_copy do
+		local strategy = strat_copy[i]
+		aipushtrace( strategy:GetName() )
+		
+		strategy:Update()
+		
+		aipoptrace( strategy:GetName() )
+	end
+end
+
+
+function CpuManager:DoStrategyPlans( strategy )
+	strategy:DoPlans()
+end
+
+
+function CpuManager:DoStrategyDeleteOldPlans( strategy )
+	strategy:DoDeleteOldPlans()
+end
+
+
+function CpuManager:Update()
+
+	profile_start("Update")
+	
+	--reset strace stack
+	stack_trace_num = 0
+	aipushtrace ("Starting AI Think...")
+
+	aitrace("Req: "..tostring(resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition) )..
+				" | Pow: "..tostring(resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power ))..
+				" | Pop: "..tostring(resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Pop )) )
+
+	aitrace("Req Floor: "..tostring( Tactic.ResourceFloor.requisition )..","..tostring( Tactic.ResourceFloor.power ) )
+	aitrace("Capture Max: "..tostring( CapturePlan.Maximums.points )..","..tostring( CapturePlan.Maximums.objectives ) )
+	aitrace("Tier: "..tostring( self:GetTierLevel() ) )
+
+	self:UpdateManagers()
+
+	-- Check if we have any uncaptured SPs/Relics
+	self:UpdateStrategicPoints()
+
+	if self:GetUncappedSPs() == true then
+		aitrace("Not all Strategic Points have LPs")
+	else
+		aitrace("All Strategic Points have LPs")
+	end
+
+	-- update the strategies
+	foreach_bind( self.strategies, self.DoStrategyDeleteOldPlans, self )
+	self.update_strat_timer:Call()
+	foreach_bind( self.strategies, self.DoStrategyNeeds, self )
+	foreach_bind( self.strategies, self.DoStrategyWants, self )
+	foreach_bind( self.strategies, self.DoStrategyPlans, self )
+	
+	profile_start("TacticsUpdate")
+
+	Tactic.Engineers.num_currrently_resourcing = 0
+	Tactic.Engineers.total_engineer_count = 0
+	
+	Tactic.Attach.num_unattached_ranged_squads = 0
+	Tactic.Attach.num_unattached_melee_squads = 0
+	Tactic.Attach.num_unattached_ranged_leaders = 0
+	Tactic.Attach.num_unattached_melee_leaders = 0
+	Tactic.Attach.num_attached_commissars = 0
+	Tactic.Attach.num_attached_priests = 0
+
+	for squad_ai in military_manager:GetSquads() do
+		local tactic = squad_ai:GetTactic()
+		tactic:Update()
+	end
+
+	for base_ai in military_manager:GetBases() do
+		local tactic = base_ai:GetTactic()
+		tactic:Update()
+	end
+	
+	aitrace("Engineers Building Posts: "..tostring( Tactic.Engineers.num_currrently_resourcing ) )
+	aitrace("Engineers Reserved for Building Posts: "..tostring( Tactic.Engineers.num_reserved_for_resourcing ) )
+	aitrace("Total Engineer Count: "..tostring( Tactic.Engineers.total_engineer_count ) )
+
+	aitrace("Unattached Ranged Squads: "..tostring( Tactic.Attach.num_unattached_ranged_squads ) )
+	aitrace("Unattached Melee Squads: "..tostring( Tactic.Attach.num_unattached_melee_squads ) )
+
+	aitrace("Unattached Ranged Leaders: "..tostring( Tactic.Attach.num_unattached_ranged_leaders ) )
+	aitrace("Unattached Melee Leaders: "..tostring( Tactic.Attach.num_unattached_melee_leaders ) )
+
+	profile_end("TacticsUpdate")
+
+	aipoptrace ("End AI Think")
+
+	aipushtrace ("AI Difficulty Setting")
+	aitrace( tostring( self.cpu_player:GetDifficultyLevel() ) )
+	aipoptrace("")
+	
+	profile_end("Update")
+end
+
+
+function CpuManager:UpdateManagers()
+
+	profile_start("UpdateManagers")
+
+	build_manager:Update()
+	resource_manager:Update()
+	military_manager:Update()
+	
+	profile_end("UpdateManagers")
+
+end
+
+function CpuManager:FindResource( id, res_type )
+
+	if( res_type == AIResource.AI_Squad ) then
+	
+		for squad in military_manager:GetSquads() do
+			if( squad:GetID() == id ) then
+				return squad
+			end
+		end
+	
+	elseif res_type == AIResource.AI_Building then
+
+		for entity in build_manager:GetBuildChannelAIs() do
+			if entity:GetID() == id then
+				return entity
+			end
+		end
+	
+	elseif res_type == AIResource.AI_StrategicPoint then
+	
+		for entity in resource_manager:GetStrategicPointAIs() do
+			if entity:GetID() == id then
+				return entity
+			end
+		end
+	end
+end
+
+
+function CpuManager:ForceReleaseResource( id, res_type )
+
+	--update the managers first
+	self:UpdateManagers()
+	
+	local resource = self:FindResource( id, res_type )
+	if resource == nil then
+		return nil
+	end
+	
+	if( resource:IsLocked() ) then
+		
+		--tell all the strategies to try to release this plan
+		for i in self.strategies do
+			self.strategies[i]:ForceReleaseResource( id, res_type )
+		end
+	
+	end
+	
+	return resource
+end
+
+
+--this function is used for the designers to get exclusive access to resources
+function CpuManager:DesignerLockResource( id, res_type )
+
+	local resource = self:ForceReleaseResource( id, res_type )
+	if resource == nil then
+		return
+	end
+	
+	if resource:IsLocked() then
+		--silently ignore additional locks
+		return
+	end
+	
+	if res_type == AIResource.AI_Squad then
+		resource:GetTactic():SetState( Tactic.States.Disabled )
+	end
+	
+	--put us in the critical section
+	self.designer_plan.lock_mutex = true
+	self.designer_plan:LockResource( resource, true ) --lock it!
+	self.designer_plan.lock_mutex = false
+end
+
+
+function CpuManager:DesignerUnlockResource( id, res_type ) 
+
+	local resource = self:FindResource( id, res_type )
+	if resource == nil then
+		return
+	end
+
+	--quick out
+	if( resource:IsLocked() == false ) then
+		return
+	end
+	
+	if( self.designer_plan:HasResource( id, res_type ) ) then
+		self.designer_plan:UnlockResource( resource )
+	end
+end
+
+
+function CpuManager:DesignerUnlockAll()
+	self.designer_plan:UnlockAll()
+end
+
+
+--counter victory objective
+function CpuManager:CounterVictoryObj()
+
+	self:Reset()
+	
+	local attack_strat = self:AddStrategy( "AttackStrategy", 1 )
+	
+	--make the attack strategy attack strategic objectives no matter the cost
+	attack_strat:SetVOFlag()
+end
+
+
+function CpuManager:ForceAttack( player_id )
+
+	self:Reset()
+	
+	-- print "forcing attack..."
+	
+	--set the start/end attacking numbers to basically infinity so they always attack
+	self.build_base_strategy.info.attack_rating = VALUE_ALWAYS_ATTACK
+
+	AttackStrategyInfo.eldar_race.stop_attack_rating = VALUE_ALWAYS_ATTACK
+	AttackStrategyInfo.eldar_race.prefer_player = player_id
+	
+	AttackStrategyInfo.chaos_marine_race.stop_attack_rating = VALUE_ALWAYS_ATTACK
+	AttackStrategyInfo.chaos_marine_race.prefer_player = player_id
+	
+	AttackStrategyInfo.ork_race.stop_attack_rating = VALUE_ALWAYS_ATTACK
+	AttackStrategyInfo.ork_race.prefer_player = player_id
+	
+	AttackStrategyInfo.space_marine_race.stop_attack_rating = VALUE_ALWAYS_ATTACK
+	AttackStrategyInfo.space_marine_race.prefer_player = player_id
+
+	AttackStrategyInfo.guard_race.stop_attack_rating = VALUE_ALWAYS_ATTACK
+	AttackStrategyInfo.guard_race.prefer_player = player_id
+
+	AttackStrategyInfo.tau_race.stop_attack_rating = VALUE_ALWAYS_ATTACK
+	AttackStrategyInfo.tau_race.prefer_player = player_id
+
+	AttackStrategyInfo.necron_race.stop_attack_rating = VALUE_ALWAYS_ATTACK
+	AttackStrategyInfo.necron_race.prefer_player = player_id
+
+	AttackStrategyInfo.sisters_race.stop_attack_rating = VALUE_ALWAYS_ATTACK
+	AttackStrategyInfo.sisters_race.prefer_player = player_id
+
+	AttackStrategyInfo.dark_eldar_race.stop_attack_rating = VALUE_ALWAYS_ATTACK
+	AttackStrategyInfo.dark_eldar_race.prefer_player = player_id
+end
+
+
+function CpuManager:Reset()
+
+	print("*** Initializing AI for player "..self.player_id )
+
+	--first unlock everything
+	for i in self.strategies do
+		self.strategies[i]:ForceReleaseAll()
+	end
+
+	-- determine if we are following a build order
+	local build_order = self:StrategyExists( "BuildOrderStrategy" )
+	
+	--load the difficulty info
+	self:LoadStrategyInfo()
+	
+	-- next, clear the strategies
+	self.strategies = {}
+
+	--add build order strategy if one previously existed -- medium priority
+	--NOTE: fine if Reset is called very early (before the old BO strategy does much), or after the old BO is complete.
+	if (build_order ~= nill) then
+		self:AddStrategy( "BuildOrderStrategy", 10 )
+	end
+	
+	-- add the basic strategy
+	self.build_base_strategy = self:AddStrategy( "BuildBaseStrategy", 10 )
+
+	-- add the designer strategy back
+	table.insert(self.strategies, self.designer_strategy)
+	table.sort( self.strategies, StrategyLessThan )
+	
+	self.restrict_military = false
+end
+
+
+function CpuManager:DesignerEnableComponent( enable, module )
+	self.components[ module ] = enable
+end
+
+
+function CpuManager:SetArmyPercentage( percent )
+
+	for i in self.strategies do
+	
+		if self.strategies[i]:GetName() == "BuildBaseStrategy" then
+			self.strategies[i].info.max_army_percentage = percent
+			return
+		end
+	end
+
+	error( "no buildbasestrategy to set max percentage on!" )
+end
+
+function CpuManager:CreateBaseTactic(base_ai)
+	dbAssert( base_ai ~= nil )
+
+	local base_name = base_ai:GetBaseName()
+	local tactic = nil
+
+	-- for now, use the same tactic for all bases...
+	if base_name == "necron_listening_post" then
+		tactic = BaseTactic( base_ai )
+	elseif base_name == "guard_hq" then
+		tactic = BaseTactic( base_ai )
+	elseif base_name == "dark_eldar_hq" then
+		tactic = DarkEldarHQTactic( base_ai )
+	else
+		tactic = BaseTactic( base_ai )
+	end
+
+	dbAssert( tactic ~= nil )
+	
+	--turn off the tactics if it's disabled
+	if not self.components[ CpuPlayer.CT_Tactics ] then
+		tactic:SetState( Tactic.States.Disabled )
+	end
+
+	return tactic
+end
+
+function CpuManager:CreateTactic( squad_ai )
+
+	dbAssert( squad_ai ~= nil )
+	dbAssert( squad_ai:IsValid() )
+	
+	local squad_name = squad_ai:GetSquadName()
+	local tactic = nil
+
+	-- print("*** Creating Tactic for player "..squad_name )
+	
+	-- handle special squads which do not have stats (e.g., not built directly)
+	if squad_name == "guard_heavy_weapon_team_entrenched_squad_sp" then
+		tactic = HeavyWeaponsTeamTactic( squad_ai )
+	end
+	if (tactic ~= nil) then	
+		--turn off the tactics if it's disabled
+		if not self.components[ CpuPlayer.CT_Tactics ] then
+			tactic:SetState( Tactic.States.Disabled )
+		end
+		return tactic
+	end
+	
+	local stats = squad_ai:GetStats()
+	if stats == nil then
+		-- print( "default tactic: "..squad_ai:GetSquadName() )
+		return DefaultTactic( squad_ai )
+	end
+
+	-- handle engineer squad case
+	if squad_ai:IsEngineer() then
+		if squad_name == "chaos_squad_slave" then
+			tactic = SlaveTactic( squad_ai )
+		elseif squad_name == "ork_squad_grot" then
+			tactic = GrotTactic( squad_ai )
+		elseif squad_name == "necron_builder_scarab_squad" then
+			tactic = BuilderScarabTactic( squad_ai )
+		-- ILE 
+		elseif squad_name == "dark_eldar_squad_slave" then
+			tactic = DarkEldarSlaveTactic( squad_ai )
+		else
+			tactic = EngineerTactic( squad_ai )
+		end
+		
+		dbAssert( tactic ~= nil )
+	
+		--turn off the tactics if it's disabled
+		if not self.components[ CpuPlayer.CT_Tactics ] then
+			tactic:SetState( Tactic.States.Disabled )
+		end
+		
+		return tactic
+	end
+	
+	local class = stats:GetClass()
+
+	if squad_name == "chaos_squad_bloodthirster" then
+		tactic = BloodThirsterTactic( squad_ai )
+	elseif squad_name == "chaos_squad_daemon_prince" then
+		tactic = DaemonPrinceTactic( squad_ai )
+	elseif squad_name == "chaos_squad_lord" then
+		tactic = ChaosLordTactic( squad_ai )
+	elseif squad_name == "chaos_squad_cultist" then
+		tactic = CultistTactic( squad_ai )
+	elseif squad_name == "chaos_squad_sorcerer" then
+		tactic = SpellCasterTactic( squad_ai )
+
+	elseif squad_name == "eldar_squad_farseer" then
+		tactic = LeaderTactic( squad_ai )
+	elseif squad_name == "eldar_harlequin_squad" then
+		tactic = EldarHarlequinTactic( squad_ai )
+	elseif squad_name == "eldar_squad_grav_platform" then
+		tactic = SupportVehicleTactic( squad_ai )
+	elseif squad_name == "eldar_squad_grav_platform_brightlance" then
+		tactic = SupportVehicleTactic( squad_ai )
+
+	elseif squad_name == "guard_squad_assassin" then
+		tactic = SpellCasterTactic( squad_ai )
+	elseif squad_name == "guard_squad_command_squad" then
+		tactic = CommandSquadTactic( squad_ai )
+	elseif squad_name == "guard_squad_commissar" then
+		tactic = CommissarTactic( squad_ai )
+	elseif squad_name == "guard_squad_guardsmen" then
+		tactic = GuardInfantryTactic( squad_ai )
+	elseif squad_name == "guard_squad_kasrkin" then
+		tactic = GuardInfantryTactic( squad_ai )
+	elseif squad_name == "guard_squad_priest" then
+		tactic = PriestTactic( squad_ai )
+	elseif squad_name == "guard_squad_psyker" then
+		tactic = SpellCasterTactic( squad_ai )
+	elseif squad_name == "guard_heavy_weapons_team_squad" then
+		tactic = HeavyWeaponsTeamTactic( squad_ai )
+
+	elseif squad_name == "ork_squad_bad_dok" then
+		tactic = HealerTactic( squad_ai )
+	elseif squad_name == "ork_squad_mek_boy" then
+		tactic = LeaderTactic( squad_ai )
+	elseif squad_name == "ork_squad_warboss" then
+		tactic = SpellCasterTactic( squad_ai )
+
+	elseif squad_name == "space_marine_squad_apothecary" then
+		tactic = HealerTactic( squad_ai )
+	elseif squad_name == "space_marine_squad_librarian" then
+		tactic = SpellCasterTactic( squad_ai )
+	elseif squad_name == "space_marine_squad_force_commander" then
+		tactic = LeaderTactic( squad_ai )
+		
+	elseif squad_name == "tau_commander_squad" then
+		tactic = TauCommanderTactic( squad_ai )
+	elseif squad_name == "tau_ethereal_squad" then
+		tactic = TauEtherealTactic( squad_ai )
+	elseif squad_name == "tau_drone_harbinger_squad" then
+		tactic = DroneHarbingerTactic( squad_ai )
+	elseif squad_name == "tau_harbinger_drones_squad" then
+		tactic = HarbingerDronesTactic( squad_ai )
+	elseif squad_name == "tau_broadside_battlesuit_squad" then
+		tactic = BroadsideBattlesuitTactic( squad_ai )
+
+	elseif squad_name == "necron_lord_squad" then
+		tactic = NecronLordTactic( squad_ai )
+	elseif squad_name == "necron_night_bringer" then
+		tactic = NightBringerTactic( squad_ai )
+	elseif squad_name == "necron_tomb_spyder_squad" then
+		tactic = TombSpyderTactic( squad_ai )
+	elseif squad_name == "necron_scarab_squad" then
+		tactic = InfantryTactic( squad_ai )
+
+	-- ILE DARK ELDAR
+	elseif squad_name == "dark_eldar_squad_talos" then
+		tactic = TalosTactic( squad_ai )
+	elseif squad_name == "dark_eldar_squad_haemonculus" then
+		tactic = HaemonculusTactic( squad_ai )
+	elseif squad_name == "dark_eldar_squad_haemonculus_hg_dxp3" then
+		tactic = HaemonculusTactic( squad_ai )
+		
+	-- ILE SISTERS OF BATTLE
+	elseif squad_name == "sisters_squad_missionary" then
+		tactic = MissionaryTactic( squad_ai )
+	elseif squad_name == "sisters_squad_missionary_hg_dxp3" then
+		tactic = MissionaryTactic( squad_ai )
+	elseif squad_name == "sisters_squad_canoness" then
+		tactic = CanonessTactic( squad_ai )
+	elseif squad_name == "sisters_squad_canoness_advance_sp" then
+		tactic = CanonessTactic( squad_ai )
+	elseif squad_name == "sisters_squad_repentia" then
+		tactic = RepentiaTactic( squad_ai )
+	elseif squad_name == "sisters_squad_repentia_sp_dxp3_prisoner" then
+		tactic = RepentiaTactic( squad_ai )
+	elseif squad_name == "sisters_squad_servitor" then
+		tactic = ServitorTactic( squad_ai )
+	elseif squad_name == "sisters_squad_servitor_hg_dxp3" then
+		tactic = ServitorTactic( squad_ai )
+	
+	elseif class == UnitStatsAI.UC_VehicleLow or class == UnitStatsAI.UC_VehicleMed or class == UnitStatsAI.UC_VehicleHigh then
+		tactic = VehicleTactic( squad_ai )
+	else
+		tactic = InfantryTactic( squad_ai )
+	end
+
+	dbAssert( tactic ~= nil )
+	
+	--turn off the tactics if it's disabled
+	if not self.components[ CpuPlayer.CT_Tactics ] then
+		tactic:SetState( Tactic.States.Disabled )
+	end
+
+	return tactic
+end
+
+
+function CpuManager:GetClosestUnlockedSquad( pos, range, functor )
+
+	local squad_ai = nil
+	local current_pos = nil
+	local range_sqr = range * range
+	
+	for squad in military_manager:GetUnlockedSquads() do
+	
+		if functor( squad ) then
+			local squad_pos = squad:GetPosition()
+			
+			if distance_sqr( squad_pos, pos ) <= range_sqr then
+				if squad_ai == nil or distance_sqr( current_pos, pos ) > distance_sqr( squad_pos, pos ) then
+					squad_ai = squad
+					current_pos = squad_pos
+				end
+			end
+		end
+	end
+	
+	return squad_ai	
+end
+
+
+function CpuManager:GetClosestSquad( pos, range, functor )
+
+	local squad_ai = nil
+	local current_pos = nil
+	local range_sqr = range * range
+
+	for squad in military_manager:GetSquads() do
+	
+		--fulfills requirements
+		if functor( squad ) then
+			local squad_pos = squad:GetPosition()
+			
+			-- is in range or don't check range
+			if ( range <= 0 ) or ( distance_sqr( squad_pos, pos ) <= range_sqr ) then
+				if squad_ai == nil or distance_sqr( current_pos, pos ) > distance_sqr( squad_pos, pos ) then
+					squad_ai = squad
+					current_pos = squad_pos
+				end
+			end
+		end
+	end
+	
+	return squad_ai
+end
+
+
+function CpuManager:FindFirstFriendly( functor )
+
+	for squad in military_manager:GetSquads() do
+		if squad:IsValid() and functor( squad ) then
+			return squad
+		end
+	end
+end
+
+
+function CpuManager:FindClosestEnemy( pos, range, functor )
+
+	profile_start("FindClosestEnemy")
+	
+	local squad_ai = nil
+	local current_pos = nil
+	local range_sqr = range*range
+
+	for enemy in self.stats:GetPlayerStats() do
+		if cpu_manager.player_stats:IsEnemy( enemy ) then
+		
+			for squad in enemy:GetSquads() do
+			
+				--fulfills requirements
+				if squad:IsValid() and functor( squad ) then
+				
+					local squad_pos = squad:GetPosition()
+					
+					--is in range
+					if distance_sqr( squad_pos, pos ) <= range_sqr then
+						
+						--check if it's closer
+						if squad_ai == nil or distance_sqr( current_pos, pos ) > distance_sqr( squad_pos, pos ) then
+							squad_ai = squad
+							current_pos = squad_pos
+						end
+						
+					end
+				
+				end
+				
+			end
+		
+		end
+	end
+	
+	profile_end("FindClosestEnemy")
+	
+	return squad_ai
+	
+end
+
+-- get the first enemy that satisfies the functor
+-- returns nil if not found
+function CpuManager:FindFirstEnemy( functor )
+
+	profile_start( "FindFirstEnemy" )
+	
+	for enemy in self.stats:GetPlayerStats() do
+		if cpu_manager.player_stats:IsEnemy( enemy ) then
+		
+			for squad in enemy:GetSquads() do
+			
+				--fulfills requirements
+				if squad:IsValid() and functor( squad ) then
+					
+					profile_end( "FindFirstEnemy" )
+					return squad
+				
+				end
+				
+			end
+		
+		end
+	end
+	
+	profile_end( "FindFirstEnemy" )
+	
+	return nil
+
+end
+
+function CpuManager:IsFriendly( player_id )
+
+	for player in self.stats:GetPlayerStats() do
+		if player:GetPlayerID() == player_id then
+			return not cpu_manager.player_stats:IsEnemy( player )
+		end
+	end
+	
+	return false
+	
+end
+
+function CpuManager:FindFurthestEnemyPlayer()
+
+	profile_start("FindFurthestEnemyPlayer")
+	
+	if self.furthest_enemy_player ~= nil and not self.furthest_enemy_player:IsPlayerDead() then
+		profile_end("FindFurthestEnemyPlayer")
+		return self.furthest_enemy_player
+	end
+	
+	local furthest = nil
+	local prev_distance = 0
+	
+	for enemy in self.stats:GetPlayerStats() do
+		if cpu_manager.player_stats:IsEnemy( enemy ) then
+	
+			local new_distance = cpu_manager.terrain_analyzer:GetPathingDistance( self.cpu_player:GetStartingPosition(), enemy:GetStartingPosition() )
+			
+			--found a path
+			if furthest == nil then
+				furthest = enemy
+				prev_distance = new_distance
+			else
+			
+				if new_distance > prev_distance or prev_distance == -1 then
+					furthest = enemy
+					prev_distance = new_distance
+				end
+				
+			end
+		
+		end
+	end
+	
+	self.furthest_enemy_player = furthest
+	
+	profile_end("FindFurthestEnemyPlayer")
+	
+	return furthest
+	
+end
+
+function CpuManager:GetFirstEnemyPlayer()
+
+	if self.first_enemy_player ~= nil and not self.first_enemy_player:IsPlayerDead() then
+		return self.first_enemy_player
+	end
+	
+	for enemy in self.stats:GetPlayerStats() do
+		if cpu_manager.player_stats:IsEnemy( enemy ) then
+			self.first_enemy_player = enemy
+			return enemy
+		end
+	end
+	
+end
+
+function CpuManager:FindClosestEnemyPlayer()
+
+	profile_start("FindClosestEnemyPlayer")
+	
+	if self.closest_enemy_player ~= nil and not self.closest_enemy_player:IsPlayerDead() then
+		profile_end("FindClosestEnemyPlayer")
+		return self.closest_enemy_player
+	end
+	
+	local closest = nil
+	local current_distance = nil
+	
+	local local_pos = self.player_stats:GetStartingPosition()
+	
+	for player in self.stats:GetPlayerStats() do
+		if self.player_stats:IsEnemy( player ) and not player:IsPlayerDead() then
+		
+			if closest == nil then
+				closest = player
+				current_distance = self.terrain_analyzer:GetPathingDistance( player:GetStartingPosition(), local_pos )
+			else
+			
+				local new_distance = self.terrain_analyzer:GetPathingDistance( player:GetStartingPosition(), local_pos )
+				if new_distance < current_distance then
+				
+					closest = player
+					current_distance = new_distance
+					
+				end
+				
+			end
+			
+		end
+	end
+	
+	self.closest_enemy_player = closest
+	profile_end("FindClosestEnemyPlayer")
+	
+	return closest
+end
+
+--? @shortdesc Find the closes base or strategic point from position from_pos.  
+--? @args from_pos 		The position to compare distance from
+--? @args min_displacement 	Ignores buildings / points closer than the minimum displacement.
+--? @args player_stats 	The PlayerStatsAI object for the player owning strategic points (nil for current player)
+--? @args base_functor 		Functor passed a BaseAI object, should return true to consider building, false to ignore it.
+--? @args strat_functor 		Functor passed a StrategicPointAI object, should return true to consider strategic point, false to ignore it.
+--? @result BaseAI or StrategicPointAI
+function CpuManager:FindClosestBaseOrStrategicPoint( from_pos, min_displacement, player_stats, base_functor, strat_functor )
+
+	local best_base = self.FindClosestBase(self, from_pos,min_displacement,player_stats,base_functor)
+	local best_strat = self.FindClosestStrategicPoint(self, from_pos,min_displacement,player_stats,strat_functor)
+	
+	if (best_base == nil) then
+		return best_strat
+	elseif (best_strat == nil) then
+		return best_base
+	end
+	
+	local base_distance = distance( best_base:GetPosition(), from_pos )
+	local strat_distance = distance( best_strat:GetPosition(), from_pos )
+	
+	if (strat_distance < base_distance) then
+		return best_strat
+	else
+		return best_base
+	end
+end
+
+--? @shortdesc Find the closes base (building) from position from_pos.  
+--? @args from_pos 		The position to compare distance from
+--? @args min_displacement 	Ignores buildings closer than the minimum displacement.
+--? @args player_stats 	The PlayerStatsAI object for the player owning bases (nil for current player)
+--? @args functor 		Functor passed a BaseAI object, should return true to consider base, false to ignore it.
+--? @result BaseAI
+function CpuManager:FindClosestBase( from_pos, min_displacement, player_stats, functor )
+
+	local min_displacement_sqr = min_displacement * min_displacement
+	local best_base = nil
+	local best_distance = -1
+
+	local stats = nil 
+	if player_stats == nil then
+		stats = military_manager
+	else
+		stats = player_stats
+	end
+	
+	if functor == nil then
+		functor = function() return true end
+	end
+	
+	local candidate_bases = {}
+	
+	-- get candidate bases
+	for base in stats:GetBases() do
+		local base_pos = base:GetPosition()
+		
+		if (distance_sqr( base_pos, from_pos ) >= min_displacement_sqr and functor(base)) then
+			local base_info = {}
+			base_info.base = base
+			base_info.pos = base_pos
+			base_info.distance = distance(base_info.pos,from_pos)
+				
+			table.insert(candidate_bases,base_info)
+		end
+	end
+	
+	-- sort candidates so we start with closest
+	table.sort(candidate_bases,function(e1,e2) return e1.distance < e2.distance end)
+	
+	-- Find "best base"
+	for i,candidate in candidate_bases do
+		local base = candidate.base
+		local base_pos = candidate.pos
+		
+		if best_base == nil then
+			best_base = base
+			best_distance = cpu_manager.terrain_analyzer:GetPathingDistance( base_pos, from_pos )
+		elseif (candidate.distance < best_distance or best_distance == -1) then
+			local new_distance = cpu_manager.terrain_analyzer:GetPathingDistance( base_pos, from_pos )
+			if new_distance < best_distance or best_distance == -1 then
+				best_base = base
+				best_distance = new_distance
+			end
+		end
+	end
+
+	return best_base
+end
+
+--? @shortdesc Find the closes strategic point from position from_pos.  
+--? @args from_pos 		The position to compare distance from
+--? @args min_displacement 	Ignores points closer than the minimum displacement.
+--? @args player_stats 	The PlayerStatsAI object for the player owning strategic points (nil for current player)
+--? @args functor 		Functor passed a StrategicPointAI object, should return true to consider strategic point, false to ignore it.
+--? @result StrategicPointAI
+function CpuManager:FindClosestStrategicPoint( from_pos, min_displacement, player_stats, functor )
+
+	local min_displacement_sqr = min_displacement * min_displacement
+	local best_so = nil
+	local best_distance = -1
+
+	local player_id = self.player_id 
+	if player_stats == nil then
+		player_id = self.player_id
+	else
+		player_id = player_stats:GetPlayerID()
+	end
+
+	if functor == nil then
+		functor = function() return true end
+	end
+
+	local candidate_points = {}
+	
+	-- get candidate strategic points
+	for strat_ai in resource_manager:GetStrategicPointAIs() do
+		local strat_pos = strat_ai:GetPosition()
+		if	(strat_ai:Owner() == player_id and
+			distance_sqr( strat_pos, from_pos ) >= min_displacement_sqr and functor(strat_ai)) then
+				
+			local point_info = {}
+			point_info.point = strat_ai
+			point_info.pos = strat_pos				
+			point_info.distance = distance(point_info.pos,from_pos)
+	
+			table.insert(candidate_points,point_info)
+		end
+	end
+	
+	-- sort candidates so we start with closest
+	table.sort(candidate_points,function(e1,e2) return e1.distance < e2.distance end)
+	
+	for i,candidate in candidate_points do
+		local strat_ai = candidate.point	
+		local strat_pos = candidate.pos
+		
+		if best_so == nil then
+			best_so = strat_ai
+			best_distance = cpu_manager.terrain_analyzer:GetPathingDistance( candidate.pos, from_pos )
+		elseif (candidate.distance < best_distance or best_distance == -1) then
+			local new_distance = cpu_manager.terrain_analyzer:GetPathingDistance( candidate.pos, from_pos )
+			if new_distance < best_distance or best_distance == -1 then
+				best_so = strat_ai
+				best_distance = new_distance
+			end
+		end
+	end
+
+	return best_so
+end
+
+
+--? @shortdesc Find the closest friendly base or strategic point from position from_pos.  
+--? @args from_pos 		The position to compare distance from
+--? @args min_displacement 	Ignores bases / points closer than the minimum displacement.
+--? @args player_stats 	The PlayerStatsAI object for the player owning strategic points (nil for current player)
+--? @args base_functor 		Functor passed a BaseAI object, should return true to consider building, false to ignore it.
+--? @args strat_functor 		Functor passed a StrategicPointAI object, should return true to consider strategic point, false to ignore it.
+--? @result BaseAI or StrategicPointAI
+function CpuManager:FindClosestFriendlyBaseOrStrategicPoint( from_pos, min_displacement, base_functor, strat_functor )
+
+	local best_base = self.FindClosestFriendlyBase(self, from_pos,min_displacement,base_functor)
+	local best_strat = self.FindClosestFriendlyStrategicPoint(self, from_pos,min_displacement,strat_functor)
+	
+	if (best_base == nil) then
+		return best_strat
+	elseif (best_strat == nil) then
+		return best_base
+	end
+	
+	local base_distance = distance( best_base:GetPosition(), from_pos )
+	local strat_distance = distance( best_strat:GetPosition(), from_pos )
+	
+	if (strat_distance < base_distance) then
+		return best_strat
+	else
+		return best_base
+	end
+end
+
+--? @shortdesc Find the closes friendly base (building) from position from_pos.  
+--? @args from_pos 		The position to compare distance from
+--? @args min_displacement 	Ignores bases closer than the minimum displacement.
+--? @args player_stats 	The PlayerStatsAI object for the player owning bases (nil for current player)
+--? @args functor 		Functor passed a BaseAI object, should return true to consider base, false to ignore it.
+--? @result BaseAI
+function CpuManager:FindClosestFriendlyBase( from_pos, min_displacement, functor )
+
+	local min_displacement_sqr = min_displacement * min_displacement
+	local best_base = nil
+	local best_distance = -1
+	
+	if functor == nil then
+		functor = function() return true end
+	end
+	
+	local candidate_bases = {}
+	
+	-- get candidate bases
+	for player in cpu_manager.stats:GetPlayerStats() do
+		if (not cpu_manager.player_stats:IsEnemy( player )) then
+			for base in player:GetBases() do
+				local base_pos = base:GetPosition()
+		
+				if (distance_sqr( base_pos, from_pos ) >= min_displacement_sqr and functor(base)) then
+					local base_info = {}
+					base_info.base = base
+					base_info.pos = base_pos
+					base_info.distance = distance(base_info.pos,from_pos)
+				
+					table.insert(candidate_bases,base_info)
+				end
+			end
+		end
+	end
+	
+	-- sort candidates so we start with closest
+	table.sort(candidate_bases,function(e1,e2) return e1.distance < e2.distance end)
+	
+	-- Find "best base"
+	for i,candidate in candidate_bases do
+		local base = candidate.base
+		local base_pos = base:GetPosition()
+		
+		if best_base == nil then
+			best_base = base
+			best_distance = cpu_manager.terrain_analyzer:GetPathingDistance( base_pos, from_pos )
+		elseif (candidate.distance < best_distance or best_distance == -1) then
+			local new_distance = cpu_manager.terrain_analyzer:GetPathingDistance( base_pos, from_pos )
+			if new_distance < best_distance or best_distance == -1 then
+				best_base = base
+				best_distance = new_distance
+			end
+		end
+	end
+	
+	return best_base
+end
+
+--? @shortdesc Find the closest friendly strategic point from position from_pos.  
+--? @args from_pos 		The position to compare distance from
+--? @args min_displacement 	Ignores points closer than the minimum displacement.
+--? @args player_stats 	The PlayerStatsAI object for the player owning strategic points (nil for current player)
+--? @args functor 		Functor passed a StrategicPointAI object, should return true to consider strategic point, false to ignore it.
+--? @result StrategicPointAI
+function CpuManager:FindClosestFriendlyStrategicPoint( from_pos, min_displacement, functor )
+
+	local min_displacement_sqr = min_displacement * min_displacement
+	local best_so = nil
+	local best_distance = -1
+
+	if functor == nil then
+		functor = function() return true end
+	end
+
+	local candidate_points = {}
+	
+	-- get candidate strategic points
+	for strat_ai in resource_manager:GetStrategicPointAIs() do
+		local strat_pos = strat_ai:GetPosition()
+		if	(cpu_manager:IsFriendly(strat_ai:Owner()) and
+			distance_sqr( strat_pos, from_pos ) > min_displacement_sqr and functor( strat_ai )) then
+				
+			local point_info = {}
+			point_info.point = strat_ai
+			point_info.pos = strat_pos				
+			point_info.distance = distance(point_info.pos,from_pos)
+	
+			table.insert(candidate_points,point_info)
+		end
+	end
+	
+	-- sort candidates so we start with closest
+	table.sort(candidate_points,function(e1,e2) return e1.distance < e2.distance end)
+	
+	for i,candidate in candidate_points do
+		local strat_ai = candidate.point	
+		local strat_pos = candidate.pos
+
+		if best_so == nil then
+			best_so = strat_ai
+			best_distance = cpu_manager.terrain_analyzer:GetPathingDistance( strat_pos, from_pos )
+		elseif (candidate.distance < best_distance or best_distance == -1) then
+			local new_distance = cpu_manager.terrain_analyzer:GetPathingDistance( strat_pos, from_pos )
+			if new_distance < best_distance or best_distance == -1 then
+				best_so = strat_ai
+				best_distance = new_distance
+			end
+		end
+	end
+
+	return best_so
+end
+
+
+function CpuManager:RestrictMilitary()
+	return self.restrict_military
+end
+
+function CpuManager:SetRestrictMilitary( restrict )
+	self.restrict_military = restrict
+end
+
+function CpuManager:SetUsingDesignerPreference( is_using )
+	self.designer_preference = is_using
+end
+
+function CpuManager:IsUsingDesignerPreference()
+	return self.designer_preference
+end
+
+function CpuManager:GetClassPreferences()
+	local prefs = self.designer_strategy:GetClassPreferences()
+	local keyed_table = {}
+	for i in prefs do
+		table.insert( keyed_table, {i, prefs[i] } )
+	end
+	
+	return keyed_table
+end
+
+function CpuManager:GetDemandTable()
+	local prefs = self.designer_strategy:GetDemandTable()
+	local keyed_table = {}
+	for i in prefs do
+		table.insert( keyed_table, {i, prefs[i][1], prefs[i][2] } )
+	end
+	
+	return keyed_table
+end
+
+
+--utility function used to account for defensive buildings
+function CpuManager:GetDefensiveBuildingsCostAt( player, pos, range )
+
+	profile_start( "GetDefensiveCost" )
+	local cost = 0
+	
+	local range_sqr = range * range
+	--for every defensive building in range, add 150
+	for building in player:GetBases() do
+	
+		if (building:HasGuns()) then
+			if distance_sqr( building:GetPosition(), pos ) < range_sqr then
+				cost = cost + 250
+			end
+		end
+	end
+
+	profile_end( "GetDefensiveCost" )
+	return cost
+	
+end
+
+function CpuManager:NotifyAssassinate()
+	print("assassinate...")
+	self.assassinate = true
+end

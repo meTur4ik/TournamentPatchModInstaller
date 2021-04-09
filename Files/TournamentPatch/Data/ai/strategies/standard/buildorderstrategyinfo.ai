@@ -1,0 +1,146 @@
+--STANDARD
+BuildOrderStrategyInfo = 
+{
+	space_marine_race =
+	{
+		{ "flag_capture" },
+		{ "flag_capture" },
+		{ "squad", "space_marine_squad_scout" },
+		{ "squad", "space_marine_squad_scout" },
+		{ "squad", "space_marine_squad_scout" },
+		{ "squad", "space_marine_squad_servitor" },
+		{ "building", "space_marine_barracks" },
+		{ "post_builder" },
+		{ "squad", "space_marine_squad_tactical" },
+		{ "squad", "space_marine_squad_tactical" },
+	},
+	
+	ork_race = 
+	{
+		{ "building", "ork_waagh_banner" },
+		{ "squad", "ork_squad_grot" },
+		{ "flag_capture" },
+		{ "flag_capture" },
+		{ "squad", "ork_squad_slugga" },
+		{ "squad", "ork_squad_slugga" },
+		{ "building", "ork_boy_hut" },
+		{ "post_builder" },
+		{ "building", "ork_waagh_banner" },
+		{ "building", "ork_pile_o_guns" },
+		{ "building", "ork_mek_shop" },
+	},
+	
+	chaos_marine_race =
+	{
+		{ "flag_capture" },
+		{ "flag_capture" },
+		{ "squad", "chaos_squad_cultist" },
+		{ "squad", "chaos_squad_cultist" },
+		{ "squad", "chaos_squad_cultist" },
+		{ "squad", "chaos_squad_slave" },
+		{ "building", "chaos_temple" },
+		{ "post_builder" },
+		{ "squad", "chaos_marine_squad" },
+		{ "squad", "chaos_marine_squad" },
+	},
+	
+	eldar_race =
+	{
+		{ "building", "eldar_aspect_portal" },
+		{ "flag_capture" },
+		{ "flag_capture" },
+		{ "squad", "eldar_guardian_squad" },
+		{ "squad", "eldar_guardian_squad" },
+		{ "squad", "eldar_guardian_squad" },
+		{ "squad", "eldar_squad_bonesinger" },
+		{ "post_builder" },
+		{ "squad", "eldar_squad_rangers" },
+		{ "addon", "eldar_aspect_stone_banshees"},
+		{ "squad", "eldar_squad_banshees" },
+		{ "squad", "eldar_squad_farseer" },
+	},
+	
+	guard_race =
+	{
+		{ "flag_capture" },
+		{ "flag_capture" },
+
+		{ "building", "guard_infantry" },
+
+		{ "squad", "guard_squad_guardsmen" },
+		{ "squad", "guard_squad_guardsmen" },
+
+		{ "squad", "guard_squad_enginseer" },
+		{ "building", "guard_plasma_generator" },
+
+		{ "post_builder" },
+
+		{ "squad", "guard_squad_commissar" },
+		{ "squad", "guard_squad_commissar" },
+
+		{ "building", "guard_tactica" },
+
+		{ "squad", "guard_squad_command_squad" },
+	},
+
+	tau_race =
+	{
+		{ "squad", "tau_stealth_team_squad" },
+		{ "flag_capture" },
+		{ "flag_capture" },
+		{ "squad", "tau_stealth_team_squad" },
+		{ "building", "tau_barracks" },
+		{ "squad", "tau_fire_warrior_squad" },
+		{ "building", "tau_kroot_nest" },
+		{ "squad", "tau_kroot_carnivore_squad" },
+		{ "post_builder" },
+		{ "squad", "tau_commander_squad" },
+	},
+	
+	necron_race =
+	{
+		{ "squad", "necron_builder_scarab_squad"},
+		{ "building", "necron_plasma_generator" },
+		{ "building", "necron_plasma_generator" },
+		{ "squad", "necron_basic_warrior_squad" },
+		{ "squad", "necron_builder_scarab_squad" },
+		{ "squad", "necron_basic_warrior_squad" },
+		{ "building", "necron_plasma_generator" },
+		{ "squad", "necron_builder_scarab_squad" },
+		{ "building", "necron_plasma_generator" },
+		{ "squad", "necron_basic_warrior_squad" },
+		{ "building", "necron_plasma_generator" },
+		{ "squad", "necron_lord_squad" },
+		{ "building", "necron_plasma_generator" },
+		{ "squad", "necron_flayed_one_squad" },
+		{ "squad", "necron_scarab_squad" },
+	},
+	
+	sisters_race =
+	{
+		{ "flag_capture" },
+		{ "flag_capture" },
+		{ "squad", "sisters_squad_missionary" },
+		{ "squad", "sisters_squad_missionary" },
+		{ "squad", "sisters_squad_missionary" },
+		{ "squad", "sisters_squad_servitor" },
+		{ "building", "sisters_infantry" },
+		{ "post_builder" },
+		{ "squad", "sisters_squad_canoness" },
+		{ "squad", "sisters_squad_battle_sister" },
+		{ "squad", "sisters_squad_battle_sister" },
+	},
+
+	dark_eldar_race =
+	{
+		{ "flag_capture" },
+		{ "flag_capture" },
+		{ "squad", "dark_eldar_squad_mandrake" },
+		{ "squad", "dark_eldar_squad_mandrake" },
+		{ "building", "dark_eldar_hall_of_blood" },
+		{ "post_builder" },
+		{ "squad", "dark_eldar_squad_warrior" },
+		{ "squad", "dark_eldar_squad_warrior" },
+
+	},
+}

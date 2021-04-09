@@ -1,0 +1,328 @@
+----------------------------------------
+-- File: 'necronstrategyinfo.ai'
+-- Edited by Thudmeizer   @ 22.10.2008
+
+BuildBaseStrategyInfo = 
+{	
+	necron_race =
+	{
+		post_builder = 1,
+		flag_capture = 1,
+
+		-- Reserve this amount for building units, reinforcing and upgrading
+		req_reserve = -99999,
+		
+		--need at least this at all times
+		squad_cap_threshold = 2,
+
+		--need at least this at all times
+		support_cap_threshold = 3,
+		
+		--used to calculate wants for engineers
+		Engineers =
+		{
+			--number of engineers we're aiming for
+			want = 5,
+		},
+
+		-- Is used to modify the army strength in the build programs (Allows faster balancing adjustments)
+		ArmyStrengthModifier = 1.0,
+		
+		-- Item-Syntax: Min. Tier, Min. Requisition, Min. Power, Min. ArmyStrength, Object-Count, Object-Type, Object-Name
+		BuildPrograms =
+		{
+			-- Research Total: 9
+ 			-- Allround strategy
+			{
+				{ 1, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 1, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 1, 0, 225, 0, 1,	"Building",	"monolith" },
+				{ 1, 0, 75, 0, 4,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 125, 0, 1,	"Building",	"necron_turret" },
+				{ 1, 0, 120, 0, 1,	"Building",     "necron_summoning_core" },
+				{ 1, 0, 125, 0, 6,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 200, 750, 1,	"Research",	"necron_warrior_boost" },
+				{ 1, 0, 75, 0, 1,	"TurretAddon",  "addon_necron_list_post_1" },
+				{ 1, 0, 340, 1000, 100,	"Addon", 	"addon_necron_hq_1" },
+				{ 1, 0, 150, 500, 7,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 150, 500, 1,	"Building",	"necron_forbidden_archive" },
+				{ 1, 0, 75, 250, 50,   "TurretAddon",  "addon_necron_list_post_1" },
+
+				{ 2, 0, 250, 250, 1,    "Building",	"necron_greater_summoning_core" },
+				{ 2, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 2, 0, 250, 0, 1,	"Unit",		"necron_destroyer_squad" },
+				{ 2, 0, 135, 0, 1,	"Unit",		"necron_immortal_squad" },
+				{ 2, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 2, 0, 175, 1000, 8,	"Building",	"necron_plasma_generator" },
+				{ 2, 0, 200, 1000, 1,	"Research",	"necron_warrior_boost_2" },
+				{ 2, 0, 50, 1000, 50,	"TurretAddon",  "addon_necron_turret" },
+				{ 2, 0, 225, 1000, 2,	"Building",	"monolith" },
+				{ 2, 0, 350, 1000, 1,	"Research",	"necron_power_research" },
+				{ 2, 0, 75, 1000, 1,	"Research",	"necron_wraith_boost" },
+				{ 2, 0, 400, 1500, 100,	"Addon",	"addon_necron_hq_2" },
+				{ 2, 0, 75, 2000, 100,   "TurretAddon",  "addon_necron_list_post_1" },
+				{ 2, 0, 150, 2000, 40,	"TurretAddon",  "addon_necron_list_post_2" },
+				{ 2, 0, 125, 2000, 2,   "Building",	"necron_turret" },
+				{ 2, 0, 225, 2000, 10,	"Building",	"necron_plasma_generator" },
+
+				{ 3, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 3, 0, 200, 0, 1,	"Unit",		"necron_pariah_squad" },
+				{ 3, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 3, 0, 300, 0, 1,	"Unit",		"necron_heavy_destroyer_squad" },
+				{ 3, 0, 550, 2000, 1,	"Research",	"necron_power_research_2" },
+				{ 3, 0, 550, 2000, 1,	"Building",	"necron_energy_core" },
+				{ 3, 0, 150, 2000, 80,	"TurretAddon",  "addon_necron_list_post_2" },
+				{ 3, 0, 125, 2000, 4,   "Building",	"necron_turret" },
+
+				{ 4, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 4, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 4, 0, 1000, 0, 1,	"Unit",		"necron_restored_monolith_squad" },
+				{ 4, 0, 750, 2000, 1,	"Research",	"necron_ctan_research" },
+				{ 4, 0, 125, 2000, 6,   "Building",	"necron_turret" },
+				{ 4, 0, 700, 4000, 3,	"Building",	"monolith" },
+				{ 4, 0, 325, 4000, 14,	"Building",	"necron_plasma_generator" }
+			},
+			
+ 			-- Necron warrior strategy
+			{
+				{ 1, 0, 0, 0, 0,	"Rush", 	"Prepare" },
+				{ 1, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 1, 0, 225, 0, 1,	"Building",	"monolith" },
+				{ 1, 0, 75, 0, 4,	"Building",  	"necron_plasma_generator" },
+				{ 1, 0, 120, 0, 1,	"Building",     "necron_summoning_core" },
+				{ 1, 0, 125, 0, 6,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 200, 750, 1,	"Research",	"necron_warrior_boost" },
+				{ 1, 0, 75, 0, 1,	"TurretAddon",  "addon_necron_list_post_1" },
+				{ 1, 0, 340, 1000, 100,	"Addon", 	"addon_necron_hq_1" },
+				{ 1, 0, 125, 500, 1,	"Building",	"necron_turret" },
+				{ 1, 0, 150, 500, 7,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 150, 500, 1,	"Building",	"necron_forbidden_archive" },
+				{ 1, 0, 75, 250, 50,	"TurretAddon",  "addon_necron_list_post_1" },
+
+				{ 2, 0, 250, 250, 1,    "Building",	"necron_greater_summoning_core" },
+				{ 2, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 2, 0, 250, 0, 1,	"Unit",		"necron_destroyer_squad" },
+				{ 2, 0, 135, 0, 1,	"Unit",		"necron_immortal_squad" },
+				{ 2, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 2, 0, 175, 1000, 8,	"Building",	"necron_plasma_generator" },
+				{ 2, 0, 200, 1000, 1,	"Research",	"necron_warrior_boost_2" },
+				{ 2, 0, 50, 1000, 50,	"TurretAddon",  "addon_necron_turret" },
+				{ 2, 0, 225, 1000, 2,	"Building",	"monolith" },
+				{ 2, 0, 350, 1000, 1,	"Research",	"necron_power_research" },
+				{ 2, 0, 75, 1000, 1,	"Research",	"necron_wraith_boost" },
+				{ 2, 0, 400, 1500, 100,	"Addon",	"addon_necron_hq_2" },
+				{ 2, 0, 75, 2000, 100,   "TurretAddon",  "addon_necron_list_post_1" },
+				{ 2, 0, 150, 2000, 40,	"TurretAddon",  "addon_necron_list_post_2" },
+				{ 2, 0, 125, 2000, 2,   "Building",	"necron_turret" },
+				{ 2, 0, 225, 2000, 10,	"Building",	"necron_plasma_generator" },
+
+				{ 3, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 3, 0, 200, 0, 1,	"Unit",		"necron_pariah_squad" },
+				{ 3, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 3, 0, 300, 0, 1,	"Unit",		"necron_heavy_destroyer_squad" },
+				{ 3, 0, 550, 2000, 1,	"Research",	"necron_power_research_2" },
+				{ 3, 0, 550, 2000, 1,	"Building",	"necron_energy_core" },
+				{ 3, 0, 150, 2000, 80,	"TurretAddon",  "addon_necron_list_post_2" },
+				{ 3, 0, 125, 2000, 4,   "Building",	"necron_turret" },
+
+				{ 4, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 4, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 4, 0, 1000, 0, 1,	"Unit",		"necron_restored_monolith_squad" },
+				{ 4, 0, 750, 2000, 1,	"Research",	"necron_ctan_research" },
+				{ 4, 0, 125, 2000, 6,   "Building",	"necron_turret" },
+				{ 4, 0, 700, 4000, 3,	"Building",	"monolith" },
+				{ 4, 0, 325, 4000, 14,	"Building",	"necron_plasma_generator" }
+			},
+			
+ 			-- Double monolith strategy
+			{
+				{ 1, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 1, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 1, 0, 225, 0, 1,	"Building",	"monolith" },
+				{ 1, 0, 100, 0, 5,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 225, 0, 2,	"Building",	"monolith" },
+				{ 1, 0, 120, 0, 1,	"Building",     "necron_summoning_core" },
+				{ 1, 0, 125, 0, 6,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 75, 750, 1,	"TurretAddon",  "addon_necron_list_post_1" },
+				{ 1, 0, 340, 1000, 1,	"Addon", 	"addon_necron_hq_1" },
+				{ 1, 0, 125, 500, 1,	"Building",	"necron_turret" },
+				{ 1, 0, 150, 500, 7,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 200, 500, 1,	"Research",	"necron_warrior_boost" },
+				{ 1, 0, 150, 500, 1,	"Building",	"necron_forbidden_archive" },
+				{ 1, 0, 75, 250, 50,   "TurretAddon",  "addon_necron_list_post_1" },
+
+				{ 2, 0, 250, 250, 1,    "Building",	"necron_greater_summoning_core" },
+				{ 2, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 2, 0, 250, 0, 1,	"Unit",		"necron_destroyer_squad" },
+				{ 2, 0, 135, 0, 1,	"Unit",		"necron_immortal_squad" },
+				{ 2, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 2, 0, 175, 1000, 8,	"Building",	"necron_plasma_generator" },
+				{ 2, 0, 200, 1000, 1,	"Research",	"necron_warrior_boost_2" },
+				{ 2, 0, 50, 1000, 50,	"TurretAddon",  "addon_necron_turret" },
+				{ 2, 0, 225, 1000, 2,	"Building",	"monolith" },
+				{ 2, 0, 350, 1000, 1,	"Research",	"necron_power_research" },
+				{ 2, 0, 75, 1000, 1,	"Research",	"necron_wraith_boost" },
+				{ 2, 0, 340, 1500, 100,	"Addon", 	"addon_necron_hq_1" },
+				{ 2, 0, 400, 1500, 100,	"Addon",	"addon_necron_hq_2" },
+				{ 2, 0, 75, 2000, 100,   "TurretAddon",  "addon_necron_list_post_1" },
+				{ 2, 0, 150, 2000, 40,	"TurretAddon",  "addon_necron_list_post_2" },
+				{ 2, 0, 125, 2000, 2,   "Building",	"necron_turret" },
+				{ 2, 0, 225, 2000, 10,	"Building",	"necron_plasma_generator" },
+
+				{ 3, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 3, 0, 200, 0, 1,	"Unit",		"necron_pariah_squad" },
+				{ 3, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 3, 0, 300, 0, 1,	"Unit",		"necron_heavy_destroyer_squad" },
+				{ 3, 0, 550, 2000, 1,	"Research",	"necron_power_research_2" },
+				{ 3, 0, 550, 2000, 1,	"Building",	"necron_energy_core" },
+				{ 3, 0, 150, 2000, 80,	"TurretAddon",  "addon_necron_list_post_2" },
+				{ 3, 0, 125, 2000, 4,   "Building",	"necron_turret" },
+
+				{ 4, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 4, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 4, 0, 1000, 0, 1,	"Unit",		"necron_restored_monolith_squad" },
+				{ 4, 0, 750, 2000, 1,	"Research",	"necron_ctan_research" },
+				{ 4, 0, 125, 2000, 6,   "Building",	"necron_turret" },
+				{ 4, 0, 700, 4000, 3,	"Building",	"monolith" },
+				{ 4, 0, 325, 4000, 14,	"Building",	"necron_plasma_generator" }
+			},
+			
+ 			-- Fast vehicle destroyer/warrior strategy
+			{
+				{ 1, 0, 0, 0, 1,	"Rush", 	"Prepare" },
+				{ 1, 0, 0, 0, 5,	"Unit",		"necron_builder_scarab_squad" },
+				{ 1, 0, 225, 0, 1,	"Building",	"monolith" },
+				{ 1, 0, 75, 0, 4,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 120, 0, 1,	"Building",     "necron_summoning_core" },
+				{ 1, 0, 125, 0, 6,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 75, 0, 1,	"TurretAddon",  "addon_necron_list_post_1" },
+				{ 1, 0, 340, 0, 100,	"Addon", 	"addon_necron_hq_1" },
+				{ 1, 0, 125, 0, 1,	"Building",	"necron_turret" },
+				{ 1, 0, 150, 0, 7,	"Building",	"necron_plasma_generator" },
+				{ 1, 0, 200, 0, 1,	"Research",	"necron_warrior_boost" },
+				{ 1, 0, 75, 0, 50,	"TurretAddon",  "addon_necron_list_post_1" },
+
+				{ 2, 0, 0, 0, 1,	"Rush", 	"Prepare" },
+				{ 2, 0, 250, 0, 1,   	"Building",	"necron_greater_summoning_core" },
+				{ 2, 0, 175, 0, 8,	"Building",	"necron_plasma_generator" },
+				{ 2, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 2, 0, 250, 0, 3,	"Unit",		"necron_destroyer_squad" },
+				{ 2, 0, 135, 0, 2,	"Unit",		"necron_immortal_squad" },
+				{ 2, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 2, 0, 0, 1500, 0,	"Rush", 	"Unleash" },
+				{ 2, 0, 150, 1500, 1,	"Building",	"necron_forbidden_archive" },
+				{ 2, 0, 200, 1500, 1,	"Research",	"necron_warrior_boost_2" },
+				{ 2, 0, 50, 1500, 50,	"TurretAddon",  "addon_necron_turret" },
+				{ 2, 0, 225, 1500, 2,	"Building",	"monolith" },
+				{ 2, 0, 350, 1500, 1,	"Research",	"necron_power_research" },
+				{ 2, 0, 75, 1500, 1,	"Research",	"necron_wraith_boost" },
+				{ 2, 0, 400, 1500, 100,	"Addon",	"addon_necron_hq_2" },
+				{ 2, 0, 75, 2000, 100,   "TurretAddon",  "addon_necron_list_post_1" },
+				{ 2, 0, 150, 2000, 40,	"TurretAddon",  "addon_necron_list_post_2" },
+				{ 2, 0, 125, 2000, 2,   "Building",	"necron_turret" },
+				{ 2, 0, 225, 2000, 10,	"Building",	"necron_plasma_generator" },
+
+				{ 3, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 3, 0, 200, 0, 1,	"Unit",		"necron_pariah_squad" },
+				{ 3, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 3, 0, 300, 0, 1,	"Unit",		"necron_heavy_destroyer_squad" },
+				{ 3, 0, 550, 2000, 1,	"Research",	"necron_power_research_2" },
+				{ 3, 0, 550, 2000, 1,	"Building",	"necron_energy_core" },
+				{ 3, 0, 150, 2000, 80,	"TurretAddon",  "addon_necron_list_post_2" },
+				{ 3, 0, 125, 2000, 4,   "Building",	"necron_turret" },
+
+				{ 4, 0, 150, 0, 1,	"Unit",		"necron_lord_squad" },
+				{ 4, 0, 60, 0, 1,	"Unit",		"necron_wraith_squad" },
+				{ 4, 0, 1000, 0, 1,	"Unit",		"necron_restored_monolith_squad" },
+				{ 4, 0, 750, 2000, 1,	"Research",	"necron_ctan_research" },
+				{ 4, 0, 125, 2000, 6,   "Building",	"necron_turret" },
+				{ 4, 0, 700, 4000, 3,	"Building",	"monolith" },
+				{ 4, 0, 325, 4000, 14,	"Building",	"necron_plasma_generator" }
+			}
+		},
+		
+		SquadLimits = 
+		{
+			standard = 
+			{
+				necron_builder_scarab_squad = 0,
+				necron_basic_warrior_squad = 3,
+				necron_wraith_squad = 2,
+				necron_immortal_squad = math.random( 3,4 ),
+				necron_flayed_one_squad = math.random( 3,4 ),
+				necron_pariah_squad = 1,
+				necron_lord_squad = 1,
+				necron_lord_destroyer_squad = 0,
+				necron_scarab_squad = 1,
+				necron_tomb_spyder_squad = 3,
+				necron_destroyer_squad = math.random( 4,6 ),
+				necron_heavy_destroyer_squad = math.random( 4,6 ),
+				necron_restored_monolith_squad = 1,
+				necron_restored_monolith_illusion_squad = 1,
+				necron_deceiver_squad = 1,
+				necron_night_bringer = 1,
+			}
+		}
+	},
+}
+
+BuildOrderStrategyInfo = 
+{
+	necron_race =
+	{
+		Basic =
+		{
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_basic_warrior_squad" },
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "building", "necron_plasma_generator", true },
+			{ "building", "necron_plasma_generator", true },
+			{ "building", "necron_plasma_generator", true },
+			{ "building", "necron_plasma_generator", true },
+			{ "flag_capture" },	{ "flag_capture" },
+			{ "post_builder" },	{ "post_builder" }
+		},
+		 
+		QuickStart =
+		{
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_basic_warrior_squad" },
+			{ "building", "necron_plasma_generator", true },
+			{ "building", "necron_plasma_generator", true },
+			{ "building", "necron_plasma_generator", true },
+			{ "building", "necron_plasma_generator", true },
+			{ "flag_capture" },	{ "flag_capture" }, 
+			{ "flag_capture" },
+			{ "post_builder" },	{ "post_builder" }
+		},
+		 
+		LargeMap =
+		{
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_builder_scarab_squad" },
+			{ "squad", "necron_basic_warrior_squad" },
+			{ "building", "necron_plasma_generator", true },
+			{ "building", "necron_plasma_generator", true },
+			{ "building", "necron_plasma_generator", true },
+			{ "building", "necron_plasma_generator", true },
+			{ "flag_capture" },	{ "flag_capture" }, 
+			{ "flag_capture" },
+			{ "post_builder" },	{ "post_builder" }
+		}
+	},
+}
+
+AttackStrategyInfo = 
+{
+	necron_race =
+	{
+		MinArmyStrength = 750,
+	},
+}

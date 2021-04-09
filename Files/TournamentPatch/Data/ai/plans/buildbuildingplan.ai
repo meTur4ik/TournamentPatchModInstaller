@@ -1,0 +1,399 @@
+import ("Plans/BuildPlan.ai")
+
+class 'BuildBuildingPlan' (BuildPlan)
+
+function BuildBuildingPlan:__init( building_id, build_pos, wait_on_builder) super( CpuPlayer.CT_BuildBuildings )
+	
+	--nil if you want to automatically quit out on failure
+	self.wait_on_builder = wait_on_builder
+	self.build_facing_bias = Vector3f( 0,0,0 )
+
+	-- the building i'm trying to build
+	BuildPlan.SetItemID( self, building_id )
+	BuildPlan.SetItemName( self, cpu_manager.stats:GetBuildingName( building_id ) )
+
+	dbAssert( self.item_name ~= nil )
+	
+	Plan.SetNeeds( self, "Asking for builder", BuildBuildingPlan.ObtainBuilder )
+	Plan.SetState( self, "Wanting to build: "..self.item_name, BuildBuildingPlan.BuildBuilding )
+
+	Plan.SetName( self, "Build Building Plan" )
+
+	self.bBuildDefensive = true
+	self.bConsiderBase = true
+	self.bConsiderLP = true
+	self.bConsiderSO = false
+	self.bConsiderThreat = false
+	
+	if build_pos ~= nil then
+		self.build_pos = Vector2f()
+		self.build_pos.x = build_pos.x
+		self.build_pos.y = build_pos.z
+	else
+		self:SetDesires( self.item_id )
+	end
+
+	-- ILE
+	if not (cpu_manager.player_stats:GetPlayerRaceName() == "dark_eldar_race") then
+		local building = build_manager:FindUnfinishedBuilding( self.item_id )
+		if building then
+			Plan.SetNeeds( self, "Finishing building...", BuildBuildingPlan.ObtainNewBuilder )
+			Plan.SetState( self, "Try to finish building: "..self.item_name, BuildBuildingPlan.FixState )
+		end
+	end
+end
+
+
+function BuildBuildingPlan:SetDesires( building_id )
+	-- hack at the end of the project
+
+	local name = cpu_manager.stats:GetBuildingName( building_id )
+	
+	if name == "guard_turret_heavy_bolter" then
+		self.bBuildDefensive = false
+		self.bConsiderBase = true
+		self.bConsiderLP = true
+		self.bConsiderSO = false
+		self.bConsiderThreat = false
+	elseif name == "guard_mines" then
+		self.bBuildDefensive = false
+		self.bConsiderBase = false
+		self.bConsiderLP = false
+		self.bConsiderSO = true
+		self.bConsiderThreat = false
+	elseif name == "necron_turret" then
+		self.bBuildDefensive = false
+		self.bConsiderBase = true
+		self.bConsiderLP = true
+		self.bConsiderSO = false
+		self.bConsiderThreat = false
+	elseif name == "eldar_webway_gate" then
+		self.bBuildDefensive = math.random(3) <= 2 -- sometimes defensive, sometimes not
+		self.bConsiderBase = true
+		self.bConsiderLP = true
+		self.bConsiderSO = false
+		self.bConsiderThreat = false
+	end
+end
+
+
+function BuildBuildingPlan:FindBestEngineerBasePair( bBuildDefensive, bConsiderBase, bConsiderLP, bConsiderSO, bConsiderThreat )
+
+	local enemy_pos
+	local enemy = cpu_manager:FindClosestEnemyPlayer()
+	if enemy ~= nil then
+		enemy_pos = enemy:GetStartingPosition()
+	else
+		-- use center of map
+		enemy_pos = Vector3f()
+		enemy_pos.x = 0
+		enemy_pos.y = 0
+		enemy_pos.z = 0
+	end
+	
+	local best_base_pos = nil
+	local best_distance_to_enemy
+	local best_enemy_threat
+
+	local candidate_bases = {}
+	
+	-- get candidate bases
+	for base_ai in military_manager:GetBases() do
+		if	( bConsiderLP == true or base_ai:IsListeningPost() == false ) and
+			( bConsiderBase == true or base_ai:IsListeningPost() == true) then
+			local base_info = {}
+			base_info.base = base_ai
+			base_info.pos = base_ai:GetPosition()				
+			base_info.distance = distance(base_info.pos,enemy_pos)
+			base_info.threat = cpu_manager.terrain_analyzer:GetThreatAtPos( base_info.pos, 25, true )
+				
+			table.insert(candidate_bases,base_info)
+		end
+	end
+	
+	-- sort candidates so we start with farthest / closest
+	if (bBuildDefensive == true) then
+		table.sort(candidate_bases,function(e1,e2) return e1.distance > e2.distance end)	
+	else
+		table.sort(candidate_bases,function(e1,e2) return e1.distance < e2.distance end)
+	end
+	
+	-- Find "best base"
+	for i,candidate in candidate_bases do
+		local base = candidate.base
+
+		if best_base_pos == nil then
+			best_base_pos = candidate.pos
+			best_distance_to_enemy = cpu_manager.terrain_analyzer:GetPathingDistance( candidate.pos, enemy_pos )			
+			best_enemy_threat = candidate.threat
+		else
+			-- compare
+			if	( bConsiderThreat == false ) or ( candidate.threat < best_enemy_threat ) then
+				-- best distance for defensive is LARGER
+				if	( bBuildDefensive == true and candidate.distance > best_distance_to_enemy ) or
+					( bBuildDefensive == false and candidate.distance < best_distance_to_enemy ) then
+					local new_distance = cpu_manager.terrain_analyzer:GetPathingDistance( candidate.pos, enemy_pos )
+					if (new_distance >= 0) then
+						if	( bBuildDefensive == true and new_distance > best_distance_to_enemy ) or
+							( bBuildDefensive == false and new_distance < best_distance_to_enemy ) then
+							best_base_pos = candidate.pos
+							best_distance_to_enemy = new_distance			
+							best_enemy_threat = candidate.threat
+						end
+					end
+				end
+			end
+		end
+	end
+
+	-- Find "best strategic objective"
+	if (bConsiderSO) then
+		local candidate_points = {}
+	
+		-- get candidate strategic points
+		for strat_ai in resource_manager:GetStrategicPointAIs() do
+			if	(strat_ai:Owner() == cpu_manager.player_id and strat_ai:FinishedCapturing()) and
+				( bConsiderLP == true or strat_ai:HasListeningPost() == false ) and
+				( bConsiderBase == true or strat_ai:HasListeningPost() == true) then
+				
+				local point_info = {}
+				point_info.point = strat_ai
+				point_info.pos = strat_ai:GetPosition()				
+				point_info.distance = distance(point_info.pos,enemy_pos)
+				point_info.threat = cpu_manager.terrain_analyzer:GetThreatAtPos( point_info.pos, 25, true )
+				
+				table.insert(candidate_points,point_info)
+			end
+		end
+	
+		-- sort candidates so we start with farthest / closest
+		if (bBuildDefensive == true) then
+			table.sort(candidate_points,function(e1,e2) return e1.distance > e2.distance end)
+		else
+			table.sort(candidate_points,function(e1,e2) return e1.distance < e2.distance end)
+		end
+	
+		for i,candidate in candidate_points do
+			local strat_ai = candidate.point
+
+			if best_base_pos == nil then
+				best_base_pos = candidate.pos
+				best_distance_to_enemy = cpu_manager.terrain_analyzer:GetPathingDistance( candidate.pos, enemy_pos )
+				best_enemy_threat = candidate.threat
+			elseif	( bConsiderThreat == false ) or ( candidate.threat < best_enemy_threat ) then
+				-- best distance for defensive is LARGER
+				if	( bBuildDefensive == true and candidate.distance > best_distance_to_enemy ) or
+					( bBuildDefensive == false and candidate.distance < best_distance_to_enemy ) then
+					local new_distance = cpu_manager.terrain_analyzer:GetPathingDistance( candidate.pos, enemy_pos )
+					if (new_distance >= 0) then
+						if	( bBuildDefensive == true and new_distance > best_distance_to_enemy ) or
+							( bBuildDefensive == false and new_distance < best_distance_to_enemy ) then
+							best_base_pos = candidate.pos
+							best_distance_to_enemy = new_distance			
+							best_enemy_threat = candidate.threat
+						end
+					end
+				end
+			end
+		end
+	end
+
+	-- find closest engineer to the base we selected
+	local best_engineer = nil
+
+	if best_base_pos ~= nil then
+		local best_engineer_distance	
+		local candidate_squads = {}
+	
+		-- get candidate engineers
+		for squad_ai in military_manager:GetUnlockedSquads() do
+			if squad_ai:IsEngineer() and squad_ai:CanBuild( self.item_id ) == SquadAI.CANBUILD_Ok then
+				local squad_info = {}
+				squad_info.squad = squad_ai
+				squad_info.pos = squad_ai:GetPosition()				
+				squad_info.distance = distance(squad_info.pos,best_base_pos)
+				
+				table.insert(candidate_squads,squad_info)
+			end
+		end
+	
+		-- sort candidates so we start with closest
+		table.sort(candidate_squads,function(e1,e2) return e1.distance < e2.distance end)	
+	
+		for i,candidate in candidate_squads do
+			local squad_ai = candidate.squad
+
+			if best_engineer == nil then
+				best_engineer = squad_ai
+				best_engineer_distance = cpu_manager.terrain_analyzer:GetPathingDistance( candidate.pos, best_base_pos )
+			elseif (candidate.distance < best_engineer_distance or best_engineer_distance == -1) then
+				--check if the new squad is closer
+				local new_distance = cpu_manager.terrain_analyzer:GetPathingDistance( candidate.pos, best_base_pos )
+				if new_distance < best_engineer_distance or best_engineer_distance == -1 then
+					best_engineer = squad_ai
+					best_engineer_distance = new_distance
+				end
+			end
+		end
+	end
+	
+	if best_engineer ~= nil then
+		self.build_pos = Vector2f()
+		self.build_pos.x = best_base_pos.x
+		self.build_pos.y = best_base_pos.z
+	end
+	
+	return best_engineer
+end
+
+
+function BuildBuildingPlan:ObtainBuilder()
+
+	self.bestPosition = Vector3f()
+	
+	--find a place to build it
+	local enemy = cpu_manager:FindFurthestEnemyPlayer()
+	if enemy ~= nil then
+		self.build_facing_bias = enemy:GetStartingPosition()
+	else
+		self.build_facing_bias = Vector3f( 0,0,0 )
+	end
+
+	local engineer = nil 
+	if self.build_pos == nil then
+	
+		engineer = self:FindBestEngineerBasePair( self.bBuildDefensive, self.bConsiderBase, self.bConsiderLP, self.bConsiderSO, self.bConsiderThreat )
+		if engineer == nil then
+			aitrace( "unable to find builder/position for: "..self.item_name )
+			return
+		end
+	end
+	
+	dbAssert( self.bestPosition ~= nil )
+	dbAssert( self.build_pos ~= nil )
+	
+	if not cpu_manager.terrain_analyzer:FindClosestFreePosition( self.item_id, self.build_pos, self.build_facing_bias, self.bestPosition ) then
+		aitrace( "unable to place building: "..self.item_name)
+		return
+	end
+	
+	--the build pos was already set, but no engineer was found yet. find one close to the best position
+	if engineer == nil then
+		--find the closest engineer
+		local functor = function( squad_ai )
+			return squad_ai:IsEngineer() and squad_ai:CanBuild( self.item_id ) == SquadAI.CANBUILD_Ok
+		end
+		
+		engineer = cpu_manager:GetClosestUnlockedSquad( self.bestPosition, 1000, functor )
+		
+		if engineer == nil then
+			aitrace( "no builders for: "..self.item_name )
+			return
+		end
+	end
+	
+	dbAssert( engineer ~= nil )
+
+	BuildPlan.SetBuilder( self, engineer )
+	Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )
+end
+
+
+function BuildBuildingPlan:BuildBuilding()
+
+	if self.builder ~= nil then
+	
+		local canBuild = self.builder:CanBuildAt( self.item_id, self.bestPosition )
+		dbAssert( canBuild == true )
+		if canBuild then
+			self.builder:DoBuildBuilding( self.item_id, self.bestPosition )
+			Plan.SetState( self, "Building a "..self.item_name, BuildPlan.BuildingState )
+			return		
+		end
+
+	end
+	
+	aitrace( "can't build "..self.item_name )
+
+	if self.wait_on_builder == nil then
+		Plan.SetComplete( self, true )
+	end
+end
+
+
+function BuildBuildingPlan:Retry()
+
+	if( self.build_pos == nil ) then
+		Plan.SetComplete( self, true )
+		return
+	end
+
+	local enemy = cpu_manager:FindFurthestEnemyPlayer()
+	if enemy ~= nil then
+		self.build_facing_bias = enemy:GetStartingPosition()
+	else
+		self.build_facing_bias = Vector3f( 0,0,0 )
+	end
+	
+	--find a place to build it
+	local enemy = cpu_manager:FindFurthestEnemyPlayer()
+	dbAssert( enemy ~= nil )
+
+	self.bestPosition = Vector3f()
+	if cpu_manager.terrain_analyzer:FindClosestFreePosition( self.item_id, self.build_pos, self.build_facing_bias, self.bestPosition ) then
+		if self.builder:CanBuildAt( self.item_id, self.bestPosition ) == SquadAI.CANBUILD_Ok  then
+			self.builder:DoBuildBuilding( self.item_id, self.bestPosition )
+		end
+	end
+end
+
+
+function BuildBuildingPlan:ObtainNewBuilder()
+
+	self.building = nil
+	
+	self.building = build_manager:FindUnfinishedBuilding( self.item_id )
+	if self.building == nil then
+		self:SetComplete( true )
+	end
+	
+	--find an engineer
+	for squadai in military_manager:GetUnlockedSquads() do
+
+		if( squadai:IsEngineer() ) then
+			BuildPlan.SetBuilder( self, squadai )
+			Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )
+			return
+		end
+	end
+end
+
+
+function BuildBuildingPlan:FixState()
+
+	if self.building == nil or self.builder == nil then
+		return
+	end
+	
+	self.started_building = false
+	self.builder:DoFinishBuilding( self.building )
+
+	Plan.SetState( self, "Fixing a "..self.item_name, BuildPlan.BuildingState )
+end
+
+
+function BuildBuildingPlan:Update()
+
+	--take into account if my builder dies
+	if self.builder ~= nil and not self.builder:IsValid() then
+		--reset builder
+		Plan.UnlockResource( self, self.builder )
+		self.builder = nil
+
+		--set my state to try to fix the building
+		Plan.SetNeeds( self, "Asking for new builder", BuildBuildingPlan.ObtainNewBuilder )
+		Plan.SetState( self, "Try to fix building: "..self.item_name, BuildBuildingPlan.FixState )
+	end
+	
+	Plan.Update( self )
+end

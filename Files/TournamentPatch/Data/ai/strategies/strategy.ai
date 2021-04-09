@@ -1,0 +1,552 @@
+import( 'utility.ai' )
+
+
+function PlanLessThan( plan1, plan2 )
+	return (plan1:GetPriority() < plan2:GetPriority())
+end
+
+--? @module AI
+--? @group Strategy
+class 'Strategy'
+
+Strategy.Events = 
+{
+	OnStart = "OnStart",
+	OnSuccess = "OnSuccess",
+	OnFailure = "OnFailure",
+	OnAttack = "OnAttack"
+}
+
+--? @shortdesc Ctor
+--? @args 
+--? @result void
+function Strategy:__init( info )
+
+	self.player_stats = cpu_manager.player_stats
+	dbAssert( self.player_stats ~= nil )
+
+	if info ~= nil then
+		self.info = info[ self.player_stats:GetPlayerRaceName() ] 
+		dbAssert( self.info ~= nil )
+	end
+	
+	self.plans = {}
+	self:ResetDemand()
+
+	self.status = "Normal"
+
+	self.can_build_military = true
+	
+end
+
+function Strategy:GetStatus( status )
+	return self.status
+end
+
+function Strategy:SetStatus( status )
+	self.status = status
+end
+
+--? @shortdesc returns the base being attacked, nil if none
+--? @args 
+--? @result void
+function Strategy:IsBaseBeingAttacked()
+
+	for base in military_manager:GetBases() do
+		if cpu_manager.terrain_analyzer:HasThreat( base:GetPosition(), 25 ) then
+			return base
+		end
+	end
+
+	return nil
+end
+
+
+--? @shortdesc Reset all the demand tables
+--? @args 
+--? @result void
+function Strategy:ResetDemand()
+
+	self.unit_class_demand = {}
+	self.effectiveness_demand = {}
+	self.squad_demand = {}
+	
+	for i = 0, UnitStatsAI.UC_Count - 1 do
+		self.unit_class_demand[ i ] = 0
+		self.effectiveness_demand[ i ] = 0
+	end
+	
+end
+
+
+--? @shortdesc Adpot control of all the plans that the strategy is running
+--? @args Strategy strategy
+--? @result void
+function Strategy:AdoptStrategy( strategy )
+
+	for i in strategy.plans do
+		self:AddPlan( strategy.plans[i] )
+	end
+	
+	strategy.plans = {}
+
+end
+
+--? @args float priority
+--? @result void
+function Strategy:SetPriority( priority )
+	self.priority = priority
+end
+
+--? @args 
+--? @result float
+function Strategy:GetPriority()
+	dbAssert( self.priority ~= nil )
+	return self.priority
+end
+
+--? @shortdesc Get the name of the strategy
+--? @args 
+--? @result string
+function Strategy:GetName()
+	return "Invalid Strategy"
+end
+
+--? @shortdesc Get the plans table for this strategy
+--? @args 
+--? @result table
+function Strategy:GetPlans()
+	return self.plans
+end
+
+--? @shortdesc Get the number of plans this strategy
+--? @args 
+--? @result number
+function Strategy:GetPlanCount()
+	return table.getn(self.plans)
+end
+
+
+function Strategy:DoNeeds()
+	foreach_bind( self.plans, self.DoPlanNeeds, self )
+end
+
+function Strategy:DoWants()
+	foreach_bind( self.plans, self.DoPlanWants, self )
+end
+
+--? @shortdesc Update the current state of the strategy
+--? @args 
+--? @result void
+function Strategy:Update()
+
+	--reset demands
+	self:ResetDemand()
+
+end
+
+function Strategy:DoDeleteOldPlans()
+
+	--remove the finished plans
+	local num_items = table.getn( self.plans )
+	for i = num_items, 1, -1 do
+		if( self.plans[i]:IsComplete() == true ) then
+			self.plans[i]:UnlockAll() -- release resources
+			table.remove( self.plans, i ) --erase from table
+		end
+	end
+	
+end
+
+function Strategy:DeletePlan(plan)
+
+	--remove the named plan
+	local num_items = table.getn( self.plans )
+	for i = num_items, 1, -1 do
+		if(Plan.GetName(self.plans[i]) == plan) then
+		print("AAA "..plan)
+			if( self.plans[i]:IsComplete() == true ) then
+				print("BBB "..plan)
+				self.plans[i]:UnlockAll() -- release resources
+				table.remove( self.plans, i ) --erase from table
+			end
+		end
+	end
+end
+
+function Strategy:DoPlans()
+
+	--update the currently running plans
+	foreach_bind( self.plans, self.DoPlan, self )
+	
+end
+
+--? @shortdesc Adds a plan to the strategy
+--? @args Plan plan
+--? @result void
+function Strategy:AddPlan( plan )
+
+	profile_start("AddPlan")
+	
+	--ZZZ
+	--local planName = Plan.GetName(plan)
+	--print("add plan "..planName)
+	
+	dbAssert( plan ~= nil )
+	table.insert( self.plans, plan )
+	table.sort( self.plans, PlanLessThan )
+	
+	profile_end("AddPlan")
+	
+end
+
+function Strategy:PostEvent( event )
+
+	cpu_manager:OnStrategicEvent( self, event )
+
+end
+
+--? @shortdesc Updates a plan
+--? @args Plan plan
+--? @result void
+function Strategy:DoPlan( plan )
+	plan:Update()
+end
+
+function Strategy:DoPlanNeeds( plan )
+	plan:Needs()
+end
+
+function Strategy:DoPlanWants( plan )
+	plan:Wants()
+end
+
+--? @shortdesc Returns the name of the plan if plan is equal to the name and id passed in (nil otherwise)
+--? @args string plan_name, int id, Plan plan
+--? @result string
+function Strategy:FindPlan( plan_name, plan_id, plan )
+	dbAssert( type( plan_name ) == "string" )
+--	dbAssert( type( plan_id ) == "number" )
+	
+	dbAssert( plan.IsEqual ~= nil )
+	
+	if plan:IsEqual( plan_name, plan_id ) then
+		return plan_name
+	end
+	
+	return nil
+end
+
+--? @shortdesc Returns an array of plans matching the given plan_name
+--? @args string plan_name
+--? @result array 
+function Strategy:GetPlansByName(plan_name)
+	dbAssert( type( plan_name ) == "string" )
+
+	local matched_plans = {}
+	
+	for i in self.plans do
+		local plan = self.plans[i]
+		
+		if (plan:GetName() == plan_name) then
+
+			table.insert(matched_plans,plan)
+		
+		end
+	end
+
+	return matched_plans
+end
+
+--? @shortdesc Returns true if this plan already exists
+--? @args Plan plan, int id
+--? @result bool
+function Strategy:PlanExists( plan_name, plan_id )
+	if (foreach_bind( self.plans, self.FindPlan, self, plan_name, plan_id ) == nil) then
+		return false
+	end
+	
+	return true
+end
+
+function Strategy:PlanCount( plan_name )
+
+	local count = 0
+	for i in self.plans do
+		dbAssert( self.plans[i] ~= nil )
+		if self.plans[i]:GetName() == plan_name then
+			count = count + 1
+		end
+	end
+
+	return count
+	
+end
+
+--? @shortdesc Builds creates a plan to build a prerequisite
+--? @args CpuPrerequisites.BuildType build_type
+--? @result void
+function Strategy:BuildPrereq( build_type )
+
+	if( build_type.btype == CpuPrerequisites.BT_Squad ) then
+		
+		--used to nerf the AI if the AI is getting too strong
+		if cpu_manager:RestrictMilitary() then
+			return
+		end
+		
+		if( not cpu_manager.components[ CpuPlayer.CT_BuildUnits ] ) then
+			return
+		end
+		
+		local id = cpu_manager.stats:GetSquadID( build_type.name )
+		self.AddPlan( self, BuildUnitPlan( id ) )
+		
+	elseif( build_type.btype == CpuPrerequisites.BT_Building ) then
+	
+		if( not cpu_manager.components[ CpuPlayer.CT_BuildBuildings ] ) then
+			return
+		end
+
+		local id = cpu_manager.stats:GetBuildingID( build_type.name )
+		
+		if( self:PlanExists("Build Building Plan", id) == false ) then 
+			self.AddPlan( self, BuildBuildingPlan( id, nil ) )
+		end
+
+	elseif( build_type.btype == CpuPrerequisites.BT_Research ) then
+
+		if( not cpu_manager.components[ CpuPlayer.CT_BuildResearch ] ) then
+			return
+		end
+
+		local id = cpu_manager.stats:GetResearchID( build_type.name )
+		
+		if( self:PlanExists("Build Research Plan", id) == false ) then 
+			self.AddPlan( self, BuildResearchPlan( id ) )
+		end
+		
+	elseif( build_type.btype == CpuPrerequisites.BT_AddOn ) then
+
+		if( not cpu_manager.components[ CpuPlayer.CT_BuildAddOns ] ) then
+			return
+		end
+
+		local id = cpu_manager.stats:GetAddOnID( build_type.name )
+		
+		if( self:PlanExists("Build AddOn Plan", id) == false ) then 
+			self.AddPlan( self, BuildAddOnPlan( id ) )
+		end
+		
+	else
+		aitrace( "foobar"..build_type.name )
+		dbBreak()
+	end
+
+end
+
+--? @shortdesc Forces the release of all resources the strategy owns
+--? @args
+--? @result void
+function Strategy:ForceReleaseAll()
+
+	for i in self.plans do
+		self.plans[i]:UnlockAll()
+	end
+	
+	self.plans = {}
+
+end
+
+--? @shortdesc Forces the release of a resource if the strategy owns it
+--? @args int id AIResource res_type
+--? @result void
+function Strategy:ForceReleaseResource( id, res_type )
+
+	--find the plan that has it locked, and remove it
+	for i in self.plans do
+		if( self.plans[i]:HasResource( id, res_type ) == true ) then
+			self.plans[i]:UnlockAll() -- release resources
+			self.plans[i]:SetComplete( true )
+			table.remove( self.plans, i ) --erase from table
+			return
+		end
+	end
+
+end
+
+--? @shortdesc Tries to build the item, or it's prerequisites (may fail)
+--? @args int id
+--? @result void
+function Strategy:TryBuild( build_type )
+
+	local prereq = CpuPrerequisites( cpu_manager.cpu_player, build_type.name, build_type.btype )
+	
+	if prereq:PrerequisitesFulfilled() then
+		self:BuildPrereq( build_type )
+	else
+		--notify
+		cpu_manager:OnEvent( CpuManager.Events.TryBuildPrereq, id )
+
+		-- build prereqs
+		aipushtrace("prereqs for "..build_type.name..":")
+
+		for i in prereq:GetUnfulfilledPrerequisites() do
+			
+			if( i.prereq_fulfilled ) then
+				self:BuildPrereq( i )
+				aitrace( i.name )
+			else
+				aitrace( i.name.." (dependent)" )
+			end
+		end
+
+		aipoptrace( "end prereqs" )
+	end
+end
+
+
+function Strategy:SetSquadDemand( sbpid, demand )
+	dbAssert( type( sbpid ) == "number" )
+	if sbpid == 0 then
+		return
+	end
+	
+	self.squad_demand[ sbpid ] = demand
+end
+
+
+function Strategy:GetSquadDemand( sbpid )
+	local demand = self.squad_demand[ sbpid ];
+	if( demand == nil ) then
+		return 0
+	else
+		return demand
+	end
+end
+
+
+function Strategy:IncClassInfluence( class, inc )
+	dbAssert( class < UnitStatsAI.UC_Count )
+	self.unit_class_demand[ class ] = self.unit_class_demand[ class ] + inc
+end
+
+
+function Strategy:GetClassInfluence( class )
+	dbAssert( self.unit_class_demand[ class ] ~= nil )
+	return self.unit_class_demand[ class ]
+end
+
+
+function Strategy:IncEffectivenessDemand( class, inc )
+	dbAssert( class < UnitStatsAI.UC_Count )
+	self.effectiveness_demand[class] = self.effectiveness_demand[class] + inc
+end
+
+
+function Strategy:GetEffectivenessDemand( class )
+	dbAssert( self.effectiveness_demand[ class ] ~= nil )
+	return self.effectiveness_demand[ class ]
+end
+
+
+function Strategy:GetHighestDemandedSquad( buildForNow )
+
+	local sbpid = nil
+	local highest_demand = VALUE_LOCK_BUILD
+	
+	for i in self.squad_demand do
+	
+		if i then
+
+			local name = cpu_manager.stats:GetSquadName( i )
+			local unit_stats = cpu_manager.stats:GetUnitStatsFromBPID( i )
+
+			if unit_stats == nil then
+				print( "no unit stats for "..name )
+			else
+				
+				local bReplace = false
+				local eta = 0
+
+				-- get pre-reqs		
+				local prereq = CpuPrerequisites( cpu_manager.cpu_player, name, CpuPrerequisites.BT_Squad )
+
+				if buildForNow then 
+					-- check if we can build it NOW
+
+					if prereq:GetNumUnfulfilledPrerequisites() > 0 then
+						-- too many pre-reqs
+						eta = VALUE_TOO_MANY_REQS
+						bReplace = true
+					else
+						-- is there a valid spawner?
+						local builder = nil
+						for build_channel in build_manager:GetUnlockedBuildChannelAIs() do
+			
+							if build_channel:IsBuilding() == 0 and build_channel:ConstructionDone() then
+						
+								local item_index  = build_channel:GetItemIndexFromID( BuildChannelAI.PQ_Squad, i )
+								if item_index ~= BuildChannelAI.INVALID_INDEX then
+									builder = build_channel
+									break
+								end
+							end
+						end
+
+						if builder == nil then
+							eta = VALUE_NO_BUILD
+							bReplace = true
+						else
+							local squad_cap_req = unit_stats:GetSquadCapReq()
+							local support_cap_req = unit_stats:GetSupportCapReq()
+
+							if	( squad_cap_req > 0 and build_manager:GetSquadCapLeft() - squad_cap_req < 0 ) or 
+								( support_cap_req > 0 and build_manager:GetSupportCapLeft() - support_cap_req < 0 ) then
+								eta = VALUE_CAP
+								bReplace = true
+							end
+						end
+					end
+				elseif prereq:GetNumUnfulfilledPrerequisites() > 3 then
+					-- too many pre-reqs even for the future
+					eta = VALUE_TOO_MANY_REQS
+					bReplace = true
+				else
+					-- check caps if we have no growth room for the required cap
+					if	build_manager:GetSquadCapCurrentMax() == build_manager:GetSquadCapTotalMax() and
+						build_manager:GetSupportCapCurrentMax() == build_manager:GetSupportCapTotalMax() then
+
+						local squad_cap_req = unit_stats:GetSquadCapReq()
+						local support_cap_req = unit_stats:GetSupportCapReq()
+
+						if	( squad_cap_req > 0 and build_manager:GetSquadCapLeft() - squad_cap_req < 0 ) or 
+							( support_cap_req > 0 and build_manager:GetSupportCapLeft() - support_cap_req < 0 ) then
+							eta = VALUE_CAP
+							bReplace = true
+						end
+					end
+				end
+
+				dbAssert( eta ~= nil )
+			
+				if self.squad_demand[ i ] > VALUE_LOCK_BUILD then
+					local demand = 0
+					if bReplace == true then
+						demand = eta
+					else
+						demand = self.squad_demand[ i ] + eta
+					end
+
+					if( highest_demand < demand ) then
+						highest_demand = demand
+						sbpid = i
+					end
+				end
+			end
+		end
+	end
+	
+	return sbpid, highest_demand
+end
+

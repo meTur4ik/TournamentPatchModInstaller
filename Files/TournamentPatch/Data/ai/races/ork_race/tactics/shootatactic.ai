@@ -1,0 +1,48 @@
+----------------------------------------
+-- File: 'shootatactic.ai'
+-- Edited by Thudmeizer   @ 26.10.2006
+
+class 'ShootaTactic' (OrkInfantryTactic)
+
+function ShootaTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Shoota Tactic")
+end
+
+function ShootaTactic:Reinforce()
+
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+   
+	-- If there are no ressources available, don't upgrade!
+	local iRequisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	if (iRequisition < 800 and not Tactic.Options.can_reinforce) then
+		return
+	end
+	
+	-- Reinforce
+	if (not self.squad_ai:IsReinforcing()) then
+		if (self.squad_ai:CanReinforce(true, 0)) then			
+			self.squad_ai:DoReinforce(true, 0)
+		elseif (self.squad_ai:CanReinforce(false, 0)) then
+			self.squad_ai:DoReinforce(false, 0)
+		end
+	end
+end
+
+function ShootaTactic:CheckDance(oSquad)
+
+	-- Check opponent
+	if (oSquad == nil) then
+		return false
+	end
+	
+	-- Check opponent
+	if (oSquad:GetSquadName() == "chaos_squad_cultist") then
+		return false
+	end
+	return true
+end
+

@@ -1,0 +1,14 @@
+----------------------------------------
+-- File: 'chimeratactic.ai'
+-- Edited by Arkhan		@ 23.11.2007
+
+class 'ChimeraTactic' (GuardVehicleTactic)
+
+function ChimeraTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Chimera Tactic")
+
+	-- Vehicle is a light transport
+	self.m_iTransportVehicle = 1
+	self.m_iTransportSlots = 2
+end

@@ -1,0 +1,144 @@
+----------------------------------------
+-- File: 'spacemarineinfantrytactic.ai'
+-- Created by Arkhan		@ 12.01.2006
+-- Edited by Thudmeizer         @ 20.03.2007
+
+class 'SpaceMarineInfantryTactic' (InfantryTactic)
+
+function SpaceMarineInfantryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Space Marine Infantry Tactic")
+	
+	-- Set infantry options
+	local sSquadName = squad_ai:GetSquadName()
+	if (sSquadName == "space_marine_squad_scout" or
+		sSquadName == "space_marine_squad_apothecary" or
+		sSquadName == "space_marine_squad_force_commander" or
+		sSquadName == "space_marine_squad_librarian" or
+		sSquadName == "space_marine_squad_chaplain") then
+		
+		-- Squads are transportable
+		self.m_iTransportable = 1
+		
+	elseif (sSquadName == "space_marine_squad_tactical" or
+			sSquadName == "space_marine_squad_grey_knights") then
+		
+		-- Squads are transportable and able to deepstrike	
+		self.m_iTransportable = 1
+		self.m_iDeepStrikeBlueprintID = cpu_manager.stats:GetBuildingID("space_marine_orbital_relay")
+		
+	elseif (sSquadName == "space_marine_squad_terminator" or
+			sSquadName == "space_marine_squad_terminator_assault") then
+		
+		-- Squads are transportable and able to deepstrike	
+		self.m_iTransportable = 2
+		self.m_iDeepStrikeBlueprintID = cpu_manager.stats:GetBuildingID("space_marine_barracks")
+	end
+end
+
+function SpaceMarineInfantryTactic:AddTargetAbilities()
+	table.insert(InfantryTactic.TargetAbilities, { nil, "marines_melta_bombs", Ability.Filters.CloseVehicleEnemy, 1, 0 })
+	table.insert(InfantryTactic.TargetAbilities, { nil, "marines_frag_grenades", Ability.Filters.CloseSquadEnemy, 1, 0 })
+	table.insert(InfantryTactic.TargetAbilities, { nil, "marines_inquisition", Ability.Filters.CloseEnemy, 1, 0 })
+end
+
+function SpaceMarineInfantryTactic:AddCommanders()
+	table.insert(self.commander, { "space_marine_squad_force_commander", true })
+	table.insert(self.commander, { "space_marine_squad_librarian", false })
+	table.insert(self.commander, { "space_marine_squad_chaplain", false })
+end
+
+function SpaceMarineInfantryTactic:DoAbilities()
+
+	-- I might have these attached
+	if (self.squad_ai:IsAttached()) then
+	
+		if (self.squad_ai:HasSquadAttached("space_marine_squad_force_commander")) then
+			ForceCommanderTactic.InitAbilities( self )
+			ForceCommanderTactic.DoAbilities( self )
+		elseif (self.squad_ai:HasSquadAttached("space_marine_squad_librarian")) then
+			LibrarianTactic.InitAbilities( self )
+			LibrarianTactic.DoAbilities( self )
+		elseif (self.squad_ai:HasSquadAttached("space_marine_squad_chaplain")) then
+			ChaplainTactic.InitAbilities( self )
+			ChaplainTactic.DoAbilities( self )
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end
+
+function SpaceMarineInfantryTactic:CheckForBroken()
+
+	if (self.squad_ai:IsBroken()) then
+	
+		-- Check if I can repair my morale
+		local rally_id = cpu_manager.stats:GetAbilityID( "marines_rally" )
+		if (self.squad_ai:CanDoAbility( rally_id )) then
+			self.squad_ai:DoSpecialAbility( rally_id )
+		end
+	end
+	
+	-- Call basic broken check method
+	InfantryTactic.CheckForBroken(self)
+end
+
+function SpaceMarineInfantryTactic:CheckDance(oSquad)
+
+	-- Check opponent
+	if (oSquad == nil) then
+		return false
+	end
+	
+	-- Compare opponents
+	local sSquadName = self.squad_ai:GetSquadName()
+	if (sSquadName == "space_marine_squad_tactical" or sSquadName == "space_marine_squad_terminator") then
+		
+		-- Check opponent
+		if (oSquad:GetSquadName() == "chaos_squad_cultist") then
+			return false
+		end
+	end
+	return true
+end
+
+function SpaceMarineInfantryTactic:Upgrade()
+
+	-- Check if we have free ressources
+	if (not Tactic.Options.can_reinforce) then
+		return
+	end
+	
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+	
+	-- Don't upgrade space marine squads with less than 6 troopers
+	if (self.squad_ai:GetSquadName() == "space_marine_squad_tactical" and self.squad_ai:GetNumTroopers() < 6) then
+		return
+	end
+	
+	if (not self.squad_ai:IsReinforcing() and self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetNumTroopers() > 3) then
+		
+		-- Figure out my enemy's favourite class
+		local enemy = cpu_manager:FindClosestEnemyPlayer()
+		if (enemy == nil) then
+			return
+		end
+		local class_type = enemy:GetMajorityClassType()
+		
+		-- Larkins hard counter upgrade for HeavyInfantryMed 
+		if (class_type < UnitStatsAI.UC_HeavyInfantryMed) then	  
+		  
+			local enemy_race = enemy:GetPlayerRaceName()
+			if (enemy_race == "space_marine_race" or enemy_race == "chaos_marine_race" or enemy_race == "necron_race") then
+		    	class_type = UnitStatsAI.UC_HeavyInfantryMed
+		  	end
+		end
+		
+		-- Do best upgrade
+		self.squad_ai:DoBestUpgrade(class_type)
+	end
+end

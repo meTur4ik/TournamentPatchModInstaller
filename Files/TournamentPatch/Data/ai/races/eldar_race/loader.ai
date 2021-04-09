@@ -1,0 +1,160 @@
+----------------------------------------
+-- File: 'loader.ai'
+-- Edited by Arkhan	@ 23.10.2006
+-- Renamed by Corsix    @ 13.02.2006
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'eldar_race'
+
+-- Constructor
+function eldar_race:__init()
+
+end
+
+-- Returns the name of the race
+function eldar_race:GetRaceName()
+	return "eldar_race"
+end
+
+-- This function is called if eldar are the race being played
+function eldar_race:LoadRace( eDifficulty )
+	
+	-- Import strategies
+	import( 'Races/eldar_race/Strategies/EldarBuildBaseStrategy.ai' )
+	
+	-- Import strategy info
+	import( "Races/eldar_race/Strategies/EldarStrategyInfo.ai" )
+	
+	-- Import tactics
+	import( 'Races/eldar_race/Tactics/EldarInfantryTactic.ai' )
+	import( 'Races/eldar_race/Tactics/EldarVehicleTactic.ai' )
+	import( 'Races/eldar_race/Tactics/FalconTactic.ai' )
+	import( 'Races/eldar_race/Tactics/FarSeerTactic.ai' )
+	import( 'Races/eldar_race/Tactics/BonesingerTactic.ai' )
+	import( 'Races/eldar_race/Tactics/GuardianTactic.ai' )
+	import( 'Races/eldar_race/Tactics/BansheeTactic.ai' )
+	import( 'Races/eldar_race/Tactics/SeerCouncilTactic.ai' )
+	import( 'Races/eldar_race/Tactics/HarlequinTactic.ai' )
+	import( 'Races/eldar_race/Tactics/WebwayGateTactic.ai' )
+	return true
+end
+
+-- This function is called even if eldar are not the race being played
+function eldar_race:LoadGlobalInfo()
+
+	-- Import info files
+	import( 'Races/eldar_race/Info/eldarunitstats.ai' )
+		
+	-- Add eldar unit stats
+	table.insert(UnitStats, EldarUnitStats)
+	return true
+end
+
+-- Creates build base strategy
+function eldar_race:CreateBuildBaseStrategy()
+	return EldarBuildBaseStrategy(BuildBaseStrategyInfo)
+end
+
+-- Creates a special tactic for an eldar unit
+function eldar_race:CreateTactic(oSquadAI)
+
+	-- Get unit name and class
+	local sUnitName = oSquadAI:GetSquadName()
+	local eClass = oSquadAI:GetStats():GetClass()
+	
+	-- Check if there is a special tactic for the unit available
+	local bVehicle = (eClass == UnitStatsAI.UC_VehicleLow or eClass == UnitStatsAI.UC_VehicleMed or eClass == UnitStatsAI.UC_VehicleHigh)
+	local bAirPlane = (eClass == UnitStatsAI.UC_AirLow or eClass == UnitStatsAI.UC_AirMed or eClass == UnitStatsAI.UC_AirHigh)
+	if (sUnitName == "eldar_squad_bonesinger") then
+		return BonesingerTactic(oSquadAI)
+	elseif (sUnitName == "eldar_squad_falcon_grav_tank") then
+		return FalconTactic(oSquadAI)
+	elseif (sUnitName == "eldar_guardian_squad") then
+		return GuardianTactic(oSquadAI)
+	elseif (sUnitName == "eldar_squad_banshees") then
+		return BansheeTactic(oSquadAI)
+	elseif (sUnitName == "eldar_squad_seer_council") then
+		return SeerCouncilTactic(oSquadAI)
+	elseif (sUnitName == "eldar_squad_farseer") then
+		return FarSeerTactic(oSquadAI)
+	elseif (sUnitName == "eldar_harlequin_squad") then
+		return HarlequinTactic(oSquadAI)
+	elseif (oSquadAI:IsEngineer()) then
+		return nil
+	elseif (bVehicle or bAirPlane) then
+		return EldarVehicleTactic(oSquadAI)
+	end
+	return EldarInfantryTactic(oSquadAI)
+end
+
+-- Creates a base tactic
+function eldar_race:CreateBaseTactic(oBuilding)
+
+	-- Get building name
+	local sBuildingName = oBuilding:GetBaseName()
+	
+	-- Check if their is a special tactic for the building available
+	if (sBuildingName == "eldar_webway_gate") then
+		return WebwayGateTactic(oBuilding)
+	end
+	return nil
+end
+
+-- Returns a specific information
+function eldar_race:GetInfo(sType)
+
+	-- Check info type
+	if (sType == "TurretPower") then
+		return 400
+	elseif (sType == "SupportAllyFactor") then
+		return 10 / 4
+	elseif (sType == "AttackModifier") then
+		return -10
+	elseif (sType == "CriticalRangeIncreasePerTier") then
+		return 10
+	elseif (sType == "MinArmyStrengthPerTier") then
+		return 750
+	elseif (sType == "AttackRatio") then
+		return 4 / 5
+	elseif (sType == "RetreatRatio") then
+		return 3 / 5
+	elseif (sType == "InvisibleBuildings") then
+		return true
+	elseif (sType == "HarassingLeader") then
+		return "eldar_squad_farseer"
+	elseif (sType == "AutoConstructBuildings") then
+		return false
+	end
+	return nil
+end
+
+-- Returns the building type and threat
+function eldar_race:GetBuildingType(sBuildingName)
+
+	-- Return race specific object string
+	if (sBuildingName == "eldar_hq") then
+		return "HQ", 0
+		
+	elseif (sBuildingName == "eldar_warp_generator") then
+		return "Generator", 0
+		
+	elseif (sBuildingName == "eldar_advanced_warp_generator") then
+		return "BiggerGenerator", 0
+		
+	elseif (sBuildingName == "eldar_support_portal") then
+		return "VehicleBuilding", 0
+		
+	elseif (sBuildingName == "eldar_soul_shrine") then
+		return "Armoury", 0
+		
+	elseif (sBuildingName == "eldar_listening_post") then
+		return "ListeningPost", 0
+		
+	elseif (sBuildingName == "eldar_support_platform_scatterlaser") then
+		return "Turret", 300
+		
+	elseif (sBuildingName == "eldar_mine_field") then
+		return "Mine", 100
+	end
+	return nil, 0
+end

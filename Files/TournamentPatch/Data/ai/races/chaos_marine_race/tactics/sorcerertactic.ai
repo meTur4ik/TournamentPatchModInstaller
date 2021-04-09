@@ -1,0 +1,122 @@
+----------------------------------------
+-- File: 'sorcerertactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+-- Edited by LarkinVB   @ 16.08.2005
+
+class 'SorcererTactic' (ChaosMarineInfantryTactic)
+
+Sorcerer = {}
+
+function SorcererTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sorcerer Tactic")
+	
+	self.dance_time = 0
+end
+
+function SorcererTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function SorcererTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function SorcererTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Sorcerer.torment == nil) then
+		Sorcerer.torment = cpu_manager.stats:GetAbilityID( "chaos_chains_of_torment" )
+	end
+	if (Sorcerer.corruption == nil) then
+		Sorcerer.corruption = cpu_manager.stats:GetAbilityID( "chaos_corruption" )
+	end
+	if (Sorcerer.doombolt_id == nil) then
+		Sorcerer.doombolt_id = cpu_manager.stats:GetAbilityID( "chaos_doombolt" )
+	end
+end
+
+function SorcererTactic:DoAbilities()
+		
+	-- We are dying, lower requisites for attacks
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+
+		Ability.DoAbilityTarget( self.squad_ai, Sorcerer.torment, Ability.Filters.CloseEnemy, 4 ) 
+		Ability.DoAbilityPos( self.squad_ai, Sorcerer.corruption, Ability.Filters.CloseEnemy, 4 ) 
+		Ability.DoAbilityTarget( self.squad_ai, Sorcerer.doombolt_id, Ability.Filters.CloseSquadEnemy, 1 )
+	else
+		Ability.DoAbilityTarget( self.squad_ai, Sorcerer.torment, Ability.Filters.CloseEnemy, 8 )
+		Ability.DoAbilityPos( self.squad_ai, Sorcerer.corruption, Ability.Filters.CloseEnemy, 8 )
+		Ability.DoAbilityTarget( self.squad_ai, Sorcerer.doombolt_id, Ability.Filters.CloseSquadEnemy, 2 )
+	end
+	
+	-- Check if we can possess
+	if (self.squad_ai:CanPossess()) then
+	
+		-- Check if we are in combat
+		if (self.squad_ai:IsInCombat() or cpu_manager.terrain_analyzer:HasThreat(self.squad_ai:GetPosition(), 35)) then
+			self.squad_ai:DoPossess()
+		end
+	end
+end
+
+function SorcererTactic:Update()
+
+    if (self:IsComplete()) then
+        return
+    end
+    
+    -- State machine
+    if (not InfantryTactic.Update( self )) then
+        return
+    end
+    
+	-- Check for close commander
+    local bSetRanged = false
+    local bSetMelee = false
+	local vSquadPos = self.squad_ai:GetPosition()
+	local eStance = self.squad_ai:GetMeleeStance()
+	local oEnemyCommander = Ability.Filters.CloseCommanderEnemy(vSquadPos, 20, 1)
+    if (oEnemyCommander ~= nil) then
+       
+        -- Check health
+        if (self.squad_ai:GetHealthPercentage() > 0.8 and oEnemyCommander:GetHealthPercentage() < 0.3) then
+            bSetMelee = (eStance == SquadAI.MSTANCE_Ranged)
+            self.dance_time = 0
+		else
+            bSetRanged = (eStance == SquadAI.MSTANCE_Assault)
+        end
+	else
+    
+    	-- Check for close attached commander
+    	local oSquad = Ability.Filters.CloseInfantryEnemy(vSquadPos, 20, 4)
+    	if (oSquad ~= nil and oSquad:IsAttached()) then
+    		bSetRanged = (eStance == SquadAI.MSTANCE_Assault)
+    	else
+    		bSetMelee = (eStance == SquadAI.MSTANCE_Ranged)
+    	end
+    end
+
+    -- At leat 10 secs ranged stance/dancing
+    if (bSetRanged) then
+        self.squad_ai:DoSetMeleeStance( SquadAI.MSTANCE_Ranged )
+        self.dance_time = g_iGMT
+    elseif (bSetMelee and self.stateID ~= Tactic.StateID.DoDance and g_iGMT > self.dance_time + 10) then
+        self.squad_ai:DoSetDefaultMeleeStance()
+        self.dance_time = 0
+    end
+    
+	-- Check if we are in serious trouble
+	self:EmergencyRetreat()
+    
+    -- Attach to melee
+	if (self.squad_ai:GetMeleeStance() == SquadAI.MSTANCE_Assault) then
+
+		if (self:TryAttachSquad(true, true, 50, 100, nil) == nil) then
+		
+			if (self:TryAttachSquad(false, false, 50, 100, self.m_fCommanderAttachHealth) == nil) then
+				self:TryAttachSquadMelee()
+			end
+		end
+	end
+end

@@ -1,0 +1,16 @@
+----------------------------------------
+-- File: 'bloodthirstertactic.ai'
+-- Edited by Thudmeizer	@ 26.10.2008
+
+class 'BloodThirsterTactic' (ChaosMarineInfantryTactic)
+
+function BloodThirsterTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("BloodThirster Tactic")
+end
+
+function BloodThirsterTactic:AlwaysAttack()
+	return true
+end
+
+

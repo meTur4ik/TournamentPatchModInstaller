@@ -1,0 +1,34 @@
+----------------------------------------
+-- File: 'wartrukktactic.ai'
+-- Edited by Thudmeizer		@ 26.10.2008
+
+class 'WartrukkTactic' (OrkVehicleTactic)
+
+Wartrukk = {}
+
+function WartrukkTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Wartrukk Tactic")
+	
+	-- Vehicle is a light transport
+	self.m_iTransportVehicle = 1
+	self.m_iTransportSlots = 2
+end
+
+function WartrukkTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Wartrukk.boost_id == nil) then
+		Wartrukk.boost_id = cpu_manager.stats:GetAbilityID( "ork_turbo_boost" )
+	end
+end
+
+function WartrukkTactic:DoAbilities()
+
+	if ((not self.squad_ai:IsInCombat() and self.squad_ai:IsInStateMove()) or self.stateID ~= Tactic.StateID.NoState) then
+
+		if (self.squad_ai:CanDoAbility( Wartrukk.boost_id )) then
+			self.squad_ai:DoSpecialAbility( Wartrukk.boost_id )
+		end
+	end
+end

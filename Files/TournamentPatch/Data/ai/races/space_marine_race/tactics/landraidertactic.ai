@@ -1,0 +1,38 @@
+----------------------------------------
+-- File: 'landraidertactic.ai'
+-- Edited by Arkhan         @ 10.01.2007
+
+class 'LandRaiderTactic' (SpaceMarineVehicleTactic)
+
+LandRaider = {}
+
+function LandRaiderTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Land Raider Tactic")
+	
+	-- Vehicle is a heavy transport
+	self.m_iTransportVehicle = 2
+	self.m_iTransportSlots = 1
+end
+
+function LandRaiderTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (LandRaider.spirit_id == nil) then
+		LandRaider.spirit_id = cpu_manager.stats:GetAbilityID( "marines_machine_spirit" )
+	end
+end
+
+function LandRaiderTactic:DoAbilities()
+
+	-- Check if I can use machine spirit while stationary
+	if (self.squad_ai:WasRecentlyHurt() and not self.squad_ai:IsInStateMove() and not self.squad_ai:IsInStateAttackMove()) then
+		
+		if (self.squad_ai:CanDoAbility(LandRaider.spirit_id)) then
+			self.squad_ai:DoSpecialAbility(LandRaider.spirit_id)
+		end	  
+	end
+	
+	-- Do basic abilities
+	SpaceMarineVehicleTactic.DoAbilities(self)
+end

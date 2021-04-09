@@ -1,0 +1,62 @@
+----------------------------------------
+-- File: 'Psykertactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'PsykerTactic' (GuardInfantryTactic)
+
+Psyker = {}
+
+function PsykerTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Psyker Tactic")
+end
+
+function PsykerTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function PsykerTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function PsykerTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Psyker.lightning_id == nil) then
+		Psyker.lightning_id = cpu_manager.stats:GetAbilityID( "guard_psyker_lightning_arc" )	
+	end
+	if (Psyker.strip_id == nil) then
+		Psyker.strip_id = cpu_manager.stats:GetAbilityID( "guard_psyker_strip_soul" )	
+	end
+	if (Psyker.curse_id == nil) then
+		Psyker.curse_id = cpu_manager.stats:GetAbilityID( "guard_curse_machine_spirits" )	
+	end
+end
+
+function PsykerTactic:DoAbilities()
+
+	-- Target infantry
+	Ability.DoAbilityTarget( self.squad_ai, Psyker.lightning_id, Ability.Filters.CloseSquadEnemy, 1 ) 
+	
+	-- Target commanders
+	Ability.DoAbilityTarget( self.squad_ai, Psyker.strip_id, Ability.Filters.CloseCommanderEnemy, 1 )
+	
+	-- Target vehicles
+	Ability.DoAbilityTarget( self.squad_ai, Psyker.curse_id, Ability.Filters.CloseVehicleEnemy, 1 )
+end
+
+function PsykerTactic:Update()
+
+   if self:IsComplete() then
+      return
+   end
+
+   --state machine
+   if not InfantryTactic.Update( self ) then
+      return
+   end
+
+   --attach to squad
+   self:TryAttachSquad( false, false, 1000, 100, nil )
+end
+

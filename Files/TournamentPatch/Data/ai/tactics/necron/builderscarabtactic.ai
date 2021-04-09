@@ -1,0 +1,24 @@
+class 'BuilderScarabTactic' (EngineerTactic)
+
+function BuilderScarabTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Builder Scarab Tactic")
+
+end
+
+function BuilderScarabTactic:Update()
+
+	if not EngineerTactic.Update( self ) then
+		return false
+	end
+
+	if not self.squad_ai:IsReinforcing() and 
+		self.squad_ai:GetNumTroopers() < self.squad_ai:GetMaxTroopers() then
+		if self.squad_ai:CanReinforce( false, 0 ) then
+			self.squad_ai:DoReinforce( false, 0 )
+		end
+	end
+	
+	return true
+end
+

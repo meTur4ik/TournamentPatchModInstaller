@@ -1,0 +1,59 @@
+----------------------------------------
+-- File: 'Priesttactic.ai'
+-- Edited by Thudmeizer @ 22.09.2005
+
+class 'PriestTactic' (GuardInfantryTactic)
+
+Priest = {}
+
+function PriestTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Priest Tactic")
+end
+
+function PriestTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function PriestTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function PriestTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Priest.fanatical_id == nil) then
+		Priest.fanatical_id = cpu_manager.stats:GetAbilityID( "guard_priest_fanatical" )	
+	end
+end
+
+function PriestTactic:DoAbilities()
+
+	-- No fanatism while retreating
+	if (not self:IsMoving() and self.squad_ai:IsInCombat()) then
+		Ability.DoAbility( self.squad_ai, Priest.fanatical_id, Ability.Filters.IsInCombat ) 
+	end
+end
+
+function PriestTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update( self )) then
+		return
+	end
+		
+	-- Attach to melee in tier3+
+	if (cpu_manager:GetTierLevel() > 2) then
+	
+		if (self:TryAttachSquad(true, true, 50, 100, nil) ~= nil) then
+			return
+		end
+	end
+	if (self:TryAttachSquad(false, true, 50, 100, self.m_fCommanderAttachHealth) == nil) then
+		self:TryAttachSquadMelee()
+	end
+end

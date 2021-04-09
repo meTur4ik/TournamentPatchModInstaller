@@ -1,0 +1,327 @@
+----------------------------------------
+-- File: 'chaosstrategyinfo.ai'
+-- Edited by Thudmeizer @ 06.03.2008
+
+BuildBaseStrategyInfo = 
+{
+	chaos_marine_race =
+	{
+		post_builder = 1,
+		flag_capture = 1,
+
+		-- Reserve this amount for building units, reinforcing and upgrading
+		req_reserve = 150,
+		
+		--need at least this at all times
+		squad_cap_threshold = 2,
+
+		--need at least this at all times
+		support_cap_threshold = 3,
+		
+		--used to calculate wants for engineers
+		Engineers =
+		{
+			--number of engineers we're aiming for
+			want = 2,
+		},
+		
+		-- Is used to modify the army strength in the build programs (Allows faster balancing adjustments)
+		ArmyStrengthModifier = 1.0,
+				
+		-- Item-Syntax: Min. Tier, Min. Requisition, Min. Power, Min. ArmyStrength, Object-Count, Object-Type, Object-Name
+		BuildPrograms =
+		{
+			-- Research Total: 35
+			-- Allround strategy
+			{
+				{ 1, 220, 50, 0, 1,	 "Unit",	"chaos_squad_lord" },
+				{ 1, 80, 0, 0, 1,	 "Unit",	"chaos_squad_cultist" }, -- Force a capturing squad
+				{ 1, 190, 0, 0, 1,	 "Unit",	"chaos_marine_squad" },
+				{ 1, 240, 0, 0, 1,	 "Unit",	"chaos_squad_raptor" },
+				{ 1, 700, 150, 0, 1,     "Building",	"chaos_hq" },
+				{ 1, 300, 0, 0, 1,	 "Building",	"chaos_temple" },
+				{ 1, 135, 0, 0, 1,	 "Building",	"chaos_plasma_generator" },
+				{ 1, 175, 50, 500, 1,	 "Building",	"chaos_armoury" },
+				{ 1, 100, 75, 750, 60,	 "TurretAddon", "chaos_list_post_addon_1" },
+				{ 1, 135, 0, 0, 2,	 "Building",	"chaos_plasma_generator" },
+				{ 1, 90, 45, 0, 1,	 "Building",	"chaos_turret_bolter" },
+				{ 1, 325, 125, 1000, 1,	 "Addon",	"chaos_hq_addon_1" },
+				{ 1, 100, 75, 250, 100,	 "TurretAddon", "chaos_list_post_addon_1" },
+				{ 1, 135, 0, 500, 4,	 "Building",	"chaos_plasma_generator" },
+
+				{ 2, 0, 0, 0, 0,	 "Restrict",	"chaos_squad_raptor" },
+				{ 2, 200, 125, 250, 1,	 "Building",	"chaos_machine_pit" },
+				{ 2, 125, 0, 500, 1,	 "Research",    "chaos_support_cap_research" },
+				{ 2, 150, 260, 0, 1,	 "Unit",	"chaos_squad_defiler" },
+				{ 2, 200, 20, 0, 1,	 "Unit",	"chaos_squad_khorne_berserker" },
+				{ 2, 250, 50, 0, 1,	 "Unit",	"chaos_squad_horror" },
+				{ 2, 135, 0, 1000, 6,	 "Building",	"chaos_plasma_generator" },
+				{ 2, 50, 0, 1000, 50,	 "TurretAddon", "chaos_turret_addon" },
+				{ 2, 200, 40, 1000, 1,	 "Research",    "chaos_power_research_1" },
+				{ 2, 100, 50, 1000, 1,	 "Building",	"chaos_sacrificial_circle" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "chaos_requisition_research_1" },
+				{ 2, 125, 0, 1500, 1,	 "Research",    "chaos_support_cap_research_1" },
+				{ 2, 340, 340, 1500, 1,	 "Addon",	"chaos_hq_addon_2" },
+				{ 2, 265, 155, 2000, 40, "TurretAddon", "chaos_list_post_addon_2" },
+				{ 2, 90, 45, 2000, 2,	 "Building",	"chaos_turret_bolter" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"chaos_mine_field" },
+
+				{ 3, 300, 105, 0, 1,	 "Unit",	"chaos_squad_obliterator" },
+				{ 3, 260, 120, 0, 1,	 "Unit",	"chaos_squad_possessed_marine" },
+				{ 3, 100, 100, 2000, 1,	 "Building",	"chaos_greater_sacrificial_circle" },
+				{ 3, 100, 50, 2000, 2,	 "Building",	"chaos_sacrificial_circle" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "chaos_power_research_2" },
+				{ 3, 75, 350, 2000, 1,	 "Research",    "chaos_requisition_research_2" },
+				{ 3, 90, 45, 2000, 4,	 "Building",	"chaos_turret_bolter" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"chaos_mine_field" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "chaos_projectiles" },
+
+				{ 4, 250, 250, 0, 1,  	 "Research",	"chaos_daemon_prince_research" },
+				{ 4, 400, 400, 0, 1,	 "Research",    "chaos_bloodthirster_research" },
+				{ 4, 90, 45, 2000, 6,	 "Building",	"chaos_turret_bolter" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"chaos_mine_field" },
+				{ 4, 265, 155, 3000, 100,"TurretAddon", "chaos_list_post_addon_2" },
+				{ 4, 700, 150, 4000, 2,	 "Building",	"chaos_hq" }
+			},
+			
+			-- Chaos marine strategy
+			{
+				{ 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" },
+				{ 1, 220, 50, 0, 1,	 "Unit",	"chaos_squad_lord" },
+				{ 1, 80, 0, 0, 1,	 "Unit",	"chaos_squad_cultist" }, -- Force a capturing squad
+				{ 1, 190, 0, 0, 2,	 "Unit",	"chaos_marine_squad" },
+				{ 1, 190, 0, 1000, 3,	 "Unit",	"chaos_marine_squad" },
+				{ 1, 700, 150, 0, 1,	 "Building",	"chaos_hq" },
+				{ 1, 300, 0, 0, 1,	 "Building",	"chaos_temple" },
+				{ 1, 135, 0, 0, 1,	 "Building",	"chaos_plasma_generator" },
+				{ 1, 175, 50, 500, 1,	 "Building",	"chaos_armoury" },
+				{ 1, 100, 75, 750, 60,	 "TurretAddon", "chaos_list_post_addon_1" },
+				{ 1, 135, 0, 0, 2,	 "Building",	"chaos_plasma_generator" },
+				{ 1, 90, 45, 0, 1,	 "Building",	"chaos_turret_bolter" },
+				{ 1, 25, 75, 500, 1,	 "Research",    "chaos_frag_grenade_research" },
+				{ 1, 325, 125, 1000, 1,	 "Addon",	"chaos_hq_addon_1" },
+				{ 1, 100, 75, 250, 100,	 "TurretAddon", "chaos_list_post_addon_1" },
+				{ 1, 25, 75, 500, 1,	 "Research",    "chaos_frag_grenade_research" },
+
+				{ 2, 0, 0, 0, 0,	 "Restrict",	"chaos_squad_raptor" },
+				{ 2, 220, 50, 0, 1,	 "Unit",	"chaos_squad_lord" },
+				{ 2, 150, 75, 0, 1,	 "Unit",	"chaos_squad_sorcerer" },
+				{ 2, 200, 20, 0, 2,	 "Unit",	"chaos_squad_khorne_berserker" },
+				{ 2, 250, 50, 0, 2,	 "Unit",	"chaos_squad_horror" },
+				{ 2, 100, 50, 250, 1,	 "Building",	"chaos_sacrificial_circle" },
+				{ 2, 50, 0, 500, 50,	 "TurretAddon", "chaos_turret_addon" },
+				{ 2, 75, 100, 500, 1,	 "Research",    "chaos_max_weapons_research" },
+				{ 2, 135, 0, 1000, 3,	 "Building",	"chaos_plasma_generator" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "chaos_requisition_research_1" },
+				{ 2, 340, 340, 1500, 1,	 "Addon",	"chaos_hq_addon_2" },
+				{ 2, 200, 40, 1000, 1,	 "Research",    "chaos_power_research_1" },
+				{ 2, 200, 125, 1000, 1,	 "Building",	"chaos_machine_pit" },
+				{ 2, 135, 0, 1000, 4,	 "Building",	"chaos_plasma_generator" },
+				{ 2, 125, 0, 1000, 1,	 "Research",    "chaos_support_cap_research" },
+				{ 2, 265, 155, 2000, 40, "TurretAddon", "chaos_list_post_addon_2" },
+				{ 2, 135, 0, 2000, 6,	 "Building",	"chaos_plasma_generator" },
+				{ 2, 90, 45, 2000, 2,	 "Building",	"chaos_turret_bolter" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"chaos_mine_field" },
+
+				{ 3, 300, 105, 0, 1,	 "Unit",	"chaos_squad_obliterator" },
+				{ 3, 260, 120, 0, 1,	 "Unit",	"chaos_squad_possessed_marine" },
+				{ 3, 125, 0, 2000, 1,	 "Research",    "chaos_support_cap_research_1" },
+				{ 3, 100, 100, 2000, 1,	 "Building",	"chaos_greater_sacrificial_circle" },
+				{ 3, 100, 50, 2000, 2,	 "Building",	"chaos_sacrificial_circle" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "chaos_power_research_2" },
+				{ 3, 75, 350, 2000, 1,	 "Research",    "chaos_requisition_research_2" },
+				{ 3, 90, 45, 2000, 4,	 "Building",	"chaos_turret_bolter" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"chaos_mine_field" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "chaos_projectiles" },
+
+				{ 4, 250, 250, 0, 1,  	 "Research",	"chaos_daemon_prince_research" },
+				{ 4, 400, 400, 0, 1,	 "Research",    "chaos_bloodthirster_research" },
+				{ 4, 90, 45, 2000, 6,	 "Building",	"chaos_turret_bolter" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"chaos_mine_field" },
+				{ 4, 265, 155, 3000, 100,"TurretAddon", "chaos_list_post_addon_2" },
+				{ 4, 700, 150, 4000, 2,	 "Building",	"chaos_hq" }
+			},
+		
+			-- Raptor strategy
+			{
+				{ 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" },
+				{ 1, 220, 50, 0, 1,	 "Unit",	"chaos_squad_lord" },
+				{ 1, 80, 0, 0, 1,	 "Unit",	"chaos_squad_cultist" }, -- Force a capturing squad
+				{ 1, 240, 0, 0, 3,	 "Unit",	"chaos_squad_raptor" },
+				{ 1, 700, 150, 0, 1,	 "Building",	"chaos_hq" },
+				{ 1, 300, 0, 0, 1,	 "Building",	"chaos_temple" },
+				{ 1, 135, 0, 0, 1,	 "Building",	"chaos_plasma_generator" },
+				{ 1, 100, 75, 750, 60,	 "TurretAddon", "chaos_list_post_addon_1" },
+				{ 1, 135, 0, 0, 2,	 "Building",	"chaos_plasma_generator" },
+				{ 1, 90, 45, 0, 1,	 "Building",	"chaos_turret_bolter" },
+				{ 1, 175, 50, 750, 1,	 "Building",	"chaos_armoury" },
+				{ 1, 45, 25, 500, 1,	 "Research",    "chaos_raptor_research" },
+				{ 1, 325, 125, 1000, 1,	 "Addon",	"chaos_hq_addon_1" },
+				{ 1, 100, 75, 250, 100,	 "TurretAddon", "chaos_list_post_addon_1" },
+				{ 1, 135, 0, 500, 4,	 "Building",	"chaos_plasma_generator" },
+
+				{ 2, 200, 125, 250, 1,	 "Building",	"chaos_machine_pit" },
+				{ 2, 125, 0, 500, 1,	 "Research",    "chaos_support_cap_research" },
+				{ 2, 150, 260, 0, 1,	 "Unit",	"chaos_squad_defiler" },
+				{ 2, 200, 20, 0, 1,	 "Unit",	"chaos_squad_khorne_berserker" },
+				{ 2, 250, 50, 0, 1,	 "Unit",	"chaos_squad_horror" },
+				{ 2, 135, 0, 1000, 6,	 "Building",	"chaos_plasma_generator" },
+				{ 2, 50, 0, 1000, 50,	 "TurretAddon", "chaos_turret_addon" },
+				{ 2, 200, 40, 1000, 1,	 "Research",    "chaos_power_research_1" },
+				{ 2, 100, 50, 1000, 1,	 "Building",	"chaos_sacrificial_circle" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "chaos_requisition_research_1" },
+				{ 2, 125, 0, 1500, 1,	 "Research",    "chaos_support_cap_research_1" },
+				{ 2, 340, 340, 1500, 1,	 "Addon",	"chaos_hq_addon_2" },
+				{ 2, 265, 155, 2000, 40, "TurretAddon", "chaos_list_post_addon_2" },
+				{ 2, 90, 45, 2000, 2,	 "Building",	"chaos_turret_bolter" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"chaos_mine_field" },
+
+				{ 3, 300, 105, 0, 1,	 "Unit",	"chaos_squad_obliterator" },
+				{ 3, 260, 120, 0, 1,	 "Unit",	"chaos_squad_possessed_marine" },
+				{ 3, 100, 100, 2000, 1,	 "Building",	"chaos_greater_sacrificial_circle" },
+				{ 3, 100, 50, 2000, 2,	 "Building",	"chaos_sacrificial_circle" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "chaos_power_research_2" },
+				{ 3, 75, 350, 2000, 1,	 "Research",    "chaos_requisition_research_2" },
+				{ 3, 90, 45, 2000, 4,	 "Building",	"chaos_turret_bolter" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"chaos_mine_field" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "chaos_projectiles" },
+
+				{ 4, 250, 250, 0, 1, 	 "Research",	"chaos_daemon_prince_research" },
+				{ 4, 400, 400, 0, 1,	 "Research",    "chaos_bloodthirster_research" },
+				{ 4, 90, 45, 2000, 6,	 "Building",	"chaos_turret_bolter" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"chaos_mine_field" },
+				{ 4, 265, 155, 3000, 100,"TurretAddon", "chaos_list_post_addon_2" },
+				{ 4, 700, 150, 4000, 2,	 "Building",	"chaos_hq" }
+			},
+
+			-- Defiler / Chaos Marine strategy
+			{
+				{ 1, 0, 0, 0, 1,	 "Rush", 	"Prepare" },
+				{ 1, 60, 0, 0, 3,	 "Unit",	"chaos_squad_slave" },
+				{ 1, 80, 0, 0, 1,	 "Unit",	"chaos_squad_cultist" }, -- Force a capturing squad
+				{ 1, 700, 150, 0, 1,	 "Building",	"chaos_hq" },
+				{ 1, 300, 0, 0, 1,	 "Building",	"chaos_temple" },
+				{ 1, 135, 0, 0, 1,	 "Building",	"chaos_plasma_generator" },
+				{ 1, 100, 75, 0, 100,	 "TurretAddon", "chaos_list_post_addon_1" },
+				{ 1, 135, 0, 0, 2,	 "Building",	"chaos_plasma_generator" },
+				{ 1, 325, 125, 0, 1,	 "Addon",	"chaos_hq_addon_1" },
+				{ 1, 135, 0, 0, 6,	 "Building",	"chaos_plasma_generator" },
+
+				{ 2, 0, 0, 0, 1,	 "Rush", 	"Prepare" },
+				{ 2, 200, 125, 0, 1,	 "Building",	"chaos_machine_pit" },
+				{ 2, 125, 0, 0, 1,	 "Research",    "chaos_support_cap_research" },
+				{ 2, 220, 50, 0, 1,	 "Unit",	"chaos_squad_lord" },
+				{ 2, 150, 260, 0, 2,	 "Unit",	"chaos_squad_defiler" },
+				{ 2, 200, 20, 0, 3,	 "Unit",	"chaos_squad_khorne_berserker" },
+				{ 2, 0, 0, 1500, 0,	 "Rush", 	"Unleash" },
+				{ 2, 175, 50, 1500, 1,	 "Building",	"chaos_armoury" },
+				{ 2, 90, 45, 1500, 1,	 "Building",	"chaos_turret_bolter" },
+				{ 2, 200, 40, 1500, 1,	 "Research",    "chaos_power_research_1" },
+				{ 2, 50, 0, 1500, 50,	 "TurretAddon", "chaos_turret_addon" },
+				{ 2, 100, 50, 1500, 1,	 "Building",	"chaos_sacrificial_circle" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "chaos_requisition_research_1" },
+				{ 2, 125, 0, 1500, 1,	 "Research",    "chaos_support_cap_research_1" },
+				{ 2, 340, 340, 1500, 1,	 "Addon",	"chaos_hq_addon_2" },
+				{ 2, 265, 155, 2000, 40, "TurretAddon", "chaos_list_post_addon_2" },
+				{ 2, 90, 45, 2000, 2,	 "Building",	"chaos_turret_bolter" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"chaos_mine_field" },
+
+				{ 3, 300, 105, 0, 1,	 "Unit",	"chaos_squad_obliterator" },
+				{ 3, 260, 120, 0, 1,	 "Unit",	"chaos_squad_possessed_marine" },
+				{ 3, 100, 100, 2000, 1,	 "Building",	"chaos_greater_sacrificial_circle" },
+				{ 3, 100, 50, 2000, 2,	 "Building",	"chaos_sacrificial_circle" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "chaos_power_research_2" },
+				{ 3, 75, 350, 2000, 1,	 "Research",    "chaos_requisition_research_2" },
+				{ 3, 90, 45, 2000, 4,	 "Building",	"chaos_turret_bolter" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"chaos_mine_field" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "chaos_projectiles" },
+
+				{ 4, 250, 250, 0, 1,     "Research",	"chaos_daemon_prince_research" },
+				{ 4, 400, 400, 0, 1,	 "Research",    "chaos_bloodthirster_research" },
+				{ 4, 90, 45, 2000, 6,	 "Building",	"chaos_turret_bolter" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"chaos_mine_field" },
+				{ 4, 265, 155, 3000, 100,"TurretAddon", "chaos_list_post_addon_2" },
+				{ 4, 700, 150, 4000, 2,	 "Building",	"chaos_hq" }
+			}
+		},
+				
+		SquadLimits = 
+		{
+			standard =
+			{
+				chaos_squad_slave = 0,
+				chaos_squad_cultist = 1,
+				chaos_marine_squad = math.random( 4,6 ),
+				chaos_squad_raptor = math.random( 2,3 ),
+				chaos_squad_khorne_berserker = math.random( 3,4 ),
+				chaos_squad_possessed_marine = 1,
+				chaos_squad_horror = math.random( 3,4 ),
+				chaos_squad_sorcerer = 1,
+				chaos_squad_lord = 1,
+				chaos_squad_obliterator = 1,
+				chaos_squad_rhino = 3,
+				chaos_squad_hell_talon = math.random( 3,5 ),
+				chaos_squad_defiler = math.random( 4,6 ),
+				chaos_squad_predator = 2,
+				chaos_squad_bloodthirster = 1,
+				chaos_squad_daemon_prince = 1,
+			}
+		},
+	},
+}
+
+BuildOrderStrategyInfo = 
+{
+	chaos_marine_race =
+	{
+		Basic =
+		{
+			{ "flag_capture" }, { "flag_capture" },
+			{ "flag_capture" },
+			{ "squad", "chaos_squad_cultist" },
+			{ "squad", "chaos_squad_slave" },
+			{ "squad", "chaos_squad_cultist" },
+			{ "squad", "chaos_squad_cultist" },
+			{ "post_builder" }, { "post_builder" },
+			{ "building", "chaos_temple", true },
+			{ "building", "chaos_plasma_generator" }
+		},
+		
+		QuickStart =
+		{
+			{ "flag_capture" }, { "flag_capture" }, 
+			{ "flag_capture" },
+			{ "squad", "chaos_squad_cultist" },
+			{ "squad", "chaos_squad_slave" },
+			{ "squad", "chaos_squad_cultist" },
+			{ "squad", "chaos_squad_cultist" },
+			{ "squad", "chaos_squad_slave" },
+			{ "post_builder" }, { "post_builder" },
+			{ "building", "chaos_temple", true },
+			{ "building", "chaos_temple", true },
+			{ "building", "chaos_plasma_generator" }
+		},
+		
+		LargeMap =
+		{
+			{ "flag_capture" }, { "flag_capture" }, 
+			{ "flag_capture" }, { "flag_capture" },
+			{ "squad", "chaos_squad_cultist" },
+			{ "squad", "chaos_squad_slave" },
+			{ "squad", "chaos_squad_cultist" },
+			{ "squad", "chaos_squad_cultist" },
+			{ "squad", "chaos_squad_cultist" },
+			{ "post_builder" }, { "post_builder" },
+			{ "building", "chaos_temple", true },
+			{ "building", "chaos_plasma_generator" }
+		}
+	}
+}
+
+AttackStrategyInfo = 
+{	
+	chaos_marine_race =
+	{
+		MinArmyStrength = 750,
+	},
+}

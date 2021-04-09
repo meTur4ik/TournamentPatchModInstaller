@@ -1,0 +1,162 @@
+--HARD
+BuildBaseStrategyInfo = 
+{
+	eldar_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 3,
+
+		attack_rating = 100,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				eldar_squad_bonesinger = 0,
+				eldar_guardian_squad = 2,
+				eldar_squad_grav_platform = 0,
+				eldar_squad_grav_platform_brightlance = 0,
+				eldar_squad_rangers = 0,
+			},
+		},
+	},
+	
+	chaos_marine_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 3,
+
+		attack_rating = 100,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				chaos_squad_cultist = 2,
+				chaos_squad_rhino = 0,
+				chaos_squad_slave = 0,
+			}
+		},
+	},
+
+	ork_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 3,
+
+		attack_rating = 100,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				ork_squad_grot = 0,
+			}
+		},
+	},
+	
+	space_marine_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 3,
+
+		attack_rating = 100,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				space_marine_squad_servitor = 0,
+				space_marine_squad_rhino = 0,
+				space_marine_squad_scout = 2,
+				space_marine_squad_skull_probe = 0,
+			},
+		},
+	},
+
+	guard_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 3,
+
+		attack_rating = 300,
+		
+		SquadLimits = 
+		{
+			standard = 
+			{
+				guard_squad_enginseer = 0,
+				guard_squad_chimera = 0,
+			},
+		},
+	},
+
+	tau_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 3,
+
+		attack_rating = 300,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				tau_builder_squad = 0,
+				tau_stealth_team_squad = 3,
+				tau_fire_warrior_squad = 2,
+			},
+		},
+	},
+
+	necron_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 4,
+
+		attack_rating = 300, 
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				necron_builder_scarab_squad = 0,
+				necron_basic_warrior_squad = 4,
+				necron_scarab_squad = 2,
+			}
+		},
+	},
+
+	sisters_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 3,
+
+		attack_rating = 100,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				sisters_squad_servitor = 0,
+				sisters_squad_missionary = 2,
+			}
+		},
+	},
+	dark_eldar_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 3,
+
+		attack_rating = 100,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				dark_eldar_squad_slave = 0,
+				dark_eldar_squad_mandrake = 2,
+			}
+		},
+	},
+}

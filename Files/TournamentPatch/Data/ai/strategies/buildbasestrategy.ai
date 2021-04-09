@@ -1,0 +1,746 @@
+class 'BuildBaseStrategy' (Strategy)
+
+BuildBaseStrategy.Status =
+{
+	Defensive = "Defensive",
+	Offensive = "Offensive"
+}
+
+BuildBaseStrategy.UtilityFunctions =
+{
+	DoResearch = function(buildStrategy,researchTable, tierLevel)
+		for i in researchTable do 
+			if not cpu_manager.cpu_player:IsResearchComplete( researchTable[i][2] ) then		
+				if tierLevel < researchTable[i][1] then
+					-- do not research this yet!
+					break
+				else
+					local id = cpu_manager.stats:GetResearchID( researchTable[i][2] )
+					if buildStrategy:PlanExists( "Build Research Plan", id ) == false then 
+						aitrace( "wanting to do research "..researchTable[i][2] )
+						buildStrategy.AddPlan( buildStrategy, BuildResearchPlan( id ) )
+					end
+					-- Only research 1 item at a time
+					break
+				end
+			end
+		end
+	end,
+}
+
+function BuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+
+	self.debug_effectiveness = false
+	
+	self.player_stats = cpu_manager.stats:GetPlayerStatsFromID( cpu_manager.player_id )
+	dbAssert( self.player_stats ~= nil )
+
+	self.debug_table = {}
+	self.debug_table[UnitStatsAI.UC_HeavyInfantryMed]	= "HeavyInfantryMed"
+	self.debug_table[UnitStatsAI.UC_HeavyInfantryHigh]	= "HeavyInfantryHigh"
+	self.debug_table[UnitStatsAI.UC_LightInfantryLow] 	= "LightInfantryLow"
+	self.debug_table[UnitStatsAI.UC_LightInfantryMed] 	= "LightInfantryMed"
+	self.debug_table[UnitStatsAI.UC_LightInfantryHigh] 	= "LightInfantryHigh"
+	self.debug_table[UnitStatsAI.UC_VehicleLow] 		= "VehicleLow"
+	self.debug_table[UnitStatsAI.UC_VehicleMed] 		= "VehicleMed"
+	self.debug_table[UnitStatsAI.UC_VehicleHigh]		= "VehicleHigh"
+	self.debug_table[UnitStatsAI.UC_MonsterMed] 		= "Monster Med"
+	self.debug_table[UnitStatsAI.UC_MonsterHigh] 		= "Monster High"
+	self.debug_table[UnitStatsAI.UC_Commander] 			= "Commander"
+	self.debug_table[UnitStatsAI.UC_BuildingLow] 		= "BuildingLow"
+	self.debug_table[UnitStatsAI.UC_BuildingMed] 		= "BuildingMed"
+	self.debug_table[UnitStatsAI.UC_BuildingHigh]		= "BuildingHigh"
+	self.debug_table[UnitStatsAI.UC_AirLow] 			= "AirLow"
+	self.debug_table[UnitStatsAI.UC_AirMed] 			= "AirMed"
+	self.debug_table[UnitStatsAI.UC_AirHigh]			= "AirHigh"
+	
+	self:SetStatus( BuildBaseStrategy.Status.Offensive )
+	self.military_stance = BuildBaseStrategy.OffensiveStance
+	
+	self:PostEvent( Strategy.Events.OnStart )
+
+	-- evaluate more cap
+	self.squad_cap_threshold = 3
+	self.support_cap_threshold = 3
+	
+	self.tierLevel = 1
+	self.num_hq = 1		-- used for power ratio
+
+	-- Build times
+	self.initial_delay = true
+	self.now_initial_duration = 720		-- 1.5 min
+	self.now_duration = 480					-- 1 min
+
+	self.later_initial_duration = 480		-- 1 min
+	self.later_duration = 480				-- 1 min
+
+--[[	-- randomly choose one in the set of squad limits
+	local count = 0
+	for i in self.info.SquadLimits do
+		count = count + 1
+	end
+	
+	local rand = math.random( 1, count )
+	local chosen_strat = nil
+]]
+	local rand = 1
+	
+	--choose the one
+	local index = 1
+	for i in self.info.SquadLimits do
+		if index == rand then
+			chosen_strat = i
+			break
+		end
+		index = index + 1
+	end
+	
+	dbAssert( chosen_strat ~= nil )
+	print( "player "..cpu_manager.player_id.." has chosen strategy: "..chosen_strat )
+	
+	--set the squad limits
+	for i in self.info.SquadLimits[chosen_strat] do
+		build_manager:SetSquadLimit( i, self.info.SquadLimits[chosen_strat][i] )
+	end
+
+	--set maximums, if needed
+	if self.info.no_alternate_objective ~= nil then	
+		if self.info.limit_strategic_points_percentage >= 0 then
+			CapturePlan.Maximums.points = resource_manager:GetTotalNumStrategicPoints() * self.info.limit_strategic_points_percentage
+			CapturePlan.Maximums.objectives = resource_manager:GetTotalNumStrategicObjectives() * self.info.limit_strategic_points_percentage
+		else
+			CapturePlan.Maximums.points = 2
+			CapturePlan.Maximums.objectives = 0
+		end
+	end
+
+	--my rating against the first enemy player
+	self.rating = 0
+	
+	--altenating between building stuff now and looking ahead
+	self.build_now_timer = 0
+end
+
+
+function BuildBaseStrategy:GetName()
+	return "BuildBaseStrategy"
+end
+
+
+function BuildBaseStrategy:UpdateTierLevel()
+	aitrace( "this race does not evaluate tier" )
+	self.tierLevel = 1
+end
+
+
+function BuildBaseStrategy:GetTierLevel()
+	return self.tierLevel
+end
+
+
+-- Increase demand on units with high effectivness against enemy class types
+function BuildBaseStrategy:CalculateEffectivenessDemand( enemy_id )
+
+	local enemy_stats = cpu_manager.stats:GetPlayerStatsFromID( enemy_id )
+	dbAssert( enemy_stats ~= nil )
+	
+	for class = 0, UnitStatsAI.UC_Count - 1 do
+		local self_eff = self.player_stats:GetTotalEffectivenessRating( class )
+		local enemy_class_rating = enemy_stats:GetTotalClassRating( class )
+
+		local difference = self_eff - enemy_class_rating
+		-- if < 0 we want more of this type to counter the enemy
+		-- else we have enough of this type
+		self:IncEffectivenessDemand( class, difference )
+	end
+end
+
+
+-- increase demand on units that the enemy has low effectivness on or that we no longer want
+function BuildBaseStrategy:CalculateClassDemand( enemy_id )
+
+	local enemy_stats = cpu_manager.stats:GetPlayerStatsFromID( enemy_id )
+	dbAssert( enemy_stats ~= nil )
+	for class = 0, UnitStatsAI.UC_Count - 1 do
+
+		local self_class_rating = self.player_stats:GetTotalClassRating( class )
+		local enemy_eff = enemy_stats:GetTotalEffectivenessRating( class )
+		local difference = enemy_eff - self_class_rating
+
+		-- if < 0 then we want more this type - the enemy can't counter them well
+		-- else they will be countered by the enemy, don't build more for now
+
+		self:IncClassInfluence( class, difference )
+	end
+end
+
+
+function BuildBaseStrategy:CalculateEngineerDemand()
+
+	local num_engineers = military_manager:GetNumEngineers()
+
+	-- make sure we have as many engineers as we requested
+	if num_engineers < self.info.engineer_count then
+		
+		--check that the main base isn't under attack
+		local pos = cpu_manager.cpu_player:GetStartingPosition() 
+		if cpu_manager.terrain_analyzer:GetThreatAtPos( pos, 10, false ) > 0 then
+			return
+		end
+		
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Squad
+		build_type.name = cpu_manager.stats:GetSquadName( cpu_manager:GetEngineerBPID() )
+		self:TryBuild( build_type )
+	end
+end
+
+function BuildBaseStrategy:CalculateDetectorDemand()
+	-- build detector units as needed
+	aitrace("this race does not build detector units!")
+end
+
+function BuildBaseStrategy:CanTacticSpendMoney()
+	local requisition = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition )
+	local power = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power )
+	
+	if requisition >= Tactic.ResourceFloor.requisition and power >= Tactic.ResourceFloor.power then
+		return true
+	else
+		return false
+	end
+end
+
+function BuildBaseStrategy:DefensiveStance()
+
+	-- if I'm being attacked don't go offensive
+	local base = self:IsBaseBeingAttacked()
+	if base ~= nil then
+		return
+	end
+
+	--if I reach here, it's because I'm not being attacked. In which case, switch to an offensive stance
+	self:SetStatus( BuildBaseStrategy.Status.Offensive )
+	self.military_stance = BuildBaseStrategy.OffensiveStance
+end
+
+
+function BuildBaseStrategy:OffensiveStance()
+
+	local base = self:IsBaseBeingAttacked()
+	if base ~= nil then
+	
+		self:SetStatus( BuildBaseStrategy.Status.Defensive )
+		self.military_stance = BuildBaseStrategy.DefensiveStance
+		return
+	end
+
+	--get the closest enemy
+	local enemy = cpu_manager:FindClosestEnemyPlayer()
+	
+	if enemy == nil then
+		return
+	end
+		
+	self.rating = cpu_manager:RateAgainstPlayer(enemy) 
+	
+	local start_pos = cpu_manager.cpu_player:GetStartingPosition()
+	dbAssert( start_pos ~= nil )
+	
+	local enemy_base = cpu_manager:FindClosestBaseOrStrategicPoint( start_pos, 0, enemy )
+	if enemy_base ~= nil then
+
+		--check if there's a cap on my army size before I attack
+		if self.info.max_army_size ~=nil and self.player_stats:GetArmyCost() > self.info.max_army_size then
+			-- attaaaaack!
+			self:PostEvent( Strategy.Events.OnAttack )
+			aitrace( "army has built up to decent size -- attack!"..enemy:GetPlayerID() )
+			return
+		end
+	
+		-- actual rating accounts for active defensive buildings
+		local actual_rating = self.rating - cpu_manager:GetDefensiveBuildingsCostAt( enemy, enemy_base:GetPosition(), 25 )
+		aitrace( "actual rating = "..actual_rating )
+	
+		if actual_rating > self.info.attack_rating then
+			self:PostEvent( Strategy.Events.OnAttack )
+			aitrace( "attacking"..enemy:GetPlayerID() )
+		end
+	end
+end
+
+
+function BuildBaseStrategy:EvaluateSquadCap()
+	aitrace("this race does not evaluate squad cap!")
+end
+
+
+function BuildBaseStrategy:DevalueUnitByTier( unit_stats )
+	aitrace("this race does not devalue units!")
+	return 0
+end
+
+
+function BuildBaseStrategy:DoSecondaryBuildings()
+	aitrace("this race does not have secondary buildings to build!")
+end
+
+
+function BuildBaseStrategy:DoResearch()
+	aitrace("this race does not research!")
+end
+
+
+function BuildBaseStrategy:BuildStructureAddons()
+	aitrace("this race does not build add-ons!")
+end
+
+
+function BuildBaseStrategy:Update()
+
+	Strategy.Update(self)
+
+	-- debugging
+	if self.info.no_research then
+		aitrace( "Difficulty: no research" )
+	else
+		aitrace( "Difficulty: able to research" )
+	end
+	
+	if self.info.no_secondary_buildings then
+		aitrace( "Difficulty: no secondary buildings" )
+	else
+		aitrace( "Difficulty: secondary buildings" )
+	end
+
+	if self.info.attack_rating then
+		aitrace( "Difficulty: attack rating "..self.info.attack_rating )
+	end
+	
+	if self.info.resource_capturers then
+		aitrace( "Difficulty: resource capturers "..self.info.resource_capturers )
+	end
+	
+	if self.info.engineer_count then
+		aitrace( "Difficulty: engineer count "..self.info.engineer_count )
+	end
+	
+	if self.info.max_army_percentage then
+		aitrace( "Difficulty: max army percentage "..self.info.max_army_percentage )
+	end
+
+
+	self:UpdateTierLevel()
+
+	self:DoCapturePlan()
+
+	if not self.info.no_research then
+		self:DoResearch()
+	end
+
+	self:BuildStructureAddons()
+
+	self:DoBuildUnits()
+
+	self:DoResourcePlan()
+	self:DoBuildGenerators()
+
+	self:EvaluateSquadCap()
+	self:FinishBuildings()
+
+	if not self.info.no_secondary_buildings then
+		self:DoSecondaryBuildings()
+	end
+	
+	-- either defend or check if I should attack
+	self.military_stance( self )
+end
+
+
+function BuildBaseStrategy:FinishBuildings() 
+
+	--try to finish a building that wasn't finished (probably becasue the AI was reset)
+	local building = build_manager:FindAnyUnfinishedBuildings()
+	if building ~= 0 then
+		
+		--first see if I'm already trying to finish this
+		if self:PlanExists( "Build Building Plan", building ) then
+			return
+		end
+		
+		-- build it!
+		self:AddPlan( BuildBuildingPlan( building, cpu_manager.cpu_player:GetStartingPosition() ) )	
+	end
+end
+
+
+function BuildBaseStrategy:DoResourcePlan()
+
+	if self:PlanCount( "Resource Plan" ) < self.info.resource_capturers then
+		-- We are below the desired plan count
+		-- check if we have any free strategic points
+		
+		for strat_ai in resource_manager:GetUnlockedStrategicPointAIs() do
+
+			if	strat_ai:Owner() == cpu_manager.player_id and 
+				not strat_ai:HasListeningPost() and 
+				not strat_ai:IsStrategicObjective() then
+		
+				-- there is a valid point to build a listening post on	
+				self:AddPlan( ResourcePlan() )	
+				break
+			end
+		end
+	end
+end
+
+
+function BuildBaseStrategy:DoCapturePlan()
+
+	if self:PlanCount( "Capture Plan" ) < self.info.resource_capturers then
+		-- max up to the number of resources we want
+		self:AddPlan( CapturePlan( cpu_manager.cpu_player:GetStartingPosition() ) )	
+	end
+end
+
+
+function BuildBaseStrategy:DoBuildGenerators()
+
+	dbAssert( self.generator_name ~= nil )
+
+	local bBuildGenerator, bBuildBigGenerator = self:CalculateGeneratorDemand()
+
+	if (bBuildBigGenerator) then
+		aitrace("trying to build bigger generator")
+			
+		if not self:PlanExists( "Build Building Plan", self.bigger_generator_id ) then
+			
+			--update where the free slag heaps are
+			resource_manager:UpdateFreeSlagHeaps( self.bigger_generator_id )
+				
+			--look for the closest generator
+			local base_pos = cpu_manager.cpu_player:GetStartingPosition() 
+				
+			local best_slag = nil
+			local best_distance = -1
+				
+			for slag_heap in resource_manager:GetSlagHeaps() do
+
+				if not cpu_manager.terrain_analyzer:HasThreat( slag_heap:GetPosition(), 15 ) then
+
+					if best_slag == nil then
+						best_slag = slag_heap
+						best_distance = distance_sqr( slag_heap:GetPosition(), base_pos )
+					else
+					
+						local cur_distance = distance_sqr( slag_heap:GetPosition(), base_pos )
+						if cur_distance < best_distance then
+							best_slag = slag_heap
+							best_distance = cur_distance
+						end
+					end
+				end
+			end
+			
+			--add the plan to build it if it isn't any where near danger
+			if best_slag ~= nil then
+				self:AddPlan( BuildBuildingPlan( self.bigger_generator_id, best_slag:GetPosition() ) )	
+			else
+				aitrace( "no available or un-threatened slag heaps for bigger generator" )
+			end
+		end
+	end
+	
+	if bBuildGenerator == true then
+		
+		aitrace("trying to build normal generator")
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		build_type.name = self.generator_name
+		self:TryBuild( build_type )
+	end
+end
+
+function BuildBaseStrategy:CalculateGeneratorDemand()
+
+	local bBuildGenerator = false
+	local bBuildBigGenerator = false
+	
+	local tierLevel = self:GetTierLevel()
+
+	local numGenerators = resource_manager:GetNumOwnedPowerGenerators()
+	local powerAmount = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power )
+	
+	-- build if we are below our max # of generators per tier
+	if( tierLevel == 1 ) then
+		if powerAmount < 150 and numGenerators < 3 then
+			bBuildGenerator = true
+		end
+	elseif( tierLevel == 2 ) then
+		if powerAmount < 300 and numGenerators < 5 then
+			bBuildGenerator = true
+		end
+	else
+		if powerAmount < 500 or numGenerators < ( self.num_hq * 6 ) then
+			bBuildGenerator = true
+		end
+	end	
+	
+	bBuildBigGenerator = bBuildGenerator and powerAmount < 500
+	
+	return bBuildGenerator, bBuildBigGenerator
+end
+
+function BuildBaseStrategy:CalculateSquadDemand( unit_stats, buildForNow )
+
+	local unit_id = unit_stats:GetID()
+	local prereq = CpuPrerequisites( cpu_manager.cpu_player, unit_stats:GetSquadName(), CpuPrerequisites.BT_Squad )
+
+	-- Check if we can even build it, ever
+	if prereq:CannotFulfillPrereqs() then
+		return VALUE_NEVER_BUILD
+	end
+
+	-- Check if this squad type is locked out
+	if not build_manager:CanBuildSquad( unit_id ) then
+		return VALUE_LOCK_BUILD
+	end
+
+	local demand = 0
+
+	local class_demand = self:GetClassInfluence( unit_stats:GetClass() )
+	if class_demand < 0 then
+		-- inverse scale for bigger units
+		demand = ( 10 - unit_stats:GetClassRating() ) * class_demand
+	else
+		demand = unit_stats:GetClassRating() * class_demand
+	end
+
+	-- depress rating according to tier
+	demand = demand + self:DevalueUnitByTier( unit_stats )
+
+	if buildForNow == true then
+		-- Consider the squads average effectivness (with upgrades) with the current demands
+		local unit_effect_demand = 0
+
+		for class = 0, UnitStatsAI.UC_Count - 1 do
+			unit_effect_demand = unit_effect_demand + ( self:GetEffectivenessDemand( class ) * unit_stats:GetEffectivenessRating( class ) )
+		end
+
+		unit_effect_demand = unit_effect_demand / UnitStatsAI.UC_Count
+
+		demand = demand + unit_effect_demand
+	end
+			
+	-- Can we build this unit within the next little bit?
+	local power_needed = unit_stats:GetCost( ResourceAmount.RT_Power ) - resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power )
+	local req_needed = unit_stats:GetCost( ResourceAmount.RT_Requisition ) - resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition )
+
+	local req_weight = 0
+	local power_weight = 0
+	local ticks_per_second = 8
+
+	-- Check rate	
+	if power_needed > 0 then
+		--rate is measured in rate per minute. we want it per second
+		local power_rate = resource_manager:GetResourceRate( ResourceAmount.RT_Power ) / 60
+
+		if power_rate == 0 then
+			return VALUE_RESOURCE_RATE
+		else
+			power_weight = ( power_needed / power_rate )
+		end
+	end
+
+	if req_needed > 0 then
+		--rate is measured in rate per minute. we want it per second
+		local req_rate = resource_manager:GetResourceRate( ResourceAmount.RT_Requisition ) / 60
+
+		if req_rate == 0 then
+			return VALUE_RESOURCE_RATE
+		else
+			req_weight = (req_needed / req_rate)
+		end
+	end
+
+	--how many seconds before I can build this thing
+	local resource_time = 0
+	if power_weight > req_weight then
+		resource_time = power_weight
+	else
+		resource_time = req_weight
+	end
+
+	-- Check time cap
+	if buildForNow == true then
+		if resource_time > 180 then
+			return VALUE_BUILD_TIME
+		end
+	elseif resource_time > 240 then
+		return VALUE_BUILD_TIME
+	end
+
+	return demand
+end
+
+
+function BuildBaseStrategy:BuildUnits( buildForNow )
+
+	local id
+	local demand 
+
+	if buildForNow == false then
+		-- always try to build units for now (for defense while teching up)
+		id, demand = self:GetHighestDemandedSquad( false )
+		dbAssert( demand ~= nil )
+
+		if id ~= nil and demand > VALUE_LOCK_BUILD then
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Squad
+			build_type.name = cpu_manager.stats:GetSquadName( id )
+	
+			aitrace( "Spawn LATER: "..build_type.name )
+			self:TryBuild( build_type )
+		end
+	end
+	
+	if self.CanTacticSpendMoney(self) or buildForNow == true then
+		-- try to build units for now (for defense while teching up)
+		id, demand = self:GetHighestDemandedSquad( true )
+		dbAssert( demand ~= nil )
+
+		if id ~= nil and demand > VALUE_LOCK_BUILD then
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Squad
+			build_type.name = cpu_manager.stats:GetSquadName( id )
+
+			aitrace( "Spawn NOW: "..build_type.name )
+			self:TryBuild( build_type )
+		end
+	end
+end
+
+
+function BuildBaseStrategy:DoBuildUnits()
+	
+	--don't go bigger than my opponent's army (if set)
+	if self.info.max_army_percentage ~= nil then
+		local army_cost = self.player_stats:GetArmyCost()
+		
+		local enemy_army_cost = 0
+		
+		for player_temp in cpu_manager.stats:GetPlayerStats() do
+			if( cpu_manager.player_stats:IsEnemy( player_temp ) ) then
+				local cost = player_temp:GetArmyCost()
+				aitrace( "Player "..player_temp:GetPlayerID().." cost: "..cost )
+				enemy_army_cost = enemy_army_cost + cost
+			end
+		end
+
+		aitrace( "My cost: "..army_cost )
+		aitrace( "Max percentage: "..self.info.max_army_percentage * 100 )
+		aitrace( "Max cost: "..enemy_army_cost * self.info.max_army_percentage )
+		aitrace( "Max attack rating"..self.info.attack_rating )
+		
+		--must have at least 400 worth of army, though
+		if( army_cost >= ( enemy_army_cost * self.info.max_army_percentage ) ) and ( army_cost > 400 ) then
+			aitrace("capping army to player")
+			Tactic.Options.can_reinforce = false
+			cpu_manager:SetRestrictMilitary( true )
+			return
+		else
+			aitrace("...still able to build units")
+			Tactic.Options.can_reinforce = true
+			cpu_manager:SetRestrictMilitary( false )
+		end
+	end
+	
+	--check if using designer strategy. If so, don't build my own units
+	if cpu_manager:IsUsingDesignerPreference() then
+		aitrace("using designer preferences")
+		return
+	end
+
+	-- calculate external influences
+	local enemy = cpu_manager:FindClosestEnemyPlayer()
+	if enemy ~= nil then
+		local player_id = enemy:GetPlayerID()
+		self:CalculateEffectivenessDemand( player_id )
+		self:CalculateClassDemand( player_id )
+	end
+	
+	-- need more engineers?
+	self:CalculateEngineerDemand()
+	
+	-- need more detectors?
+	self:CalculateDetectorDemand()
+	
+	--reset game timer if needed
+	local game_time = cpu_manager.cpu_player:GetGameTime()
+	if self.build_now_timer == 0 then
+		self.build_now_timer = game_time
+	end
+
+	--figure out ticks passed
+	local ticks_passed = game_time - self.build_now_timer
+	self.build_now_timer = self.build_now_timer + 1
+
+	local nowDelay = 0
+	local laterDelay = 0
+	if self.initial_delay == true then
+		nowDelay = self.now_initial_duration
+		laterDelay = self.later_initial_duration
+	else
+		nowDelay = self.now_duration
+		laterDelay = self.later_duration
+	end
+
+	-- calculate squad demands
+	local buildForNow
+	if ticks_passed < nowDelay then
+
+		buildForNow = true
+
+		dbAssert( self.spend_now_req ~= nil )
+		dbAssert( self.spend_now_pow ~= nil )
+
+		Tactic.ResourceFloor.requisition = self.spend_now_req
+		Tactic.ResourceFloor.power = self.spend_now_pow
+
+		if( self.initial_delay == true ) then
+			aitrace("building stuff for NOW (initial delay)")
+		else
+			aitrace("building stuff for NOW")
+		end
+	else
+
+		buildForNow = false
+		
+		dbAssert( self.spend_later_req )
+		dbAssert( self.spend_later_pow )
+
+		Tactic.ResourceFloor.requisition = self.spend_later_req
+		Tactic.ResourceFloor.power = self.spend_later_pow
+
+		if( self.initial_delay == true ) then
+			aitrace("building stuff for LATER (initial delay)")
+		else
+			aitrace("building stuff for LATER")
+		end
+	end
+	
+	for unit_stats in cpu_manager.stats:GetUnitStats( cpu_manager.cpu_player:GetPlayerRace() ) do
+		local demand = self:CalculateSquadDemand( unit_stats, buildForNow )
+		self:SetSquadDemand( unit_stats:GetID(), demand )
+	end
+	
+	self:BuildUnits( buildForNow )
+
+	if ticks_passed >= ( nowDelay + laterDelay ) then
+		-- flip from later to now
+		self.build_now_timer = 0
+
+		-- make sure we never use this again
+		self.initial_delay = false
+	end
+end

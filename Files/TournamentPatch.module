@@ -1,0 +1,33 @@
+[global]
+UIName = TournamentPatch
+Description = Unofficial balance mod for Dawn of War - Soulstorm
+Playable = 1
+DllName = WXPMod
+ModFolder = TournamentPatch
+ModVersion = 1.6.4
+
+;; //////////////////////////////////////////////////////////////////
+;; List of folders to map for this MOD 
+;; order is important - the first Archives registered will be scanned for files first
+;;DataFolder.1 = %LOCALE%\Data
+DataFolder.1 = Data
+
+;; //////////////////////////////////////////////////////////////////
+;; List of archives to load for this MOD 
+;; order is important - the first Archives registered will be scanned for files first
+ArchiveFile.1 = TPData
+
+
+;;DataFolder.1 = %LOCALE%\Data
+;;DataFolder.2 = Data
+;;DataFolder.3 = Data_Shared_Textures\%TEXTURE-LEVEL%
+;;DataFolder.4 = Data_Sound\%SOUND-LEVEL%
+;;DataFolder.5 = Data_Music
+;;DataFolder.6 = Data_Whm\%MODEL-LEVEL%
+
+;; //////////////////////////////////////////////////////////////////
+;; List of MODs that this MOD requires to work
+RequiredMod.1 = DXP2
+RequiredMod.2 = W40k
+
+

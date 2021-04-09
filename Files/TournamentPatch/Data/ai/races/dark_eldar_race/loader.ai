@@ -1,0 +1,169 @@
+----------------------------------------
+-- File: 'loader.ai'
+-- Edited by Thudmeizer	@ 23.10.2008
+
+class 'dark_eldar_race'
+
+-- Constructor
+function dark_eldar_race:__init()
+
+end
+
+-- Returns the name of the race
+function dark_eldar_race:GetRaceName()
+	return "dark_eldar_race"
+end
+
+-- This function is called if the race is being played
+function dark_eldar_race:LoadRace( eDifficulty )
+	
+	-- Import strategies
+	import( 'Races/dark_eldar_race/Strategies/DarkEldarBuildBaseStrategy.ai' )
+	
+	-- Import strategy info
+	import( "Races/dark_eldar_race/Strategies/DarkEldarStrategyInfo.ai" )
+
+ 	-- Import tactics
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarInfantryTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarVehicleTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarSlaveTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarArchonTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarHaemonculusTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarMandrakeTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarHellionTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarWychTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarWarpBeastTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarRavenTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarRaiderTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarRavagerTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarTalosTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarDaisOfDestructionTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarHQTactic.ai' )
+	import( 'Races/dark_eldar_race/Tactics/DarkEldarSlaveCaravelTactic.ai' )
+	return true
+end
+
+-- This function is called even if this race are not the race being played
+function dark_eldar_race:LoadGlobalInfo()
+		
+	-- Import info files
+	import( 'Races/dark_eldar_race/Info/darkeldarunitstats.ai' )
+	
+	-- Add race unit stats
+	table.insert(UnitStats, DarkEldarUnitStats)
+	return true
+end
+
+-- Creates build base strategy
+function dark_eldar_race:CreateBuildBaseStrategy()
+	return DarkEldarBuildBaseStrategy(BuildBaseStrategyInfo)
+end
+
+-- Creates a special tactic for a unit
+function dark_eldar_race:CreateTactic(oSquadAI)
+
+	-- Get unit name and class
+	local sUnitName = oSquadAI:GetSquadName()
+	local eClass = oSquadAI:GetStats():GetClass()
+	
+	-- Check if there is a special tactic for the unit available
+	local bVehicle = (eClass == UnitStatsAI.UC_VehicleLow or eClass == UnitStatsAI.UC_VehicleMed or eClass == UnitStatsAI.UC_VehicleHigh)
+	local bAirPlane = (eClass == UnitStatsAI.UC_AirLow or eClass == UnitStatsAI.UC_AirMed or eClass == UnitStatsAI.UC_AirHigh)
+	if (sUnitName == "dark_eldar_squad_slave") then
+		return DarkEldarSlaveTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_archon") then
+		return DarkEldarArchonTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_haemonculus") then
+		return DarkEldarHaemonculusTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_mandrake") then
+		return DarkEldarMandrakeTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_hellion") then
+		return DarkEldarHellionTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_wych") then
+		return DarkEldarWychTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_warp_beast") then
+		return DarkEldarWarpBeastTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_raven") then
+		return DarkEldarRavenTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_raider") then
+		return DarkEldarRaiderTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_ravager") then
+		return DarkEldarRavagerTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_talos") then
+		return DarkEldarTalosTactic(oSquadAI)
+	elseif (sUnitName == "dark_eldar_squad_dais_of_destruction") then
+		return DarkEldarDaisOfDestructionTactic(oSquadAI)
+	elseif (bVehicle or bAirPlane) then
+		return DarkEldarVehicleTactic(oSquadAI)
+	end
+	return DarkEldarInfantryTactic(oSquadAI)
+end
+
+-- Creates a base tactic
+function dark_eldar_race:CreateBaseTactic(oBuilding)
+
+	-- Get building name
+	local sBuildingName = oBuilding:GetBaseName()
+	
+	-- Check if their is a special tactic for the building available
+	if (sBuildingName == "dark_eldar_hq") then
+		return DarkEldarHQTactic(oBuilding)
+	elseif (sBuildingName == "dark_eldar_slave_caravel") then
+		return DarkEldarSlaveCaravelTactic(oBuilding)
+	end
+	return nil
+end
+
+-- Returns a specific information
+function dark_eldar_race:GetInfo(sType)
+
+	-- Check info type
+	if (sType == "TurretPower") then
+		return 400
+	elseif (sType == "SupportAllyFactor") then
+		return 9 / 4
+	elseif (sType == "AttackModifier") then
+		return -5
+	elseif (sType == "CriticalRangeIncreasePerTier") then
+		return 10
+	elseif (sType == "MinArmyStrengthPerTier") then
+		return 750
+	elseif (sType == "AttackRatio") then
+		return 4 / 5
+	elseif (sType == "RetreatRatio") then
+		return 3 / 5
+	elseif (sType == "InvisibleBuildings") then
+		return false
+	elseif (sType == "HarassingLeader") then
+		return "dark_eldar_squad_archon"
+	elseif (sType == "AutoConstructBuildings") then
+		return true
+	end
+	return nil
+end
+
+-- Returns the building type and threat
+function dark_eldar_race:GetBuildingType(sBuildingName)
+
+	-- Return race specific object string
+	if (sBuildingName == "dark_eldar_hq") then
+		return "HQ", 0
+		
+	elseif (sBuildingName == "dark_eldar_plasma_generator") then
+		return "Generator", 0
+		
+	elseif (sBuildingName == "dark_eldar_thermo_plasma") then
+		return "BiggerGenerator", 0
+		
+	elseif (sBuildingName == "dark_eldar_skimmer_shop") then
+		return "VehicleBuilding", 0
+		
+	elseif (sBuildingName == "dark_eldar_haemonculus_laboratory") then
+		return "Armoury", 0
+		
+	elseif (sBuildingName == "dark_eldar_listening_post") then
+		return "ListeningPost", 0
+		
+	end
+	return nil, 0
+end

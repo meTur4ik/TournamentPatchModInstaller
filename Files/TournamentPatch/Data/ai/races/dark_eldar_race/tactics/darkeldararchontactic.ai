@@ -1,0 +1,94 @@
+----------------------------------------
+-- File: 'darkeldararchontactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'DarkEldarArchonTactic' (DarkEldarInfantryTactic)
+
+DarkEldarArchon = {}
+
+function DarkEldarArchonTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Dark Eldar Archon Tactic")
+end
+
+function DarkEldarArchonTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (DarkEldarArchon.vitae_id == nil) then
+		DarkEldarArchon.vitae_id = cpu_manager.stats:GetAbilityID( "dark_eldar_animus_vitae" )
+	end
+
+	if (DarkEldarArchon.crucible_id == nil) then
+		DarkEldarArchon.crucible_id = cpu_manager.stats:GetAbilityID( "dark_eldar_crucible" )
+	end
+end
+
+function DarkEldarArchonTactic:DoAbilities()
+
+	-- We are dying, lower requisites for attacks and use life drain!
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.5) then
+		Ability.DoAbilityTarget(self.squad_ai, DarkEldarArchon.crucible_id, Ability.Filters.CloseSquadEnemy, 4)
+		Ability.DoAbilityTarget(self.squad_ai, DarkEldarArchon.vitae_id, Ability.Filters.CloseSquadEnemy, 4)
+	else
+		Ability.DoAbilityTarget(self.squad_ai, DarkEldarArchon.crucible_id, Ability.Filters.CloseSquadEnemy, 8)
+		Ability.DoAbilityTarget(self.squad_ai, DarkEldarArchon.vitae_id, Ability.Filters.CloseSquadEnemy, 8)
+	end
+end
+
+-- Assassinate win condition -- never attack
+function DarkEldarArchonTactic:IsAttacker()
+	return (not cpu_manager.assassinate and self:IsCommanderAttacker())
+end
+
+-- Assassinate win condition -- never defend
+function DarkEldarArchonTactic:IsDefender()
+	return (not cpu_manager.assassinate and self:IsCommanderDefender())
+end
+
+
+function DarkEldarArchonTactic:Reinforce()
+
+	-- Always try for the actual leader first
+	if not self.squad_ai:IsReinforcing() then
+		if self.squad_ai:CanReinforce( false, 0 ) then
+		   self.squad_ai:DoReinforce( false, 0 )
+		end
+	end
+
+	if (not self.squad_ai:IsReinforcing()) then
+
+		-- Try for different types of squad members
+		local incubiIndex = 0
+	
+		local numIncubis = self.squad_ai:GetLeaderCount( incubiIndex )
+
+		-- Desired number of each leader type
+		local desiredIncubis = 5 
+		
+		local squadMax = self.squad_ai:GetMaxLeaderCount()
+		if (squadMax > 4) then
+		
+			-- Research done - we want 7 Incubis
+			desiredIncubis = 7
+		end
+
+		-- Desired order of reinforcing
+		if (numIncubis < desiredIncubis) then
+			if (self.squad_ai:CanReinforce( true, incubiIndex )) then
+				self.squad_ai:DoReinforce( true, incubiIndex )
+			end
+		end
+	end
+end
+
+function DarkEldarArchonTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update( self )) then
+		return
+	end
+end

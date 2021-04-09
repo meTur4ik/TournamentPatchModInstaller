@@ -1,0 +1,47 @@
+----------------------------------------
+-- File: 'darkeldarhelliontactic.ai'
+-- Edited by Thudmeizer @ 23.10.2008
+
+class 'DarkEldarHellionTactic' (DarkEldarInfantryTactic)
+
+DarkEldarHellion = {}
+
+function DarkEldarHellionTactic:__init( squad_ai ) super( squad_ai )
+	
+	self:SetName("Dark Eldar Hellion Tactic")
+end
+
+function DarkEldarHellionTactic:InitAbilities()
+
+	if (DarkEldarHellion.trackingdevice_id == nil) then
+		DarkEldarHellion.trackingdevice_id = cpu_manager.stats:GetAbilityID( "dark_eldar_tracking_device" )	
+	end
+end
+
+function DarkEldarHellionTactic:DoAbilities()
+
+	--Ability.DoAbilityTarget( self.squad_ai, DarkEldarHellion.trackingdevice_id, Ability.Filters.CloseEnemy, 1 )
+
+	-- Deploy tracking device to enemy infantry/vehicles -- SS 1.10: Still crashes the game
+	--[[if (self.squad_ai:CanDoAbility(DarkEldarHellion.trackingdevice_id)) then
+	
+		-- Search a squad
+		local iRange = self.squad_ai:GetAbilityRange(DarkEldarHellion.trackingdevice_id)
+		local oUnit = Ability.Filters.CloseEnemy(self.squad_ai:GetPosition(), iRange, 1)
+		if (oUnit ~= nil) then
+			self.squad_ai:DoSpecialAbilitySquad(DarkEldarHellion.trackingdevice_id, oUnit:GetSquad())
+		end
+	end]]
+end
+
+function DarkEldarHellionTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update( self )) then
+		return
+	end
+end

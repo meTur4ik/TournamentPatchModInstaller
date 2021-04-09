@@ -1,0 +1,14 @@
+----------------------------------------
+-- File: 'sentineltactic.ai'
+-- Edited by Arkhan		@ 09.11.2006
+
+class 'SentinelTactic' (GuardVehicleTactic)
+
+function SentinelTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sentinel Tactic")
+end
+
+function SentinelTactic:CanOnlyDecap()
+	return true
+end

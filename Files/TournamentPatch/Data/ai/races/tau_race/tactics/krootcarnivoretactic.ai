@@ -1,0 +1,28 @@
+----------------------------------------
+-- File: 'krootcarnivoretactic.ai'
+-- Edited by Thudmeizer		@ 23.10.2006
+-- Edited by Arkhan			@ 15.03.2008
+
+class 'KrootCarnivoreTactic' (TauInfantryTactic)
+
+function KrootCarnivoreTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Kroot Carnivore Tactic")
+end
+
+function KrootCarnivoreTactic:DoAbilities()
+
+    -- Check if we can cannibalize
+	local vSquadPos = self.squad_ai:GetPosition()
+	if (not self.squad_ai:IsInCombat() and self.squad_ai:IsIdle() and not cpu_manager.terrain_analyzer:HasThreat(vSquadPos, 50)) then
+
+		-- Check if we have corpses in range
+		local numCorpses = self.squad_ai:GetNumCorpses(20);
+		if (numCorpses > 0) then
+			self.squad_ai:DoCannibalize();
+		end
+	end
+    
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end

@@ -1,0 +1,52 @@
+----------------------------------------
+-- File: 'guardvehicletactic.ai'
+-- Edited by Thudmeizer		@ 12.10.2006
+
+class 'GuardVehicleTactic' (VehicleTactic)
+
+function GuardVehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Guard Vehicle Tactic")
+end
+
+-- Check if the vehicle should dance away in melee
+function GuardVehicleTactic:CheckVehicleDance(sName)
+
+	if (sName == "guard_squad_basilisk" or
+		sName == "guard_squad_chimera" or
+		sName == "guard_squad_hellhound" or
+		sName == "guard_squad_sentinel" or
+		sName == "guard_squad_lemanruss" or
+		sName == "guard_squad_baneblade") then
+		return true
+	end
+	return false
+end
+
+function GuardVehicleTactic:DoAbilities()
+
+	-- Check for SearchLight (Combat = On, No Combat = On, Retreating = Off)
+	if (playing_night_map == 1) then
+
+		local light1_id = cpu_manager.stats:GetAbilityID( "guard_searchlight_sentinel" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light1_id, " vehicle" )
+	
+		local light2_id = cpu_manager.stats:GetAbilityID( "guard_searchlight_chimera" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light2_id, " vehicle" )
+	
+		local light3_id = cpu_manager.stats:GetAbilityID( "guard_searchlight_hellhound" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light3_id, " vehicle" )
+	
+		local light4_id = cpu_manager.stats:GetAbilityID( "guard_searchlight_basilisk" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light4_id, " vehicle" )
+	
+		local light5_id = cpu_manager.stats:GetAbilityID( "guard_searchlight_lemanruss" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light5_id, " vehicle" )
+	
+		local light6_id = cpu_manager.stats:GetAbilityID( "guard_searchlight_baneblade" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light6_id, " vehicle" )
+	end
+	
+	-- Call standard method
+	VehicleTactic.DoAbilities(self)
+end

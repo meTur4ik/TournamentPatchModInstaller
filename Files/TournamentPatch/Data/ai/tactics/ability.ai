@@ -1,0 +1,311 @@
+-------------------------------------------------------------------------
+-- Helper functions to cast abilities ----------------------------
+-------------------------------------------------------------------------
+
+Ability = 
+{
+
+--pass these filters into the functions (DoAbilityPos, DoAbilityTarget) below to figure out the target to do special ability on
+--NOTE: these filters return an object supporting the following methods: GetPosition()
+-- (e.g., squad_ai, base_ai, strategic_ai, buildchannel_ai, entity)
+Filters = 
+{
+	CloseHurt = function( position, range, count )
+		return cpu_manager.cpu_player:FindFirstHurtSquad( position, range )
+	end,
+
+	CloseInCombat = function( position, range, count )
+		return cpu_manager.cpu_player:FindFirstSquadInCombat( position, range )
+	end,
+	
+	MaxCostSquad = function( position, range, count )
+		return cpu_manager.cpu_player:FindMaxCostSquad( position, range )
+	end,
+	
+	CloseEnemy = function( position, range, count )
+		if count == nil then
+			count = 1 
+		end
+		return cpu_manager.cpu_player:FindFirstEnemy( position, range, count )
+	end,
+	
+	CloseVehicleEnemy = function( position, range, count )
+		if count == nil then
+			count = 1 
+		end
+		return cpu_manager.cpu_player:FindFirstVehicleEnemy( position, range, count )
+	end,
+	
+	CloseInfantryEnemy = function( position, range, count )
+		if count == nil then
+			count = 1 
+		end
+		return cpu_manager.cpu_player:FindFirstInfantryEnemy( position, range, count )
+	end,
+	
+	CloseCommanderEnemy = function( position, range, count )
+		if count == nil then
+			count = 1 
+		end
+		return cpu_manager.cpu_player:FindFirstCommanderEnemy( position, range, count )
+	end,
+
+	CloseCommanderVehicleInfantryEnemy = function( position, range, count )
+		if count == nil then
+			count = 1 
+		end
+
+		local result 
+		
+		result = cpu_manager.cpu_player:FindFirstCommanderEnemy( position, range, count )
+		if (result ~= nil) then
+			return result
+		end
+		
+		result = cpu_manager.cpu_player:FindFirstVehicleEnemy( position, range, count )
+		if (result ~= nil) then
+			return result
+		end
+	
+		result = cpu_manager.cpu_player:FindFirstInfantryEnemy( position, range, count )
+		if (result ~= nil) then
+			return result
+		end
+
+		return cpu_manager.cpu_player:FindFirstEnemy( position, range, count )
+	end,
+
+	CloseInfiltratedEnemy = function( position, range, count )
+		if count == nil then
+			count = 1 
+		end
+		return cpu_manager.cpu_player:FindFirstInfiltratedEnemy( position, range, count )
+	end,
+	
+	CloseStrategicPoint = function( position, range, args )
+		return resource_manager:FindFirstStrategicPoint( position, range )
+	end,
+
+	CloseFaithfulUnits = function( position, range, args )
+		return cpu_manager.cpu_player:FindFirstFaithful( position, range, count )
+	end,
+},
+
+--pass these filters into the functions (DoAbility) below to determine if we should apply the special ability
+--NOTE: these filters return a boolean
+PredicateFilters =
+{
+	ConstantTrue = function(ai, args)
+		return true
+	end,
+	IsInfiltrating = function(ai, args)
+		return ai:IsInfiltrating()
+	end,
+	IsNotInfiltrating = function(ai, args)
+		return not ai:IsInfiltrating()
+	end,
+	IsInCombat = function( ai, args )
+		return ai:IsInCombat()
+	end,
+	IsUnderAttack = function( ai, args )
+		return ai:IsUnderAttack()
+	end,
+	IsAttacking = function( ai, args )
+		return ai:IsAttacking()
+	end,
+	IsLowHealth = function( ai, args )
+		return ai:GetHealthPercentage() < args.min_health
+	end,
+	IsUnderAttackAndNotAttacking = function( ai, args )
+		return ai:IsUnderAttack() and not ai:IsAttacking()
+	end,	
+	IsLowHealthAndUnderAttack = function( ai, args )
+		return Ability.PredicateFilters.IsLowHealth(ai,args) and Ability.PredicateFilters.IsUnderAttack(ai,args) 
+	end,	
+	IsUnderAttackAndNotAttackingOrLowHealth = function( ai, args )
+		return Ability.PredicateFilters.IsLowHealth(ai,args) or Ability.PredicateFilters.IsUnderAttackAndNotAttacking(ai,args)
+	end,
+	IsAttackingWithEnoughTroops = function( ai, args )
+		return ai:IsAttacking() and ai:GetNumTroopers() >= args.min_troops
+	end,
+	
+	-- requires args.ability_id or args.range to be set
+	HasUsableBodies = function(ai, args)
+		local range = 0
+		if (args.range ~= nil) then
+			range = args.ability_range
+		elseif (args.ability_id ~= nil) then
+			range = ai:GetAbilityRadius( args.ability_id )
+		end
+		
+		return cpu_manager.cpu_player:HasUsableBodies(ai:GetPosition(), range, args.min_bodies)	
+	end,
+
+	-- requires args.ability_id or args.range to be set
+	HasCloseInfiltratedEnemy = function(ai, args)
+		local range = 0
+		if (args.range ~= nil) then
+			range = args.ability_range
+		elseif (args.ability_id ~= nil) then
+			range = ai:GetAbilityRadius( args.ability_id )
+		end
+			
+		return cpu_manager.cpu_player:FindFirstInfiltratedEnemy( ai:GetPosition(), range, 1 ) ~= nil
+	end,
+},
+
+--pass these filters into the functions (DoAbilityTargetEntity) below to figure out the target to do special ability on
+--NOTE: these filters return an entity
+EntityFilters = 
+{	
+	CloseBaseEntityEnemy = function( position, range, count )
+		if count == nil then
+			count = 1 
+		end
+
+		local base = cpu_manager.cpu_player:FindFirstBaseEnemy( position, range, count )
+
+		if (base ~= nil and base:IsValid()) then
+			local range_sqr = range * range
+
+			local entity = base:GetEntity()
+			local entity_pos = entity:GetPosition()
+			if distance_sqr( entity_pos, position ) <= range_sqr then
+				return entity
+			end
+		end
+		
+		return nil
+	end,
+},
+
+--pass these filters into the functions (DoAbilityLocation) below to figure out the location to do special ability on
+--NOTE: these filters return a vector position
+LocationFilters =
+{
+	-- returns a position registered to a choke-point plan, or nil
+	AnyChokePointLocation = function(position, range, count )
+		if count == nil then
+			count = 1 
+		end
+	
+		local defend_strategy = cpu_manager:StrategyExists("DefendStrategy")
+		
+		if (defend_strategy ~= nil) then
+			local plans = defend_strategy:GetPlansByName("Defend Choke Point Plan")
+			local count = table.getn(plans)
+			
+			if (count >= 1) then
+				local rnd_idx = math.random(1,count)
+				return plans[rnd_idx].waypoint_pos
+			end
+		end
+		
+		return nil
+	end,
+
+	CloseInfiltratedEnemyRandomOffset = function( position, range , args)
+		local target = Ability.Filters.CloseInfiltratedEnemy(position, range, 1)
+		local radius = 20 -- prefer to use ai:GetAbilityRadius(args.ability_id)
+		
+		if (type(args) == "table" and type(args.radius) == "number") then
+			radius = args.radius
+		end
+
+		if (target ~= nil) then
+			local rand_x = ((math.random() * 2) - 1) * radius
+			local rand_y = ((math.random() * 2) - 1) * radius
+			local offset = Vector3f(rand_x,0,rand_y)
+			local target_pos = Vector3f()
+			
+			target_pos = target:GetPosition() + offset
+			
+			return target_pos
+		end
+		
+		return nil
+	end,
+
+},
+
+
+DoAbility = function( ai, id, functor, args)
+
+	dbAssert( functor ~= nil )
+
+	if ai:CanDoAbility( id ) and functor( ai, args ) then
+		ai:DoSpecialAbility( id ) 
+	end
+end,
+
+
+DoAbilityPos = function( ai, id, functor, args )
+
+	dbAssert( functor ~= nil )
+	
+	if ai:CanDoAbility( id ) then
+		local range = ai:GetAbilityRange( id )
+		
+		--look for a target
+		local target = nil
+		target = functor( ai:GetPosition(), range, args )
+		
+		if target ~= nil then
+			ai:DoSpecialAbilityPos( id, target:GetPosition() )
+		end		
+	end	
+end,
+
+
+DoAbilityTarget = function( ai, id, functor, args )
+
+	dbAssert( functor ~= nil )
+	
+	if ai:CanDoAbility( id ) then
+		local range = ai:GetAbilityRange( id )
+
+		local target = nil
+		target = functor( ai:GetPosition(), range, args )
+		
+		if target ~= nil then
+			ai:DoSpecialAbilitySquad( id, target:GetSquad() )
+		end
+	end
+end,
+
+DoAbilityTargetEntity = function( ai, id, functor, args )
+
+	dbAssert( functor ~= nil )
+	
+	if ai:CanDoAbility( id ) then
+		local range = ai:GetAbilityRange( id )
+
+		local target = nil
+		target = functor( ai:GetPosition(), range, args )
+		
+		if target ~= nil then
+			ai:DoSpecialAbilityEntity( id, target )
+		end
+	end
+end,
+
+DoAbilityLocation = function( ai, id, functor, args )
+
+	dbAssert( functor ~= nil )
+	
+	if ai:CanDoAbility( id ) then
+		local range = ai:GetAbilityRange( id )
+		
+		--look for a target
+		local target = nil
+		target = functor( ai:GetPosition(), range, args )
+		
+		if target ~= nil then
+			ai:DoSpecialAbilityPos( id, target )
+		end
+		
+	end
+	
+end,
+
+}

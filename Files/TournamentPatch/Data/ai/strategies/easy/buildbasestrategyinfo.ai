@@ -1,0 +1,222 @@
+--EASY
+BuildBaseStrategyInfo = 
+{
+	eldar_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 2,
+
+		no_research = true,
+		no_secondary_buildings = true,
+		no_alternate_objective = true,
+		limit_strategic_points_percentage =  0.30,
+
+		max_army_percentage = 0.30,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				eldar_squad_avatar = 0,
+				eldar_squad_bonesinger = 0,
+				eldar_squad_farseer = 0,
+			}
+		},
+	},
+	
+	chaos_marine_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 2,
+		
+		no_research = true,
+		no_secondary_buildings = true,
+		no_alternate_objective = true,
+		limit_strategic_points_percentage =  0.30,
+		
+		max_army_percentage = 0.30,
+		attack_rating = -500,
+		
+		SquadLimits = 
+		{
+			standard = 
+			{
+				chaos_squad_bloodthirster = 0,
+				chaos_squad_lord = 0,
+				chaos_squad_rhino = 0,
+				chaos_squad_slave = 0,
+			}
+		},
+	},
+
+	ork_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 2,
+
+		no_research = true,
+		no_secondary_buildings = true,
+		no_alternate_objective = true,
+		limit_strategic_points_percentage =  0.30,
+
+		max_army_percentage = 0.30,
+		attack_rating = -500,
+		
+		SquadLimits = 
+		{
+			standard = 
+			{
+				ork_squad_grot = 0,
+				ork_squad_mek_boy = 0,
+				ork_squad_squiggoth = 0, 
+				ork_squad_warboss = 0,
+			}
+		},
+	},
+	
+	space_marine_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 2,
+
+		no_research = true,
+		no_secondary_buildings = true,
+		no_alternate_objective = true,
+		limit_strategic_points_percentage =  0.30,
+
+		max_army_percentage = 0.30,
+		attack_rating = -500,
+		
+		SquadLimits = 
+		{
+			standard = 
+			{
+				space_marine_squad_force_commander = 0,
+				space_marine_squad_servitor = 0,
+				space_marine_squad_land_raider = 0,
+				space_marine_squad_rhino = 0,
+				space_marine_squad_skull_probe = 0,
+			}
+		},
+	},
+	
+	guard_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 2,
+		
+		no_research = true,
+		no_secondary_buildings = true,
+		no_alternate_objective = true,
+		limit_strategic_points_percentage =  0.30,
+
+		max_army_percentage = 0.30,
+		attack_rating = -500,
+		
+		SquadLimits = 
+		{
+			standard = 
+			{
+				guard_squad_enginseer = 0,
+				guard_squad_baneblade = 0,
+				guard_squad_command_squad = 0,
+			},
+		},
+	},
+	tau_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 2,
+
+		no_research = true,
+		no_secondary_buildings = true,
+		no_alternate_objective = true,
+		limit_strategic_points_percentage =  0.30,
+
+		max_army_percentage = 0.30,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				tau_builder_squad = 0,
+				tau_stealth_team_squad = 0,
+				tau_fire_warrior_squad = 0,
+				tau_kroot_carnivore_squad = 0,
+			},
+		},
+	},
+	necron_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 2,
+
+		no_research = true,
+		no_secondary_buildings = true,
+		no_alternate_objective = true,
+		limit_strategic_points_percentage =  0.30,
+
+		max_army_percentage = 0.30,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				necron_builder_scarab_squad = 0,
+				necron_basic_warrior_squad = 0,
+				necron_flayed_one_squad = 0,
+				necron_scarab_squad = 0,
+			}
+		},
+	},
+	sisters_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 2,
+
+		no_research = true,
+		no_secondary_buildings = true,
+		no_alternate_objective = true,
+		limit_strategic_points_percentage =  0.30,
+
+		max_army_percentage = 0.30,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				sisters_squad_canoness = 0,
+				sisters_squad_servitor = 0,
+				sisters_squad_living_saint = 0,
+				sisters_squad_rhino = 0
+				
+			}
+		},
+	},
+	dark_eldar_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 2,
+
+		no_research = true,
+		no_secondary_buildings = true,
+		no_alternate_objective = true,
+		limit_strategic_points_percentage =  0.30,
+
+		max_army_percentage = 0.30,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				dark_eldar_squad_slave = 5,
+				dark_eldar_squad_warrior = 5,
+			}
+		},
+	},
+}

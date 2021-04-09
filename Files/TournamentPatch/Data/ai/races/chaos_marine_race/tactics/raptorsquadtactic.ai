@@ -1,0 +1,49 @@
+----------------------------------------
+-- File: 'raptorsquadtactic.ai'
+-- Edited by Thudmeizer	@ 26.10.2008
+
+class 'RaptorSquadTactic' (ChaosMarineInfantryTactic)
+
+RaptorSquad = {}
+
+function RaptorSquadTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Raptor Squad Tactic")
+end
+
+function RaptorSquadTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (RaptorSquad.rage_id == nil) then
+		RaptorSquad.rage_id = cpu_manager.stats:GetAbilityID( "chaos_furious_rage" )	
+	end
+
+	if (RaptorSquad.speed_id == nil) then
+		RaptorSquad.speed_id = cpu_manager.stats:GetAbilityID( "chaos_speed_fiend" )	
+	end
+end
+
+function RaptorSquadTactic:DoAbilities()
+
+	if (self.squad_ai:IsInCombat() and not self.squad_ai:IsCapturing() and not self.squad_ai:IsBroken()) then
+	  
+		-- Check if I can go berserk while stationary
+		if (not self:IsMoving()) then
+
+			if (self.squad_ai:CanDoAbility( RaptorSquad.rage_id )) then
+				self.squad_ai:DoSpecialAbility( RaptorSquad.rage_id )
+			end
+		end		
+	end
+
+	-- Check if jump squad can speed up with boost
+	if ((not self.squad_ai:IsInCombat() and self.squad_ai:IsInStateMove()) or self.stateID ~= Tactic.StateID.NoState) then
+		
+		if (self.squad_ai:CanDoAbility( RaptorSquad.speed_id )) then
+			self.squad_ai:DoSpecialAbility( RaptorSquad.speed_id )
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	ChaosMarineInfantryTactic.DoAbilities(self)
+end

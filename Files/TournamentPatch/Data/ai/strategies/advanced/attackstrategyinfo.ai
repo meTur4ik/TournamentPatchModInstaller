@@ -1,0 +1,57 @@
+--ADVANCED
+AttackStrategyInfo = 
+{
+
+	eldar_race =
+	{
+		stop_attack_rating = -200,
+		min_units = 2,
+	},
+	
+	chaos_marine_race =
+	{
+		stop_attack_rating = -200,
+		min_units = 2,
+	},
+	
+	ork_race =
+	{
+		stop_attack_rating = -200,
+		min_units = 3,
+	},
+	
+	space_marine_race =
+	{
+		stop_attack_rating = -200,
+		min_units = 2,
+	},
+	
+	guard_race =
+	{
+		stop_attack_rating = -200,
+		min_units = 4,
+	},
+
+	tau_race =
+	{
+		stop_attack_rating = -200,
+		min_units = 4,
+	},
+
+	necron_race =
+	{
+		stop_attack_rating = -200,
+		min_units = 4,
+	},
+	sisters_race =
+	{
+		stop_attack_rating = -200,
+		min_units = 2,
+	},
+
+	dark_eldar_race =
+	{
+		stop_attack_rating = -200,
+		min_units = 2,
+	},
+}

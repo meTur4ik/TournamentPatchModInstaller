@@ -1,0 +1,26 @@
+----------------------------------------
+-- File: 'darkeldarwarpbeasttactic.ai'
+-- Created by Arkhan		@ 06.04.2008
+
+class 'DarkEldarWarpBeastTactic' (DarkEldarInfantryTactic)
+
+function DarkEldarWarpBeastTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Warp Beast Tactic")
+end
+
+function DarkEldarWarpBeastTactic:CheckForBroken()
+
+	if (self.squad_ai:IsBroken()) then
+	
+		-- Check if I can tame the beasts (Warp Beasts)
+		local tame_id = cpu_manager.stats:GetAbilityID( "dark_eldar_tame_warp_beasts" )
+		if (self.squad_ai:CanDoAbility( tame_id )) then
+			self.squad_ai:DoSpecialAbility( tame_id )
+		end
+	end
+
+	-- Call basic broken check method
+	InfantryTactic.CheckForBroken(self)
+end
+

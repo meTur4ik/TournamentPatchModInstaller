@@ -1,0 +1,92 @@
+class 'DefendStrategy' (Strategy)
+
+function DefendStrategy:__init( info ) super()
+
+	--remember how many strategic points I have
+	self.num_strategic_points = 0
+	self.choke_point_plan = nil
+	
+end
+
+function DefendStrategy:CalculateNewChokepoint()
+
+	local enemy = cpu_manager:FindFurthestEnemyPlayer()
+	dbAssert( enemy ~= nil )
+	
+	local not_in_threat = function( strat_ai )
+	
+		--make sure there are no threats between me and my chokept
+		return strat_ai:FinishedCapturing() and 
+			not cpu_manager.terrain_analyzer:HasThreatOnPath( cpu_manager.cpu_player:GetStartingPosition(), strat_ai:GetPosition(), 30 )
+	
+	end
+	
+	--find the closest strategic point not in threat I own to this enemy, and use it as my chokepoint
+	local strat_pt = cpu_manager:FindClosestStrategicPoint( enemy:GetStartingPosition(), 10, nil, not_in_threat )
+
+	--if you don't have any strategic points to use as chokepoints... you're screwed anyway
+	if strat_pt == nil then
+		aitrace("no chokepoints available")
+		self.chokept_pos = nil
+		return
+	end
+
+	self.chokept_pos = strat_pt:GetEntity():GetPosition()
+	
+	--use chokepoint marker if it's closer to the enemy
+	local chokept = cpu_manager.terrain_analyzer:GetClosestChokepointID( cpu_manager.cpu_player:GetStartingPosition() )
+	if chokept ~= 0 then
+	
+		local marker_pos = cpu_manager.terrain_analyzer:GetMarkerPositionByID( chokept )
+
+		if cpu_manager.terrain_analyzer:GetPathingDistance( enemy:GetStartingPosition(), marker_pos ) <
+			cpu_manager.terrain_analyzer:GetPathingDistance( enemy:GetStartingPosition(), self.chokept_pos ) and
+			not cpu_manager.terrain_analyzer:HasThreat( marker_pos, 20 ) then
+
+			self.chokept_pos = marker_pos
+			
+		end
+		
+	end
+	
+	if( self:PlanExists("Defend Choke Point Plan", self.chokept_pos ) == false ) then 
+	
+		if self.choke_point_plan ~= nil then
+			self.choke_point_plan:SetComplete( true )
+		end
+		
+		aitrace("Choke pt coords: <"..tostring(self.chokept_pos.x)..","..tostring(self.chokept_pos.y)..","..tostring(self.chokept_pos.z)..">")
+		
+		self.choke_point_plan = DefendChokePointPlan( self.chokept_pos )
+		self:AddPlan( self.choke_point_plan )
+
+	end
+	
+end
+
+function DefendStrategy:GetName()
+	return "DefendStrategy"
+end
+
+function DefendStrategy:DefendPosition( pos )
+	if( self:PlanExists("Defend Plan", pos ) == false ) then 
+		self:AddPlan( DefendPlan( pos ) )
+	end
+end
+
+function DefendStrategy:Update()
+	
+	local base = self:IsBaseBeingAttacked()
+	if base ~= nil then
+		self:DefendPosition( base:GetPosition() ) 
+	elseif self.chokept_pos ~= nil and cpu_manager.terrain_analyzer:HasThreat( self.chokept_pos, 20 ) then
+		self:DefendPosition( self.chokept_pos ) 
+	end
+	
+	self:CalculateNewChokepoint()
+
+	-- superclass
+	Strategy.Update(self)
+	
+end
+

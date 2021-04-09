@@ -1,0 +1,29 @@
+----------------------------------------
+-- File: 'wraithtactic.ai'
+-- Edited by Arkhan @ 27.10.2006
+
+class 'WraithTactic' (NecronVehicleTactic)
+
+function WraithTactic:__init( squad_ai ) super( squad_ai )
+		
+	self:SetName("Wraith Tactic")
+	
+	self.m_iPhaseShiftID = cpu_manager.stats:GetAbilityID( "necron_wraith_phase_shift" )
+end
+
+function WraithTactic:DoAbilities()
+
+	--Wraith Ability   
+	if (self.squad_ai:IsInCombat()) then
+
+		-- Check if I can do phase shift!
+      	if (self.m_iPhaseShiftID == nil) then
+        	self.m_iPhaseShiftID = cpu_manager.stats:GetAbilityID( "necron_wraith_phase_shift" )
+        end
+        Ability.DoAbility( self.squad_ai, self.m_iPhaseShiftID, Ability.PredicateFilters.IsLowHealthAndUnderAttack , { min_health = 0.4 })
+	end
+end
+
+function WraithTactic:CanOnlyDecap()
+	return true
+end

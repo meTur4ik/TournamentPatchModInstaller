@@ -1,0 +1,311 @@
+class 'DefendPlan' (Plan)
+
+
+function DefendPlan:__init( defend_pos ) super( CpuPlayer.CT_Defending )
+
+	dbAssert( defend_pos ~= nil )
+	
+	self.defend_pos = defend_pos
+	
+	-- set true if the attack point requires detector units
+	self.detector_required = false
+		
+	Plan.SetName( self, "Defend Plan" )	
+	
+	self.defend_units = {}
+	
+	--don't do anything if I can't defend
+	if not self:CheckDefendable() then
+		return
+	end
+	
+	Plan.SetNeeds( self, "Obtain Force", DefendPlan.ObtainForce )
+	Plan.SetWants( self, "Obtain More Force", DefendPlan.ObtainMoreForce )
+	Plan.SetState( self, "Defending "..vec2str(self.defend_pos), DefendPlan.Defending )
+	
+end
+
+--? @shortdesc Determine if one of the locked units is a detector
+--? @args
+--? @result bool (true if a least one unit is a detector)
+function DefendPlan:HasDetector()
+
+	for i in self.defend_units do
+		local squad = self.defend_units[i] 
+		if (squad:IsDetector()) then
+			return true
+		end
+	end
+	
+	return false
+end
+
+
+function DefendPlan:CheckDefendable()
+
+	--check that we're at least 50 meters away from our main base. If not, we *must* defend
+	local distance_to_home = distance_sqr( cpu_manager.cpu_player:GetStartingPosition() , self.defend_pos )
+	if distance_to_home < 50 * 50 then
+		aitrace("always defend -- it's close!")
+		return true
+	end
+	
+	--make sure we have enough guys to defend
+	local enemy_cost  = 0
+	
+	for enemy in cpu_manager.stats:GetPlayerStats() do
+		if cpu_manager.player_stats:IsEnemy( enemy ) then
+		
+			enemy_cost = enemy_cost + enemy:GetArmyCostAt( self.defend_pos, 30 )
+			enemy_cost = enemy_cost + cpu_manager:GetDefensiveBuildingsCostAt( enemy, self.defend_pos, 30 )
+		end
+	end
+		
+	--count guys that are unlocked, and count guys locked by me
+	local my_army_cost = 0
+	
+	for squad_ai in military_manager:GetUnlockedSquads() do
+		my_army_cost = my_army_cost + squad_ai:GetProRatedCost()
+	end
+	
+	for i in self.defend_units do
+		my_army_cost = my_army_cost + self.defend_units[i]:GetProRatedCost()
+	end
+	
+	cpu_manager:GetDefensiveBuildingsCostAt( cpu_manager.player_stats, self.defend_pos, 20 )
+
+	aipushtrace("Defend Plan")
+	aitrace("defendable army cost:"..my_army_cost)
+	aitrace("enemy cost:"..enemy_cost)
+	aipoptrace("Defend Plan")
+	
+	if my_army_cost < enemy_cost then
+		aitrace("can't defend -- too few units")
+		
+		aitrace("retreating...")
+
+		--retreat: move all my dudes to the closest base
+		local base = cpu_manager:FindClosestBase( self.defend_pos, 0 )
+		if base ~= nil then
+		
+			local retreat_pos = base:GetPosition() 
+			for i in self.defend_units do
+				self.defend_units[i]:DoMove( retreat_pos )
+			end
+		end
+		
+		self:SetComplete(true)
+		return false
+	end
+	
+	return true
+end
+
+
+function DefendPlan:IsEqual( plan_name, plan_id )
+	return self:GetName() == plan_name and distance_sqr( plan_id, self.defend_pos ) < 100
+end
+
+
+function DefendPlan:ObtainMoreForce()
+
+	local defend_units = {}
+	
+	if (self.detector_required and not self:HasDetector()) then
+		for squad_ai in military_manager:GetUnlockedSquads() do
+			if (squad_ai:IsDetector())  then
+				table.insert( defend_units, squad_ai )
+				break
+			end
+		end
+	else
+		--release an engineer detector (assume we only have one)
+		for i in self.defend_units do
+			local squad = self.defend_units[i] 
+			if (squad:IsDetector() and squad:IsEngineer()) then
+				Plan.UnlockResource( self, squad )
+				table.remove( self.defend_units, i )
+				local tactic = squad:GetTactic()
+				tactic:SetState( Tactic.States.Idle )
+				break
+			end
+		end
+	end
+	
+	--lock the forces (must be done AFTER the loop inside GetUnlockedSquads!)
+	for i in defend_units do
+		--assign a tactic to it
+		local tactic = defend_units[i]:GetTactic()
+		if tactic ~= nil then
+			Plan.LockResource( self, defend_units[i] )
+			table.insert( self.defend_units, defend_units[i] )
+
+			aitrace("defendplan: reseting state for tactic")
+			
+			tactic:SetState( Tactic.States.Hold )
+			tactic:SetTarget( self.defend_pos, Tactic.Variant.Vector )
+		end
+	end
+end
+
+
+function DefendPlan:ObtainForce()
+
+	local defend_units = {}
+	
+	--find the forces and defend
+	for squad_ai in military_manager:GetUnlockedSquads() do
+		if squad_ai:GetTactic():IsDefender() then
+			table.insert( defend_units, squad_ai )
+		end
+	end
+
+	--lock the forces (must be done AFTER the loop inside GetUnlockedSquads!)
+	for i in defend_units do
+		--assign a tactic to it
+		local tactic = defend_units[i]:GetTactic()
+		if tactic ~= nil then
+			Plan.LockResource( self, defend_units[i] )
+
+			aitrace("defendplan: reseting state for tactic")
+			
+			table.insert( self.defend_units, defend_units[i] )
+			tactic:SetState( Tactic.States.Hold )
+			tactic:SetTarget( self.defend_pos, Tactic.Variant.Vector )
+		end
+	end
+end
+
+
+function DefendPlan:Defending()
+
+	local ignore_friendly = true
+	if not cpu_manager.terrain_analyzer:HasThreat( self.defend_pos, 25 ) then
+		self:SetComplete( true )
+	end
+	
+	local is_squad_infiltrated = function(squad_ai)
+		return squad_ai:IsInfiltrating()
+	end
+	
+	self.detector_required = cpu_manager:FindClosestEnemy( self.defend_pos, 40, is_squad_infiltrated ) ~= nil
+	
+	--check if any of my units are under attack -- if so, get the rest of my guys to attack
+	local defend_now_pos = nil
+	
+	for i in self.defend_units do
+	
+		if self.defend_units[i]:IsInCombat() or self.defend_units[i]:WasRecentlyHurt() then
+			
+			--find the closest enemy
+			local functor = function( enemy )
+				return true
+			end
+			
+			local enemy = cpu_manager:FindClosestEnemy( self.defend_units[i]:GetPosition(), 100, functor )
+			
+			if enemy ~= nil then
+				defend_now_pos = enemy:GetPosition()
+				break
+			end
+		end
+	end
+	
+	--protect my other troops
+	if defend_now_pos ~= nil then
+	
+		--in addition, deepstrike if I can!
+		for build_channel in build_manager:GetBuildChannelAIs() do
+		
+			if build_channel:CanDeepStrike() then
+			
+				if build_channel:CanOnlyDeepStrikeToEntity() then
+				
+					--find someone who can summon
+					local can_summon = function( squad_ai )
+						return squad_ai:CanSummon()
+					end
+					
+					local defending_unit = cpu_manager:GetClosestSquad( defend_now_pos, 100, can_summon )
+					if defending_unit then
+						build_channel:DoDeepStrikeToSquad( defending_unit:GetSquad() )
+					end
+				else
+					build_channel:DoDeepStrikeToPos( defend_now_pos )
+				end
+			end
+		end
+		
+		for i in self.defend_units do
+		
+			local squad_ai = self.defend_units[i]
+			--try to jump into combat
+			if not squad_ai:GetTactic():JumpAttackMelee() then
+
+				if not squad_ai:IsInCombat() and not squad_ai:IsInStateAttackMove() and not squad_ai:IsBroken() and not squad_ai:IsCapturing() then
+					
+					aitrace( "sbpid: "..squad_ai:GetID().." ordered attackmove" )
+					squad_ai:DoAttackMove( defend_now_pos )
+					
+				end
+				
+			end
+			
+		end
+
+	--stay within the area
+	else
+	
+		-- scale the defend distance
+		local max_distance = 30;
+	
+		local num_units = table.getn( self.defend_units )
+		for i in self.defend_units do
+			local distance = 3 * self.defend_units[i]:GetSquad():GetTightPackedSize() * num_units
+			if max_distance < distance then
+				max_distance = distance
+			end
+		end
+	
+		for i in self.defend_units do
+		
+			local distance_max_sqr = max_distance * max_distance
+			
+			local squad_ai = self.defend_units[i]
+
+			--check I'm in proximity of the target
+			if distance_sqr( squad_ai:GetSquad():GetPosition(), self.defend_pos ) < distance_max_sqr and 
+				not squad_ai:IsInCombat() and not squad_ai:IsInStateAttackMove() 
+				and not squad_ai:IsBroken() then
+				
+				squad_ai:DoAttackMove( self.defend_pos )
+				
+			end
+		end
+	end
+end
+
+
+function DefendPlan:Update()
+	
+	if self:IsComplete() then
+		aitrace("defend plan is complete")
+		return
+	end
+	
+	if not self:CheckDefendable() then
+		return
+	end
+	
+	--run through units and remove those that are complete
+	local num_items = table.getn( self.defend_units )
+	for i = num_items, 1, -1 do
+		if not self.defend_units[i]:IsValid() then
+			Plan.UnlockResource( self, self.defend_units[i] )
+			table.remove( self.defend_units, i )
+		end
+	end
+	
+	--run superclass update
+	Plan.Update( self )
+end

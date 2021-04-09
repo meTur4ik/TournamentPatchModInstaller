@@ -1,0 +1,52 @@
+class 'CommissarTactic' (InfantryTactic)
+
+
+CommissarTactic.SpecialAbilities = 
+{
+	{ nil, "guard_commissar_execute", Ability.PredicateFilters.IsAttackingWithEnoughTroops, {min_troops = 8} },
+}
+
+
+function CommissarTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.UtilityFunctions.InitAbilitiesTable(CommissarTactic.SpecialAbilities)
+
+	self:SetName("Commissar Tactic")
+
+end
+
+-- should only attack/defend when attached
+function CommissarTactic:IsAttacker()
+	return false
+end
+
+
+function CommissarTactic:IsDefender()
+	return false
+end
+
+
+-- this should only be called when the squad is attached to a unit
+function CommissarTactic:DoAbilities()
+
+	Tactic.UtilityFunctions.DoAbilities(CommissarTactic.SpecialAbilities,self.squad_ai,Ability.DoAbility)
+
+end
+
+
+function CommissarTactic:Update()
+
+	if self:IsComplete() then
+		return false
+	end
+
+	Tactic.Attach.num_unattached_ranged_leaders = Tactic.Attach.num_unattached_ranged_leaders + 1
+
+	if not InfantryTactic.Update( self ) then
+		return false
+	end
+
+	self:TryAttachSquad( true, false )
+	
+	return true
+end

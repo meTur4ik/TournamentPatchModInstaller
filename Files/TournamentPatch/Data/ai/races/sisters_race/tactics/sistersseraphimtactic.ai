@@ -1,0 +1,38 @@
+----------------------------------------
+-- File: 'sistersseraphimtactic.ai'
+-- Edited by Thudmeizer @ 15.11.2007
+
+class 'SistersSeraphimTactic' (SistersInfantryTactic)
+
+SistersSeraphim = {}
+
+function SistersSeraphimTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Seraphim Tactic")
+end
+
+function SistersSeraphimTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (SistersSeraphim.visage_id == nil) then
+		SistersSeraphim.visage_id = cpu_manager.stats:GetAbilityID( "sisters_angelic_visage" )
+	end
+
+	if (SistersSeraphim.krak_id == nil) then
+		SistersSeraphim.krak_id = cpu_manager.stats:GetAbilityID( "sisters_krak_grenades" )
+	end
+end
+
+function SistersSeraphimTactic:DoAbilities()
+	
+	-- Check if we are in combat
+	if (self.squad_ai:IsInCombat()) then
+
+		-- Reduces morale damage and boosts combat performance
+		Ability.DoAbility(self.squad_ai, SistersSeraphim.visage_id)
+		
+		-- Krak grenades
+		Ability.DoAbilityTarget( self.squad_ai, SistersSeraphim.krak_id, Ability.Filters.CloseVehicleEnemy, 1 )
+		Ability.DoAbilityTargetEntity( self.squad_ai, SistersSeraphim.krak_id, Ability.EntityFilters.CloseBaseEntityEnemy, 1)
+	end
+end

@@ -1,0 +1,57 @@
+----------------------------------------
+-- File: 'stealthteamtactic.ai'
+-- Created by Arkhan		@ 21.03.2008
+
+class 'StealthTeamTactic' (TauInfantryTactic)
+
+StealthTeam = {}
+
+function StealthTeamTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Stealth Team Tactic")
+end
+
+-- Don't attack until tier 2
+function StealthTeamTactic:IsAttacker()	
+	return (cpu_manager:GetTierLevel() >= 2)
+end
+
+function StealthTeamTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (StealthTeam.iEMPGrenadeID == nil) then
+		StealthTeam.iEMPGrenadeID = cpu_manager.stats:GetAbilityID( "tau_emp_grenade" )	
+	end
+end
+
+function StealthTeamTactic:DoAbilities()
+	
+	-- Check if we can use EMP grenade
+	Ability.DoAbilityTarget(self.squad_ai, StealthTeam.iEMPGrenadeID, Ability.Filters.CloseVehicleEnemy, 1)
+	
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end
+
+function StealthTeamTactic:Upgrade()
+
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+
+	-- Force upgrade to fusion cannon
+	if (not self.squad_ai:IsReinforcing() and self.squad_ai:HasUpgradableTrooper() and
+		self.squad_ai:GetHealthPercentage() > 0.5 and cpu_manager:GetTierLevel() >= 2) then
+		local class_type = cpu_manager:GetFirstEnemyPlayer():GetMajorityClassType()
+		self.squad_ai:DoBestUpgrade( class_type )
+	end
+end
+
+function StealthTeamTactic:Reinforce()
+
+	-- Reinforce only in tier 2
+	if (cpu_manager:GetTierLevel() >= 2) then
+		InfantryTactic.Reinforce(self)
+	end
+end

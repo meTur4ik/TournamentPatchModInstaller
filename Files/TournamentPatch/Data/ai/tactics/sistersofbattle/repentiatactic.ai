@@ -1,0 +1,13 @@
+class 'RepentiaTactic' (InfantryTactic)
+
+
+function RepentiaTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Repentia Tactic")
+	
+end
+
+function RepentiaTactic:DoAbilities()
+
+end
+

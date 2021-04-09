@@ -1,0 +1,201 @@
+--STANDARD
+BuildBaseStrategyInfo = 
+{
+	eldar_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 2,
+
+		no_secondary_buildings = true,
+		limit_strategic_points_percentage =  0.60,
+		
+		max_army_percentage = 1.0,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				eldar_squad_bonesinger = 0,
+				eldar_guardian_squad = 3,
+				eldar_squad_grav_platform = 2,
+				eldar_squad_grav_platform_brightlance = 2,
+			},
+		},
+	},
+	
+	chaos_marine_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 2,
+
+		no_secondary_buildings = true,
+		limit_strategic_points_percentage =  0.60,
+
+		max_army_percentage = 1.0,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				chaos_squad_cultist = 2,
+				chaos_squad_rhino = 0,
+				chaos_squad_slave = 0,
+			}
+		},
+	},
+
+	ork_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 2,
+
+		no_secondary_buildings = true,
+		limit_strategic_points_percentage =  0.60,
+
+		max_army_percentage = 1.0,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				ork_squad_grot = 0,
+			}
+		},
+	},
+	
+	space_marine_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 2,
+
+		no_secondary_buildings = true,
+		limit_strategic_points_percentage =  0.60,
+
+		max_army_percentage = 1.0,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				space_marine_squad_servitor = 0,
+				space_marine_squad_rhino = 0,
+				space_marine_squad_scout = 2,
+				space_marine_squad_skull_probe = 0,
+			},
+		},
+	},
+
+	guard_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 2,
+
+		no_secondary_buildings = true,
+		limit_strategic_points_percentage =  0.60,
+
+		max_army_percentage = 1.0,
+		attack_rating = -500,
+		
+		SquadLimits = 
+		{
+			standard = 
+			{
+				guard_squad_enginseer = 0,
+				guard_squad_chimera = 2,
+			},
+		},
+	},
+
+	tau_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 2,
+
+		no_secondary_buildings = true,
+		limit_strategic_points_percentage =  0.60,
+
+		max_army_percentage = 1.0,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				tau_builder_squad = 0,
+				tau_stealth_team_squad = 3,
+				tau_fire_warrior_squad = 2,
+				tau_kroot_carnivore_squad = 2,
+				tau_commander_squad = 1,
+			},
+		},
+	},
+
+	necron_race =
+	{
+		resource_capturers = 1,
+		engineer_count = 3,
+
+		no_secondary_buildings = true,
+		limit_strategic_points_percentage =  0.60,
+
+		max_army_percentage = 1.0,
+		attack_rating = -500, 
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				necron_builder_scarab_squad = 3,
+				necron_basic_warrior_squad = 3,
+				necron_flayed_one_squad = 2,
+				necron_scarab_squad = 2,
+				necron_lord_squad = 1,
+			}
+		},
+	},
+
+	sisters_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 2,
+
+		no_secondary_buildings = true,
+		limit_strategic_points_percentage =  0.60,
+
+		max_army_percentage = 1.0,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				sisters_squad_servitor = 0,
+				sisters_squad_missionary = 2
+			}
+		},
+	},
+	dark_eldar_race =
+	{
+		resource_capturers = 2,
+		engineer_count = 2,
+
+		no_secondary_buildings = false,
+		limit_strategic_points_percentage =  0.60,
+
+		max_army_percentage = 1.0,
+		attack_rating = -500,
+
+		SquadLimits = 
+		{
+			standard = 
+			{
+				dark_eldar_squad_slave = 0,
+				dark_eldar_squad_mandrake = 2,
+			}
+		},
+	},
+}

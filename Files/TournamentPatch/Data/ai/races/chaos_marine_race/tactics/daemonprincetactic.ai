@@ -1,0 +1,54 @@
+----------------------------------------
+-- File: 'daemonprincetactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'DaemonPrinceTactic' (ChaosMarineInfantryTactic)
+
+DaemonPrince = {}
+
+function DaemonPrinceTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Daemon Prince Tactic")
+	
+	self.m_oTimedSpecialAbilities = Timer( DaemonPrinceTactic.DoTimedSpecialAbilities, self, 7 )
+end
+
+function DaemonPrinceTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (DaemonPrince.strength_id == nil) then
+		DaemonPrince.strength_id = cpu_manager.stats:GetAbilityID( "chaos_daemon_strength" )	
+	end
+
+	if (DaemonPrince.roar_id == nil) then
+		DaemonPrince.roar_id = cpu_manager.stats:GetAbilityID( "chaos_fear_roar" )	
+	end
+
+	if (DaemonPrince.detector_id == nil) then
+		DaemonPrince.detector_id = cpu_manager.stats:GetAbilityID( "chaos_detector" )	
+	end	
+end
+
+function DaemonPrinceTactic:DoAbilities()
+
+	Ability.DoAbility( self.squad_ai, DaemonPrince.strength_id, Ability.Filters.IsInCombat )
+	Ability.DoAbilityArea(self.squad_ai, DaemonPrince.roar_id, Ability.Filters.CloseSquadEnemy, 10, 4)
+
+	if (self.m_oTimedSpecialAbilities ~= nil) then
+		self.m_oTimedSpecialAbilities:Call()
+	else
+		DaemonPrinceTactic.DoTimedSpecialAbilities(self)
+	end
+end
+
+function DaemonPrinceTactic:DoTimedSpecialAbilities()
+
+	-- Try to use detection ability
+	if (self.squad_ai:CanDoAbility(DaemonPrince.detector_id)) then
+	
+		local oSquad = Ability.Filters.CloseInfiltratedEnemy(self.squad_ai:GetPosition(), 35, 1)
+		if (oSquad ~= nil) then
+			self.squad_ai:DoSpecialAbility(DaemonPrince.detector_id)
+		end
+	end
+end

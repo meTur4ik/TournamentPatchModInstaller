@@ -1,0 +1,13 @@
+----------------------------------------
+-- File: 'kasrkintactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'KasrkinTactic' (GuardInfantryTactic)
+
+function KasrkinTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Kasrkin Tactic")
+	
+	-- Squad is able to occupy bunkers
+	self.m_bBunkerSquad = true
+end

@@ -1,0 +1,104 @@
+----------------------------------------
+-- File: 'darkeldarhaemonculustactic.ai'
+-- Edited by Thudmeizer @ 23.03.2008
+
+class 'DarkEldarHaemonculusTactic' (DarkEldarInfantryTactic)
+
+DarkEldarHaemonculus = {}
+
+function DarkEldarHaemonculusTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Dark Eldar Haemonculus Tactic")
+
+	self.dance_time = 0
+end
+
+function DarkEldarHaemonculusTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function DarkEldarHaemonculusTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function DarkEldarHaemonculusTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (DarkEldarHaemonculus.torture_id == nil) then
+		DarkEldarHaemonculus.torture_id = cpu_manager.stats:GetAbilityID( "dark_eldar_torture_amp" )
+	end
+
+	if (DarkEldarHaemonculus.stinger_id == nil) then
+		DarkEldarHaemonculus.stinger_id = cpu_manager.stats:GetAbilityID( "dark_eldar_stinger" )
+	end
+end
+
+function DarkEldarHaemonculusTactic:DoAbilities()
+
+	-- We are dying, lower requisites for attacks
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+		Ability.DoAbilityPos( self.squad_ai, DarkEldarHaemonculus.torture_id, Ability.Filters.CloseEnemy, 3 )
+		Ability.DoAbilityTarget( self.squad_ai, DarkEldarHaemonculus.stinger_id, Ability.Filters.CloseInfantryEnemy, 3 )
+	else
+		Ability.DoAbilityPos( self.squad_ai, DarkEldarHaemonculus.torture_id, Ability.Filters.CloseEnemy, 6 )
+		Ability.DoAbilityTarget( self.squad_ai, DarkEldarHaemonculus.stinger_id, Ability.Filters.CloseInfantryEnemy, 6 )		
+	end
+end
+
+function DarkEldarHaemonculusTactic:Update()
+
+    if (self:IsComplete()) then
+        return
+    end
+    
+    -- State machine
+    if (not InfantryTactic.Update( self )) then
+        return
+    end
+    
+	-- Check for close commander
+    local bSetRanged = false
+    local bSetMelee = false
+	local vSquadPos = self.squad_ai:GetPosition()
+	local eStance = self.squad_ai:GetMeleeStance()
+	local oEnemyCommander = Ability.Filters.CloseCommanderEnemy(vSquadPos, 20, 1)
+    if (oEnemyCommander ~= nil) then
+       
+        -- Check health
+        if (self.squad_ai:GetHealthPercentage() > 0.8 and oEnemyCommander:GetHealthPercentage() < 0.3) then
+            bSetMelee = (eStance == SquadAI.MSTANCE_Ranged)
+            self.dance_time = 0
+		else
+            bSetRanged = (eStance == SquadAI.MSTANCE_Assault)
+        end
+	else
+    
+    	-- Check for close attached commander
+    	local oSquad = Ability.Filters.CloseInfantryEnemy(vSquadPos, 20, 4)
+    	if (oSquad ~= nil and oSquad:IsAttached()) then
+    		bSetRanged = (eStance == SquadAI.MSTANCE_Assault)
+    	else
+    		bSetMelee = (eStance == SquadAI.MSTANCE_Ranged)
+    	end
+    end
+
+    -- At leat 10 secs ranged stance/dancing
+    if (bSetRanged) then
+        self.squad_ai:DoSetMeleeStance( SquadAI.MSTANCE_Ranged )
+        self.dance_time = g_iGMT
+    elseif (bSetMelee and self.stateID ~= Tactic.StateID.DoDance and g_iGMT > self.dance_time + 10) then
+        self.squad_ai:DoSetDefaultMeleeStance()
+        self.dance_time = 0
+    end
+    
+	-- Check if we are in serious trouble
+	self:EmergencyRetreat()
+    
+	-- Try to attach
+	if (self:TryAttachSquad(true, true, 50, 150, nil) == nil) then
+
+		if (self:TryAttachSquad(false, true, 50, nil, self.m_fCommanderAttachHealth) == nil) then
+			self:TryAttachSquadMelee()
+		end
+	end
+end

@@ -1,0 +1,149 @@
+-- LarkinVB 04.2009 project map database
+-- Arkhan 04.2009
+-- Create folder called mapdb in DOW root folder manually
+--  map file will be saved with unique ID, content is 'true' or 'false'
+-- If 'true' then old terrain analyzer function will be used
+-- Special AI MapDB wincondition has to be enabled 
+
+class 'MapDB'
+
+MapDB.Path = "Bugfix\\Data\\ai\\mapdb\\"
+
+function MapDB:__init( )
+
+	-- Init member variables
+	self.sMapName = "Unnamed"
+	self.bUseTA = false
+	self.fMinX = 0
+	self.fMaxX = 0
+	self.fMinZ = 0
+	self.fMaxZ = 0
+	
+	-- Get data for unique map ID and get map borders
+	local iCount = 0
+	local iMapIDx = 0
+	local iMapIDy = 0
+	local iMapIDz = 0
+	for strat_ai in resource_manager:GetStrategicPointAIs() do
+	
+		-- Get position of strategic point
+		local vStratPos = strat_ai:GetPosition()
+		local vPos = Vector3f(vStratPos)
+		
+		-- Set map borders
+		if (iCount <= 0) then
+			self.fMinX = vPos.x
+			self.fMaxX = vPos.x
+			self.fMinZ = vPos.z
+			self.fMaxZ = vPos.z
+		else
+			self.fMinX = math.min(self.fMinX, vPos.x)
+			self.fMaxX = math.max(self.fMaxX, vPos.x)
+			self.fMinZ = math.min(self.fMinZ, vPos.z)
+			self.fMaxZ = math.max(self.fMaxZ, vPos.z)
+		end
+		
+		-- Build map ID
+		iMapIDx = iMapIDx + math.abs(vPos.x)
+		iMapIDy = iMapIDy + math.abs(vPos.y)
+		iMapIDz = iMapIDz + math.abs(vPos.z)
+		iCount = iCount + 1
+	end
+	
+	-- Update map borders with starting positions
+	for oPlayer in cpu_manager.stats:GetPlayerStats() do
+	
+		-- Get player start position
+		local vPos = Vector3f(oPlayer:GetStartingPosition())
+
+		-- Set map borders
+		if (iCount <= 0) then
+			self.fMinX = vPos.x
+			self.fMaxX = vPos.x
+			self.fMinZ = vPos.z
+			self.fMaxZ = vPos.z
+		else
+			self.fMinX = math.min(self.fMinX, vPos.x)
+			self.fMaxX = math.max(self.fMaxX, vPos.x)
+			self.fMinZ = math.min(self.fMinZ, vPos.z)
+			self.fMaxZ = math.max(self.fMaxZ, vPos.z)
+		end
+	end
+	
+	-- Check if we can build map ID
+	if (iCount > 0) then
+		self.sMapName = string.format("%03d",iCount).."-"..string.format("%.0f",iMapIDx).."-"..string.format("%.0f",iMapIDy).."-"..string.format("%.0f",iMapIDz)
+	else
+		dlg("mapdb","Map has no Strategic Points")
+	end
+end
+
+function MapDB:ReadStatus()
+
+	-- Check map name
+	if (self.sMapName == "Unnamed") then
+		return false
+	end
+	
+	-- Try to open map file
+	local db = io.open(MapDB.Path..self.sMapName..".dat", "r+")
+	if (db == nil) then
+		
+		-- Map was never checked, initialize with true and enable terrainanalyzer
+		db = io.open(MapDB.Path..self.sMapName..".dat", "w+")
+		if (db) then
+			dlg("mapdb","Init : New Map")
+			db:write("true")
+			db:close()
+			self.bUseTA = true
+		end
+	else
+		-- Read status
+		local sStatus = db:read()
+		if (sStatus == "true") then
+		
+			-- Map was checked and is ok, enable terrain analyzer
+			self.bUseTA = true
+		end
+		db:close()
+	end
+	
+	-- Print status
+	if (self.bUseTA) then
+		print("Map "..self.sMapName..": Using terrain analyser...")
+	else
+		print("Map "..self.sMapName..": Terrain analyser deactivated!!!")
+	end
+	return self.bUseTA
+end
+
+function MapDB:WriteStatus(sStatus)
+
+	-- Try to open map file
+	local db = io.open(MapDB.Path..self.sMapName..".dat", "w+")
+	if (db) then
+		db:write(sStatus)
+		db:close()
+	end  
+end
+
+function MapDB:UseAnalyzer()
+	return self.bUseTA
+end
+
+function MapDB:GetMapName()
+	return self.sMapName
+end
+
+function MapDB:IsPosOnMap(vPosition)
+    
+    -- Check if position is inside the map borders
+    if (vPosition.x < self.fMinX or vPosition.x > self.fMaxX or
+    	vPosition.z < self.fMinZ or vPosition.z > self.fMaxZ) then
+    	
+    	-- Position is outside map borders
+    	return false
+    end
+    return true
+end
+

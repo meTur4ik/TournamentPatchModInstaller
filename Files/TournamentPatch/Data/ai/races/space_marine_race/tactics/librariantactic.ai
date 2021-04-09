@@ -1,0 +1,72 @@
+----------------------------------------
+-- File: 'librariantactic.ai'
+-- Edited by Thudmeizer @ 09.03.2005
+-- Edited by LarkinVB   @ 15.08.2005
+
+class 'LibrarianTactic' (SpaceMarineInfantryTactic)
+
+Librarian = {}
+
+function LibrarianTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Librarian Tactic")
+end
+
+function LibrarianTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function LibrarianTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function LibrarianTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Librarian.smite == nil) then
+		Librarian.smite = cpu_manager.stats:GetAbilityID( "marines_smite" )
+	end
+	if (Librarian.word == nil) then
+		Librarian.word = cpu_manager.stats:GetAbilityID( "marines_word_of_emperer" )
+	end
+	if (Librarian.weaken_resolve == nil) then
+		Librarian.weaken_resolve = cpu_manager.stats:GetAbilityID( "marines_weaken_resolve" )
+	end
+end
+
+function LibrarianTactic:DoAbilities()
+
+	Ability.DoAbility( self.squad_ai, Librarian.word, Ability.Filters.IsInCombat )
+	
+	-- We are dying, lower requisites for attacks
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+		Ability.DoAbilityPos( self.squad_ai, Librarian.smite, Ability.Filters.CloseInfantryEnemy, 4 )
+		Ability.DoAbilityPos( self.squad_ai, Librarian.weaken_resolve, Ability.Filters.CloseInfantryEnemy, 4 )
+	else
+		Ability.DoAbilityPos( self.squad_ai, Librarian.smite, Ability.Filters.CloseInfantryEnemy, 8 )
+		Ability.DoAbilityPos( self.squad_ai, Librarian.weaken_resolve, Ability.Filters.CloseInfantryEnemy, 8 )
+	end
+end
+
+function LibrarianTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update(self)) then
+		return
+	end
+	
+	-- Attach to melee in tier3+
+    if (self.squad_ai:GetMeleeStance() == SquadAI.MSTANCE_Assault) then
+         
+        if (self.squad_ai:IsInCombat() or self.squad_ai:WasRecentlyHurt()) then
+        
+            if (self:TryAttachSquad(false, true, 50, 150, self.m_fCommanderAttachHealth) == nil) then
+                self:TryAttachSquadMelee()
+            end
+        end
+    end
+end

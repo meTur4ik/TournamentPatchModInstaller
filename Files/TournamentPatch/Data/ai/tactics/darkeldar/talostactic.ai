@@ -1,0 +1,118 @@
+class 'TalosTactic' (VehicleTactic)
+
+function TalosTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.AssignStateFunction( self, Tactic.States.Idle,	TalosTactic.IdleState )
+	Tactic.AssignStateFunction( self, Tactic.States.Hold,	TalosTactic.BeginHoldState )
+	Tactic.AssignStateFunction( self, Tactic.States.Attack, TalosTactic.BeginAttackState )
+	
+	self:SetName("Talos Tactic")
+
+	-- if this location is not nil, move here in preference to self.target
+	self.safe_location = nil
+	
+	self:SetState(Tactic.States.Idle)		
+end
+
+function TalosTactic:DoAbilities()
+
+end
+
+function TalosTactic:IdleState()
+
+	local numCorpses = self.squad_ai:GetNumCorpses(20)
+	
+	self:CalculateSafeLocation()
+
+	if (numCorpses > 0) then
+		aitrace("cannibalize")
+		print("DE talos cannibalize")
+		self.squad_ai:DoCannibalize();
+	elseif (self.safe_location ~= nil) then
+		aitrace("tactics safe location move: "..self.squad_ai:GetID())
+		self.squad_ai:DoMove( self.safe_location )
+		return
+	end		
+end
+
+function TalosTactic:BeginHoldState()
+
+	local numCorpses = self.squad_ai:GetNumCorpses(20)
+	
+	self:CalculateSafeLocation()
+	
+	if (numCorpses > 0) then
+		aitrace("cannibalize")
+		print("DE talos cannibalize")
+		self.squad_ai:DoCannibalize();
+	elseif (self.safe_location ~= nil) then
+		aitrace("tactics safe location move: "..self.squad_ai:GetID())
+		self.squad_ai:DoMove( self.safe_location )
+		return
+	end
+		
+	if( self.target == nil ) then
+		return
+	end
+
+	if( self.variant_type == Tactic.Variant.Vector ) then
+		self.squad_ai:DoAttackMove( self.target )
+	end
+end
+
+
+function TalosTactic:BeginAttackState()
+	
+	local numCorpses = self.squad_ai:GetNumCorpses(20)
+	
+	self:CalculateSafeLocation()
+	
+	if (numCorpses > 0) then
+		aitrace("cannibalize")
+		print("DE talos cannibalize")
+		self.squad_ai:DoCannibalize();
+	elseif (self.safe_location ~= nil) then
+		aitrace("tactics safe location move: "..self.squad_ai:GetID())
+		self.squad_ai:DoMove( self.safe_location )
+		return
+	end
+	
+	if( self.target == nil ) then
+		return
+	end
+
+	if( self.variant_type == Tactic.Variant.Vector ) then
+		self.squad_ai:DoAttackMove( self.target )
+	end
+end
+
+function TalosTactic:CalculateSafeLocation()
+
+	local not_in_threat = function( base )
+		return not cpu_manager.terrain_analyzer:HasThreat( base:GetPosition(), 20 ) 
+	end
+
+	
+	--any time I'm in danger, run away
+	-- if safe_location ~= nil, then it is likely we are on our way to a safe place
+	if self.squad_ai:WasRecentlyHurt() then
+		if (self.safe_location == nil or not self.squad_ai:IsInStateMove()) then
+			local base = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint( self.squad_ai:GetPosition(), 25, not_in_threat, not_in_threat )
+			if base ~= nil then
+				self.safe_location = base:GetPosition()
+			end
+		end
+	elseif (self.target ~= nil and self.variant_type == Tactic.Variant.Vector) then
+		if (cpu_manager.terrain_analyzer:HasThreat( self.target, 25 )) then
+			local base = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint( self.squad_ai:GetPosition(), 25, not_in_threat, not_in_threat )
+			if base ~= nil then
+				self.safe_location = base:GetPosition()
+			end
+		else
+			self.safe_location = nil
+		end		
+	else
+		self.safe_location = nil
+	end
+	
+end

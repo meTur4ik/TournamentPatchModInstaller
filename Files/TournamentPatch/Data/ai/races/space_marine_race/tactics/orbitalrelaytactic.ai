@@ -1,0 +1,16 @@
+----------------------------------------
+-- File: 'orbitalrelaytactic.ai'
+-- Edited by Arkhan		@ 15.01.2007
+
+class 'OrbitalRelayTactic' (BaseTactic)
+
+function OrbitalRelayTactic:__init( base_ai ) super( base_ai )
+
+	self:SetName("Orbital Relay Tactic")
+
+	self.m_iArmouryID = cpu_manager.stats:GetBuildingID("space_marine_armoury")
+end
+
+function OrbitalRelayTactic:CanDeepStrikeTroops()
+	return (cpu_manager.player_stats:GetNumBasesByBPID(self.m_iArmouryID, true) > 0)
+end

@@ -1,0 +1,67 @@
+----------------------------------------
+-- File: 'forcecommandertactic.ai'
+-- Edited by Thudmeizer @ 09.03.2005
+-- Edited by LarkinVB   @ 16.08.2005
+
+class 'ForceCommanderTactic' (SpaceMarineInfantryTactic)
+
+ForceCommander = {}
+
+function ForceCommanderTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Force Commander Tactic")
+end
+
+function ForceCommanderTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (ForceCommander.orbital_b == nil) then
+		ForceCommander.orbital_b = cpu_manager.stats:GetAbilityID( "marines_orbital_bombardment" )
+	end
+	if (ForceCommander.battlecry == nil) then
+		ForceCommander.battlecry = cpu_manager.stats:GetAbilityID( "marines_battlecry" )
+	end
+end
+
+function ForceCommanderTactic:DoAbilities()
+
+	-- Try to use battlecry
+	Ability.DoAbilityArea(self.squad_ai, ForceCommander.battlecry, Ability.Filters.CloseInCombat, 10, 1)
+	
+	-- Try to use orbital bombardement
+	Ability.DoAbilityPos(self.squad_ai, ForceCommander.orbital_b, Ability.Filters.CloseEnemy, 24)
+	Ability.DoAbilityPos(self.squad_ai, ForceCommander.orbital_b, Ability.EntityFilters.CloseBaseEntityEnemy, 3)
+end
+
+-- Assassinate win condition -- never attack
+function ForceCommanderTactic:IsAttacker()
+	return (not cpu_manager.assassinate and self:IsCommanderAttacker())
+end
+
+-- Assassinate win condition -- never defend
+function ForceCommanderTactic:IsDefender()
+	return (not cpu_manager.assassinate and self:IsCommanderDefender())
+end
+
+function ForceCommanderTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update( self )) then
+		return
+	end
+		
+	-- Assassinate win condition -- never attach to a squad
+    if (not cpu_manager.assassinate and self.squad_ai:GetMeleeStance() == SquadAI.MSTANCE_Assault) then
+         
+        if (self.squad_ai:IsInCombat() or self.squad_ai:WasRecentlyHurt()) then
+        
+            if (self:TryAttachSquad(false, true, 50, 150, self.m_fCommanderAttachHealth) == nil) then
+                self:TryAttachSquadMelee()
+            end
+        end
+    end
+end

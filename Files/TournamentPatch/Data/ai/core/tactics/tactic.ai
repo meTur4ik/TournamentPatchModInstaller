@@ -1,0 +1,1342 @@
+----------------------------------------
+-- File: 'tactic.ai'
+-- Edited by Thudmeizer @ 01.04.2006
+-- Edited by LarkinVB   @ 14.04.2008
+-- Edited by Flenser    @ 03.06.2005
+-- Edited by Arkhan	@ 13.01.2006
+
+class 'Tactic'
+
+Tactic.States = 
+{
+	Disabled = "Disabled",
+	Idle = "Idle",
+	Attack = "Attack",
+	Hold = "Hold",
+	Retreat = "Retreat",
+	Invalid = "Invalid"
+}
+
+Tactic.Options = 
+{
+	can_reinforce = false,
+}
+
+--amount of resources tactics have to leave unused
+Tactic.ResourceFloor =
+{
+	requisition = 0,
+   power = 0
+}
+
+Tactic.Variant =
+{
+	Vector = 0,
+	SquadAI = 1,
+	BaseAI = 2,
+	Invalid = 3
+}
+
+Tactic.StateID =
+{
+    NoState = 0,
+    IsBroken = 1,
+    DoDance = 2,
+    CloseOn = 3,
+    AvoidDeath = 4,
+    AvoidStealth = 5
+}
+
+Tactic.Types =
+{
+	Undefined = 0,
+	Infantry = 1,
+	Vehicle = 2
+}
+
+Tactic.GlobalDefenseState = "Hold"
+Tactic.GlobalDefenseTime = 0
+
+--? @shortdesc ctor
+--? @args SquadAI squad_ai
+--? @result void
+function Tactic:__init( squad_ai )
+
+	dbAssert( squad_ai ~= nil )
+	
+	self.squad_ai = squad_ai
+	self.status = "Initialized"
+	self.prev_sub_state = nil
+	
+	self.state = nil
+	self.state_function = nil
+	self.state_function_map = {}
+
+	self.tactic_name = nil
+	self.m_eType = Tactic.Types.Undefined
+	
+	self.state_function_map[ Tactic.States.Idle ] = Tactic.IdleState
+	self.state_function_map[ Tactic.States.Disabled ] = Tactic.StartDisabledState
+	
+	self.sub_state_name = "No Sub State"
+	self.stateID = Tactic.StateID.NoState
+	self.m_eSubStateID = Tactic.StateID.NoState
+	
+	self:SetState( Tactic.States.Idle )
+
+	self.last_jump = 0
+
+	self.safe_point = Vector3f()
+	
+	self.tolerance_default = 100
+	self.tolerance = self.tolerance_default
+	self.target = Vector3f(cpu_manager.start_pos)
+	
+	self.m_iMoveDelay = 0
+	self.m_iLastGatherMove = 0
+	self.m_iDancing = 0
+	self.m_vCurrentPosition = squad_ai:GetPosition()
+	self.m_vLastPosition = squad_ai:GetPosition()
+	self.m_iUnitStrength = cpu_manager:GetUnitStrength(self.squad_ai)
+	
+	self.m_iNextDisownCheck = 0
+	
+	self.m_iDeepStrikeBlueprintID = -1
+	self.m_iDeepStrikeBuildingID = -1
+	
+	self.m_iLastJumpTargetUpdate = 0
+	
+	-- Init abilities
+	self:InitAbilities()
+end
+
+-- Virtual method to initialize ability ID's
+function Tactic:InitAbilities()
+	
+end
+
+--sets a general rule that all Engineers/Builders cannot capture
+--copy the function below to your engineer/builder's tactic file then set to true to allow capturing for that unit
+function Tactic:IsEngineerWhoCanCapture()
+   return false
+end
+
+function Tactic:IsInSubState()
+	return (self.m_eSubStateID ~= Tactic.StateID.NoState)
+end
+
+function Tactic:GetType()
+	return self.m_eType
+end
+
+function Tactic:CanOnlyDecap()
+	return false
+end
+
+function Tactic:IsSupportDetector()
+	return false
+end
+
+function Tactic:IsComplete()
+	return not self.squad_ai:IsValid()
+end
+
+function Tactic:IsTransportVehicle()
+	return 0
+end
+
+function Tactic:IsTransportable()
+	return 0
+end
+
+function Tactic:GetLastGatherMove()
+	return self.m_iLastGatherMove
+end
+
+function Tactic:GetTarget()
+	dbAssert(self.target ~= nil)
+	return self.target
+end
+
+function Tactic:GetUnitStrength()
+	return self.m_iUnitStrength
+end
+
+--? @shortdesc Set the name of the plan
+--? @args name
+--? @result void
+function Tactic:SetName( name )
+	self.tactic_name = name
+end
+
+--? @shortdesc Get the name of the tactic
+--? @args 
+--? @result string
+function Tactic:GetName()
+	return self.tactic_name
+end
+
+function Tactic:CanDeepStrike()
+
+	-- Check if we are able to enter a deepstrike building
+	if (self.m_iDeepStrikeBlueprintID < 0) then
+		return false
+	end
+	return true
+end
+
+function Tactic:SetDeepStrikeBuilding(oBuilding)
+
+	-- Check building
+	if (oBuilding:GetBlueprintID() ~= self.m_iDeepStrikeBlueprintID or not oBuilding:IsConstructionDone()) then
+		return
+	end
+	
+	-- Check if we already have a valid deep strike building
+	if (self.m_iDeepStrikeBuildingID >= 0) then
+
+		-- Get current deepstrike building
+		local oDeepStrikeBuilding = military_manager:GetBaseFromID(self.m_iDeepStrikeBuildingID)
+		if (oDeepStrikeBuilding ~= nil and oDeepStrikeBuilding:IsValid()) then
+		
+			-- Check if new building is closer
+			local vSquadPos = self.squad_ai:GetPosition()
+			local iNewDistance = distance_sqr(oBuilding:GetPosition(), vSquadPos)
+			local iOldDistance = distance_sqr(oDeepStrikeBuilding:GetPosition(), vSquadPos)
+			if (iNewDistance >= iOldDistance) then
+				return
+			end
+		end
+	end
+	self.m_iDeepStrikeBuildingID = oBuilding:GetEntity():GetID()
+end
+
+function Tactic:EnterDeepStrikeBuilding()
+
+	-- Check if we have a deepstrike building
+	if (self.m_iDeepStrikeBuildingID < 0) then
+		return false
+	end
+	
+	-- Get deepstrike building
+	local oDeepStrikeBuilding = military_manager:GetBaseFromID(self.m_iDeepStrikeBuildingID)
+	if (oDeepStrikeBuilding == nil or not oDeepStrikeBuilding:IsValid()) then
+		self.m_iDeepStrikeBuildingID = -1
+		return false
+	end
+
+	-- Check if we are ready to enter a deepstrike building
+	if (self.squad_ai:GetHealthPercentage() < 0.8 or self.squad_ai:IsCapturing() or
+		(self.squad_ai:GetHealthPercentage() < 1.0 and self.squad_ai:GetMaxTroopers() == 1) or
+		self.squad_ai:IsInCombat() or self.squad_ai:GetNumTroopers() < self.squad_ai:GetMaxTroopers()) then
+		return false
+	end
+
+	-- Check if the deepstrike building is much closer than the target pos, or we are waiting for action
+	local vSquadPos = self.squad_ai:GetPosition()
+	local iDistanceToTarget = distance_sqr(vSquadPos, self.target)
+	local iDistanceToBuilding = distance_sqr(vSquadPos, oDeepStrikeBuilding:GetPosition())
+	local bCloserThanHalfRange = (iDistanceToTarget < 2 * iDistanceToBuilding)
+	local bLocked = self.squad_ai:IsLocked()
+	if ((bLocked and (iDistanceToTarget < sqr(70) or bCloserThanHalfRange)) or
+		(not bLocked and iDistanceToBuilding > sqr(70) and bCloserThanHalfRange) or
+		cpu_manager.terrain_analyzer:HasThreat(vSquadPos, 70)) then
+		return false
+	end
+	
+	-- Okay, try to enter deepstrike building
+	aitrace("Tactic: Enter deepstrike building...")
+	self.squad_ai:DoDefault(oDeepStrikeBuilding:GetEntity())
+	return true
+end
+
+function Tactic:Update()
+	
+	local continue = true 
+	if (self:GetState() == Tactic.States.Disabled) then
+		continue = false
+	end
+
+	if (continue and self:IsComplete()) then
+		continue = false
+	end
+	
+	if (not cpu_manager.components[ CpuPlayer.CT_Tactics ]) then
+		continue = false	
+	end
+
+	if (continue) then
+		
+		aitrace("Tactic: Update "..tostring(self.squad_ai:GetSquadName()).."...")
+		
+		-- Update position
+		self.m_vLastPosition = self.m_vCurrentPosition
+		self.m_vCurrentPosition = self.squad_ai:GetPosition()
+		
+		-- Update unit strength
+		self.m_iUnitStrength = cpu_manager:GetUnitStrength(self.squad_ai)
+		
+		self.state_function( self )
+	end
+	return continue
+end
+
+--Larkin edit (Apr14, 2008)
+function Tactic:IsMoving()
+    local bMoveState = (self.squad_ai:IsInStateMove() or self.squad_ai:IsCapturing())
+    local bAttackMoveState = (self.squad_ai:IsInStateAttackMove() and distance_sqr(self.m_vLastPosition, self.m_vCurrentPosition) > sqr(4))
+    return (bMoveState or bAttackMoveState)
+end
+
+--? @shortdesc stay in the same state, but use a new state function (a substate)
+--? @args function state_function
+--? @result void
+function Tactic:SetSubState( state_function, sub_state_name )
+
+	dbAssert( state_function ~= nil )
+	
+	self.prev_sub_state = self.state_function
+	self.prev_sub_state_name = self.sub_state_name
+	
+	self.state_function = state_function
+	self.sub_state_name = sub_state_name
+
+end
+
+function Tactic:GetSubState()
+	return self.state_function, self.sub_state_name
+end
+
+function Tactic:GetPrevSubState()
+	
+	return self.prev_sub_state, self.prev_sub_state_name
+	
+end
+
+--? @shortdesc change the current state of the tactic and enter the starting state function 
+--? @extdesc will use IdleState if no appropriate beginning state function exists \n
+--? available states: \n
+--? Tactic.States.Idle \n
+--? Tactic.States.Attack \n
+--? Tactic.States.Hold \n
+--? @args Tactic.State state
+--? @result void
+function Tactic:SetState( state )
+
+	dbAssert( state ~= nil )
+		
+	-- We are in substate, therefore only replace previous state with new one 
+	if self.stateID ~= Tactic.StateID.NoState then
+	
+		--if you don't have a function for this, use idle state
+		if( self.state_function_map[ state ] == nil ) then
+			self.prev_sub_state = Tactic.IdleState
+		else
+			self.prev_sub_state = self.state_function_map[ state ]
+		end
+		self.prev_sub_state_name = state
+		self.m_iMoveDelay = 0
+		return
+	end
+		
+	self.state = state
+	
+	--if you don't have a function for this, use idle state
+	if( self.state_function_map[ state ] == nil ) then
+		self.state_function = Tactic.IdleState
+	else
+		self.state_function = self.state_function_map[ state ]
+	end
+	
+	--reset
+	self.sub_state_name = "Initialized"
+	self.prev_sub_state_name = "Initialized"
+	self.prev_sub_state = nil
+	self.m_iMoveDelay = 0
+end
+
+--? @shortdesc assign the starting function to use when this tactic enters a state
+--? @args 
+--? @result Tactic.State state
+function Tactic:GetState()
+	return self.state
+end
+
+--? @shortdesc assign the starting function to use when this tactic enters a state
+--? @args Tactic.State state, function state_func
+--? @result void
+function Tactic:AssignStateFunction( state, state_func )
+	
+	dbAssert( state_func ~= nil )
+	self.state_function_map[ state ] = state_func
+	
+end
+
+--? @shortdesc state used when the tactic is not locked
+--? @args 
+--? @result void
+function Tactic:IdleState()
+
+end
+
+--? @shortdesc state used when a designer locks a resource
+--? @args 
+--? @result void
+function Tactic:StartDisabledState()
+
+	if self.squad_ai ~= nil and self.squad_ai:IsValid() then
+		self.squad_ai:DoStop()
+	end
+	self:SetSubState( Tactic.DisabledState )
+end
+
+--? @shortdesc state used when the tactic should not do anything
+--? @args 
+--? @result void
+function Tactic:DisabledState()
+	
+end
+
+--? @shortdesc set a target for the tactic. This target is a variant, so it may be of different types depending on the current state
+--? @extdesc available variants: \n
+--? Tactic.Variant.Vector \n
+--? Tactic.Variant.SquadAI \n
+--? @args Variant target
+--? @result void
+function Tactic:SetTarget( target, variant_type )
+
+	if (g_iGMT < self.last_jump + 15 and self.target ~= nil and not self.squad_ai:IsRanged()) then
+		return
+	end
+	self.variant_type = variant_type
+	self.target = Vector3f(target)
+	-- self.m_iMoveDelay = 0
+end
+
+function Tactic:UpdateStance()
+
+	-- Check if I have setup time
+	if self.squad_ai:HasSetupTime() and self.squad_ai:IsRanged() then
+		if self.squad_ai:GetStance() ~= SquadAI.STANCE_StandGround then
+			self.squad_ai:DoSetStance( SquadAI.STANCE_StandGround )
+		end
+	elseif self.squad_ai:GetStance() ~= SquadAI.STANCE_Hold then
+		self.squad_ai:DoSetStance( SquadAI.STANCE_Hold )
+	end
+end
+
+-- Default troopers can attack
+function Tactic:IsAttacker()
+	return true
+end
+
+-- Default troopers can defend
+function Tactic:IsDefender()
+	return true
+end
+
+function Tactic:IsCommanderAttacker()
+
+	-- Check if we are attacking
+	if (self.squad_ai:IsLocked()) then
+	
+		-- Retreat if almost dead and not part of a large army
+		if (self.squad_ai:GetHealthPercentage() < 0.3) then
+			return false
+		end
+	else
+		-- Don't join attacks if severly hurt
+		if (self.squad_ai:GetHealthPercentage() < 0.6) then
+			return false
+		end
+	end
+	return true
+end
+
+function Tactic:IsCommanderDefender()
+	
+	-- Check HQ threat
+	if (cpu_manager:GetCriticalThreat() > 0) then
+		return true
+	end
+	return self:IsCommanderAttacker()
+end
+
+function Tactic:TryAttachSquad( melee, match_stance, radius, min_strength, health )
+
+   local bInfiltrator = self.squad_ai:IsInfiltrating()
+   if not self.squad_ai:IsBroken() and 
+	  (health == nil or self.squad_ai:GetHealthPercentage() < health) then
+	  
+	  --minimum strength of squad we want to attach to
+	  if min_strength == nil then
+	     min_strength = 160 + (cpu_manager:GetTierLevel() - 1) * 40
+	  end
+
+	  local range_filter = function( squad_ai )
+	  	 local oTactic = squad_ai:GetTactic()
+	     return squad_ai:IsRanged() and not squad_ai:IsBroken() and not squad_ai:IsCapturing() and
+	     		oTactic:GetUnitStrength() >= min_strength and self.squad_ai:CanAttachTo( squad_ai ) and
+				not oTactic:IsInSubState() and (not squad_ai:IsInfiltrating() or bInfiltrator) and oTactic:IsAttacker()
+	  end
+	  
+	  local melee_filter = function( squad_ai )
+	  	 local oTactic = squad_ai:GetTactic()
+	     return not squad_ai:IsRanged() and not squad_ai:IsBroken() and not squad_ai:IsCapturing() and
+	     		oTactic:GetUnitStrength() >= min_strength and self.squad_ai:CanAttachTo( squad_ai ) and
+				not oTactic:IsInSubState() and (not squad_ai:IsInfiltrating() or bInfiltrator) and oTactic:IsAttacker()
+	  end
+
+	  --attach to ranged
+	  if not melee then
+		 
+		 local attach_to = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), radius, range_filter )
+		 if attach_to == nil and not match_stance then
+			--try for melee unit if we don't care about the stance
+			local attach_to = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), radius, melee_filter )
+		 end
+		 
+		 if attach_to ~= nil then			
+			self:DoMoveAttach( attach_to )		            		 
+			
+			if match_stance then
+			   attach_to:DoSetMeleeStance( SquadAI.MSTANCE_Ranged )
+			end			
+		 end
+		 
+	  else --attach to melee
+		 
+		 local attach_to = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), radius, melee_filter )
+		 if attach_to == nil and not match_stance then
+			--try for ranged unit if we don't care about the stance
+			local attach_to = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), radius, range_filter )
+		 end
+
+		 if attach_to ~= nil then
+		 
+			self:DoMoveAttach( attach_to )		            		 
+			
+			if match_stance then
+			   attach_to:DoSetMeleeStance( SquadAI.MSTANCE_Assault )
+			end
+		 end
+	  end
+   end
+
+   return attach_to 
+
+end
+
+function Tactic:TryAttachSquadMelee()
+
+   --if I'm in combat
+   local bInfiltrator = self.squad_ai:IsInfiltrating()
+   if not self.squad_ai:IsBroken() and self.squad_ai:IsInCombat() then
+	  
+	  if self.squad_ai:GetHealthPercentage() < 0.3 then
+		 
+		 local attachable_filter = function( squad_ai )
+		 	local oTactic = squad_ai:GetTactic()
+		    return not squad_ai:IsBroken() and not squad_ai:IsCapturing() and self.squad_ai:CanAttachTo(squad_ai) and
+				   not oTactic:IsInSubState() and (not squad_ai:IsInfiltrating() or bInfiltrator) and oTactic:IsAttacker()
+		 end
+		 
+		 --find close by squads
+		 local attach_to = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), 10, attachable_filter )
+		 if attach_to ~= nil then
+			self.squad_ai:DoAttachSquad( attach_to )
+			attach_to:DoSetMeleeStance( SquadAI.MSTANCE_Assault )
+		 end
+		 
+	  else
+		 
+		 local melee_filter = function( squad_ai )
+		 	local oTactic = squad_ai:GetTactic()
+	        return not squad_ai:IsRanged() and not squad_ai:IsBroken() and not squad_ai:IsCapturing() and
+	        	   self.squad_ai:CanAttachTo(squad_ai) and not oTactic:IsInSubState() and
+	        	   (not squad_ai:IsInfiltrating() or bInfiltrator) and oTactic:IsAttacker()
+		 end
+		 
+		 local attach_to = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), 10, melee_filter )
+		 if attach_to ~= nil then 			
+			self.squad_ai:DoAttachSquad( attach_to )
+			attach_to:DoSetMeleeStance( SquadAI.MSTANCE_Assault )
+		 end
+	  end	  
+   end
+end
+
+--used for lower difficulty settings: some special units (such as bloodthirster) 
+--should always be in the attacking force if created
+function Tactic:AlwaysAttack()
+	return false
+end
+
+-- Arkhan 11.2005: Try to jump into combat
+function Tactic:JumpAttack()
+
+	-- Don't jump if I can't jump
+	if (not self.squad_ai:CanJump()) then
+		return false
+	end
+	
+	-- No double jump within 15 secs
+	if (g_iGMT < self.last_jump + 15) then
+		return false
+	end
+
+	-- No jump if we are in substate
+	if (self:IsInSubState()) then
+		return false
+	end
+
+	-- Check if the squad is ranged
+	if (self.squad_ai:IsRanged()) then
+		return self:JumpAttackRanged()
+	end
+	return self:JumpAttackMelee()
+end
+
+-- Arkhan 11.2005: Reworked to get a more cooperative attack behaviour
+-- Try jumping into battle and engage the ranged guys
+function Tactic:JumpAttackRanged()
+
+	-- Allow jumps only to reach a target position
+	if (self.target == nil) then
+		return false
+	end
+	
+	-- Init long and short jumps
+	local iLongJumpDistance = self.squad_ai:GetJumpDistance()
+	local iShortJumpDistance = 50
+	local iTargetRange = 35
+
+	-- Get positions
+	local vMyPos = self.squad_ai:GetPosition()
+	local vTargetPosition = self.target
+	local bUnderAttack = self.squad_ai:IsUnderAttack()
+	
+	-- Check for threats
+	if (not bUnderAttack and not cpu_manager:CloseEnemyUnits(vMyPos, iTargetRange)) then
+		return false
+	end
+	
+	-- Check my situation
+	local iMyStrength = self:GetUnitStrength()
+	local iEnemyPower, iMyPower = cpu_manager:GetArmyStrengthAtPos(vMyPos, iTargetRange)
+	
+	-- Don't jump if there's no threat at the target and we are not under attack
+	if (iEnemyPower <= 0 and not bUnderAttack) then
+		return false
+	end
+	
+	-- Don't jump attack, if the enemy is much stronger in the target area
+	local iTargetEnemyPower, iTargetAllyPower = cpu_manager:GetArmyStrengthAtPos(vTargetPosition, iTargetRange)
+	if (distance_sqr(vTargetPosition, vMyPos) < sqr(iShortJumpDistance)) then
+	
+		-- In case of short jumps, use the local allied power for comparison and don't jump in combat
+		if (2 * iTargetEnemyPower > 3 * math.max(iTargetAllyPower, iMyPower) or self.squad_ai:IsInCombat()) then
+			return false
+		end
+	else
+	
+		-- In case of long jumps, use only unit strength for comparison and jump even out of combat
+		if (2 * iTargetEnemyPower > 3 * (iTargetAllyPower + iMyStrength)) then
+			return false
+		end
+	end
+	
+	-- Try to jump in target range (5 tries)
+	local iMinRange = sqr(iShortJumpDistance)
+	local iMaxRange = sqr(iLongJumpDistance)
+	for iLoop1 = 1, 5 do
+	
+		-- Create a jump position
+		local vJumpPosition = vTargetPosition
+		vJumpPosition.x = vJumpPosition.x + math.random(-15, 15)
+		vJumpPosition.z = vJumpPosition.z + math.random(-15, 15)
+			
+		-- Check if target position is in range
+		local iDistance = distance_sqr(vJumpPosition, vMyPos)
+		if (iDistance <= iMaxRange and iDistance > iMinRange) then
+			
+			-- Check if unit is able to jump to position
+			if (self.squad_ai:CanJumpToPosition(vJumpPosition) and cpu_manager.terrain_analyzer:GetPathingDistance(vMyPos, vJumpPosition) >= 0) then
+			
+				-- Check for close enemies
+				if (not cpu_manager.terrain_analyzer:HasThreat(vJumpPosition, 20)) then
+								
+					-- Jump to position
+					self.squad_ai:DoJump(vJumpPosition)
+					self.last_jump = g_iGMT
+					self.m_iLastGatherMove = self.last_jump - 10
+					return true
+				end
+			end
+		end
+	end
+	return false
+end
+
+-- Arkhan 11.2005: Reworked to get a more cooperative attack behaviour
+-- Try jumping into battle and engage the ranged guys
+function Tactic:JumpAttackMelee()
+	
+	-- Check situation
+	local vMyPos = self.squad_ai:GetPosition()
+	local iMyStrength = self:GetUnitStrength()
+	local iTargetRange = 35
+	local iShortJumpDistance = 50
+	local iLongJumpDistance = self.squad_ai:GetJumpDistance()
+	local iDistanceToTarget = distance_sqr(vMyPos, self.target)
+	local iEnemyPower, iMyPower = cpu_manager:GetArmyStrengthAtPos(vMyPos, iTargetRange, true)
+	local iTargetEnemyPower, iTargetAllyPower = cpu_manager:GetArmyStrengthAtPos(self.target, iTargetRange, true)
+	
+	-- Init long and short jump distances
+	local iMinRange = sqr(iShortJumpDistance)
+	local iMaxRange = sqr(iLongJumpDistance)
+	if (iDistanceToTarget < sqr(iShortJumpDistance)) then
+	
+		-- Check short jumps
+		if (not self.squad_ai:IsInCombat() or self:IsMoving()) then
+			return false
+		end
+		iMinRange = sqr(25)
+		iMaxRange = sqr(iShortJumpDistance)
+	else
+	
+		-- Check long jumps
+		if (iTargetEnemyPower > 2 * (iTargetAllyPower + iMyStrength)) then
+			return false
+		end
+	end
+	
+	-- Check for close units
+	local oVictim = nil
+	local iMinStrength = 0
+	if (cpu_manager:CloseEnemyUnits(vMyPos, iLongJumpDistance)) then
+	
+		-- Get list of jump targets
+		local aJumpTargets = cpu_manager:GetJumpTargets()
+		
+		-- Check all enemy units
+		for iLoop1 in aJumpTargets do
+						
+			-- Check distance and unit strength
+			local iDistance = distance_sqr(vMyPos, aJumpTargets[iLoop1][2])
+			if (iDistance > iMinRange and iDistance < iMaxRange and aJumpTargets[iLoop1][3] > iMinStrength) then
+	
+				-- Check distance to target position
+				if (distance_sqr(self.target, aJumpTargets[iLoop1][2]) < sqr(iTargetRange)) then
+			
+					-- Take this target
+					iMinStrength = aJumpTargets[iLoop1][3]
+					oVictim = aJumpTargets[iLoop1][1]
+				end
+			end
+		end
+	end
+	
+	-- Check strategic points with long jumps
+	if (oVictim == nil and iMaxRange > sqr(iShortJumpDistance)) then
+	
+		-- Get closest strategic point in range of the target position
+		local oStrategicPoint = resource_manager:FindFirstStrategicPoint(self.target, 35)
+		if (oStrategicPoint ~= nil and not cpu_manager:IsFriendly(oStrategicPoint:Owner())) then
+		
+			-- Don't jump attack if strat is outside jump range
+			local vStratPos = oStrategicPoint:GetPosition()
+			local iDistance = distance_sqr(vMyPos, vStratPos)
+			if (iDistance < iMaxRange and iDistance > iMinRange) then
+				
+				-- Don't jump attack, if the enemy is much stronger in this area
+				local iStratEnemyPower, iStratAllyPower = cpu_manager:GetArmyStrengthAtPos(vStratPos, iTargetRange, true)
+				if (iStratEnemyPower < iStratAllyPower + iMyStrength) then
+					oVictim = oStrategicPoint:GetEntity()
+				end
+			end
+		end
+	end
+	
+	-- Leave, if no victim was found
+	if (oVictim == nil) then
+		return false
+	end
+	
+	-- Get enemy position
+	local vEnemyPos = oVictim:GetPosition()
+		
+	-- Now make the jump attack
+	if (self:CanJumpAttached()) then
+	  
+		-- Try to grab some nearby melee dudes to help unit
+		local attach_to = self:TryAttachSquad(true, true, 10, 200, nil)
+		if (attach_to ~= nil and attach_to:CanJumpToPosition(vEnemyPos)) then
+			attach_to:DoJump(vEnemyPos)
+		else
+			self.squad_ai:DoJump(vEnemyPos)
+		end
+	else
+		self.squad_ai:DoJump(vEnemyPos)
+	end
+	
+	self.target = Vector3f(vEnemyPos)
+	self.last_jump = g_iGMT
+	self.m_iLastGatherMove = self.last_jump - 10
+	return true
+end
+
+-- Arkhan 03.2006: Virtual method used by commander which are able to jump with an attached squad
+function Tactic:CanJumpAttached()
+	return false
+end
+
+-- Unstable in SS because of buggy CanJumpToPosition() function!!! Don't use!
+function Tactic:CompassMove( fMaxDistance )
+
+	-- Init directions
+	local fDiaDistance = fMaxDistance / math.sqrt(2)
+	local aMoveDirections =
+	{
+		{ fMaxDistance, 0, nil, nil },
+		{ fDiaDistance, fDiaDistance, nil, nil },
+		{ 0, fMaxDistance, nil, nil },
+		{ -fDiaDistance, fDiaDistance, nil, nil },
+		{ -fMaxDistance, 0, nil, nil },
+		{ -fDiaDistance, -fDiaDistance, nil, nil },
+		{ 0, -fMaxDistance, nil, nil },
+		{ fDiaDistance, -fDiaDistance, nil, nil }
+	}
+	
+	-- Calculate positions and distances
+	local vSquadPos = self.squad_ai:GetPosition()
+	for iLoop1 in aMoveDirections do
+	
+		-- Create move position
+		local vMovePos = Vector3f(vSquadPos)
+		vMovePos.x = vMovePos.x + aMoveDirections[iLoop1][1]
+		vMovePos.z = vMovePos.z + aMoveDirections[iLoop1][2]
+		aMoveDirections[iLoop1][3] = Vector3f(vMovePos)
+		
+		-- Calculate distance to home base
+		aMoveDirections[iLoop1][4] = distance_sqr(vMovePos, cpu_manager.start_pos)
+	end
+	
+	-- Move positions in home direction first
+	oLessThan = function(vDir1, vDir2) return vDir1[4] < vDir2[4] end
+	table.sort(aMoveDirections, oLessThan)
+	
+	-- Check move positions
+	for iLoop1 = 1, table.getn(aMoveDirections) do
+	
+		-- Check if we can jump to move position
+		local vMovePos = aMoveDirections[iLoop1][3]
+		if (cpu_manager:IsPosOnMap(vMovePos) and
+			self.squad_ai:CanJumpToPosition(vMovePos) and
+			cpu_manager.terrain_analyzer:GetPathingDistance(vSquadPos, vMovePos) >= 0) then
+		
+			-- Check for threat
+			if (not cpu_manager.terrain_analyzer:HasThreat(vMovePos, 35)) then
+				return vMovePos
+			end
+		end
+	end
+	
+	-- No valid move position found
+	return nil
+end
+
+function Tactic:MoveToDisengage()
+
+	local maxd = 100
+	local mind = 40
+	local safe_radius = 35
+	local jump_ok = false
+	local squad_pos = self.squad_ai:GetPosition()
+	
+	-- Broken squad will need bigger safe area than others
+	if (self.squad_ai:IsBroken()) then
+  		maxd = 140
+  		safe_radius = 50
+  	end
+  	
+  	-- No double jump within 10 secs
+  	if (self.squad_ai:CanJump() and g_iGMT > self.last_jump + 10) then
+  		jump_ok = true
+  		maxd = self.squad_ai:GetJumpDistance()
+  	end
+  	
+	-- We are safe, no need to jump if not forced to do so
+	if (not cpu_manager.terrain_analyzer:HasThreat( squad_pos, safe_radius )) then
+		mind = 10
+		jump_ok = false
+	end
+	local deviate = false
+	
+	-- No SP, check for friendly squad
+	local move_pos = nil
+	if (jump_ok and self.squad_ai:WasRecentlyHurt()) then
+	
+		local squad_filter = function( squad_ai )
+			return not cpu_manager.terrain_analyzer:HasThreat( squad_ai:GetPosition(), 35 )
+		end
+	
+		-- Check for friendly squad
+		move_pos = cpu_manager:GetClosestSquadWithin( squad_pos, mind, maxd, squad_filter )
+		if (CpuManager.AISettings.bUseMapDB and move_pos == nil and jump_ok) then
+		
+			-- No friendly squad and SP, do compass move
+			move_pos = self:CompassMove( maxd - 5 )
+		end
+	else
+		deviate = true
+	end
+	
+	-- Check if we already have a move pos
+	if (move_pos == nil) then
+	
+		-- Get closest strat to retreat
+		local vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(squad_pos, cpu_manager.start_pos, true, false)
+		if (vBasePos ~= nil) then
+			move_pos = Vector3f(vBasePos)
+		end
+	end
+	
+	-- We have a valid destination
+	if (move_pos ~= nil) then
+	
+		local safe_point = Vector3f( move_pos )
+		
+		-- Deviate as we can't jump directly on SP (x/z)
+		if deviate then
+			safe_point.x = safe_point.x + deviate_pos( 5 )
+			safe_point.z = safe_point.z + deviate_pos( 5 )
+		end
+		if (jump_ok and self.squad_ai:CanJumpToPosition( safe_point ) and distance_sqr(squad_pos, safe_point) > sqr(mind)) then
+			self.squad_ai:DoJump( safe_point )
+			self.last_jump = g_iGMT
+		else
+			cpu_manager:DoMove( self.squad_ai, move_pos, false, "Disengage", false )
+		end
+		self.safe_point = Vector3f( move_pos )
+		return true
+	end
+		
+	-- Check for save point
+	if (jump_ok) then
+	
+		-- Check for save point
+		self.squad_ai:DoMoveToClosestSafePoint(self.safe_point, maxd)
+		if (self.squad_ai:CanJumpToPosition(self.safe_point) and distance_sqr(squad_pos, self.safe_point) > sqr(mind)) then
+			self.squad_ai:DoJump(self.safe_point)
+			self.last_jump = g_iGMT
+		end
+		return true
+	end
+	return false
+end
+
+function Tactic:EmergencyRetreat()
+
+	-- Check if we can jump
+	if (not self.squad_ai:CanJump() or self.squad_ai:GetHealthPercentage() > 0.6 or not self.squad_ai:WasRecentlyHurt()) then
+		return
+	end
+	
+	-- Check health
+	local vSquadPos = self.squad_ai:GetPosition()
+	if (self.squad_ai:GetHealthPercentage() > 0.3) then
+		
+		-- Check threat
+		if (cpu_manager.terrain_analyzer:HasThreat(vSquadPos, 50)) then
+		
+			-- Check situation
+			local iEnemyStrength, iAlliedStrength = cpu_manager:GetArmyStrengthAtPos(vSquadPos, 50)
+			if (iEnemyStrength < 300 or iEnemyStrength < 2 * iAlliedStrength) then
+				return
+			end
+		else
+			return
+		end
+		
+	elseif (not cpu_manager.terrain_analyzer:HasThreat(vSquadPos, 35)) then
+		return
+	end
+	
+	-- Try to teleport to save position
+	self:MoveToDisengage()
+end
+
+function Tactic:DoMoveAttach( attach_to )
+
+   --[[local attach_pos = attach_to:GetPosition()
+   local squad_pos = self.squad_ai:GetPosition()
+   
+   dbAssert( attach_pos ~= nil )
+   dbAssert( squad_pos ~= nil )
+   
+   if distance_sqr( squad_pos, attach_pos ) > 100 then
+      cpu_manager:DoMove( self.squad_ai, attach_pos, false, "Attach" )
+      self.squad_ai:DoMove( attach_pos )
+   end]]
+   
+   self.squad_ai:DoAttachSquad( attach_to )
+end
+
+--try to close on enemy if we fight CC, receive damage but there is no enenmy
+--squad nearby. This is most likely if we attack a building and enemy squad is
+--shooting us.
+function Tactic:CloseOnEnemy()
+
+	-- Check move delay
+	if (g_iGMT < self.m_iMoveDelay + 5) then
+		return
+	end
+
+	if (self.squad_ai:IsBroken() or not self.squad_ai:IsInCombat() or not self.squad_ai:WasRecentlyHurt() or
+		self.squad_ai:IsCapturing() or self:IsMoving() or not self.squad_ai:IsInStateAttackMove() or
+		self:IsInSubState()) then
+		return
+	end
+
+	-- Get squad position
+	local vSquadPos = self.squad_ai:GetPosition()
+
+	-- Check for nearby enemy squads
+	local oEnemyUnit = cpu_manager.cpu_player:FindFirstEnemy(vSquadPos, 35, 1)
+	if (oEnemyUnit == nil) then
+		return
+	end
+
+	-- Check if enemy squad is close to us
+	local vEnemyPos = oEnemyUnit:GetPosition()
+	if (distance_sqr(vSquadPos, vEnemyPos) < sqr(10)) then
+		return
+	end
+
+	-- Check for nearby enemy buildings
+	local oEnemyBuilding = cpu_manager.cpu_player:FindFirstBaseEnemy(vSquadPos, 10, 1)
+	if (oEnemyBuilding == nil) then
+		return
+	end
+	
+	-- Check if enemy building is attacking
+	if (oEnemyBuilding:IsAttacking()) then
+		return
+	end
+	
+	-- Squad is most likely fighting a building
+	cpu_manager:DoMove(self.squad_ai, vEnemyPos, false, "Close on enemy")
+	
+	-- Set move delay
+	if (self.squad_ai:IsRanged()) then
+		self.m_iMoveDelay = g_iGMT
+	else
+		self.m_iMoveDelay = g_iGMT + 5
+	end
+end
+
+-- Arkhan 01.2006: Virtual method to avoid the worker bug
+function Tactic:ValidMove( vDestination )
+	self.squad_ai:DoMove( vDestination )
+end
+
+-- Arkhan 01.2006: Method to figure out if the squad should continue capturing even in critical situations
+function Tactic:UrgentCapturing()
+
+	-- Check if squad is capturing
+	if (not self.squad_ai:IsCapturing()) then
+		return false
+	end
+	
+	-- Get closest strategic point
+	local vSquadPos = self.squad_ai:GetPosition()
+	local oTargetPoint = resource_manager:FindFirstStrategicPoint(vSquadPos, 50)
+	if (oTargetPoint == nil) then
+	
+		-- Clean check
+		local iTargetDistance = sqr(50)
+		for oStrategicPoint in resource_manager:GetStrategicPointAIs() do
+		
+			-- Check distance
+			local iDistance = distance_sqr(vSquadPos, oStrategicPoint:GetPosition())
+			
+			-- Take this strategic point if it is closer than the previous points
+			if (iDistance < iTargetDistance) then
+				iTargetDistance = iDistance
+				oTargetPoint = oStrategicPoint
+			end
+		end
+		if (oTargetPoint == nil) then
+			return false
+		end
+	end
+	
+	-- Check if strategic point belongs to the enemy
+	local iOwner = oTargetPoint:Owner()
+	if (iOwner > 0 and not cpu_manager:IsFriendly(iOwner)) then
+		return true
+	end
+	
+	-- Check threat
+	if (not cpu_manager.terrain_analyzer:HasThreat(vSquadPos, 50)) then
+		return true
+	end
+	
+	-- Get situation
+	local iEnemyStrength, iAlliedStrength = cpu_manager:GetArmyStrengthAtPos(vSquadPos, 50)
+	
+	-- Check enemy strength
+	local iStratLimit = 1.0
+	if (iEnemyStrength < 50) then
+		iStratLimit = iStratLimit - 0.4
+	elseif (iEnemyStrength < 100) then
+		iStratLimit = iStratLimit - 0.3
+	elseif (iEnemyStrength < 150) then
+		iStratLimit = iStratLimit - 0.2
+	elseif (iEnemyStrength < 200) then
+		iStratLimit = iStratLimit - 0.1
+	end
+	
+	-- Check allied strength
+	if (2 * iAlliedStrength < iEnemyStrength) then
+		iStratLimit = iStratLimit + 0.4
+	elseif (iAlliedStrength < iEnemyStrength) then
+		iStratLimit = iStratLimit + 0.2
+	elseif (iAlliedStrength < 2 * iEnemyStrength) then
+		iStratLimit = iStratLimit - 0.1
+	else
+		iStratLimit = iStratLimit - 0.2
+	end
+	
+	-- Check limits
+	iStratLimit = math.min(iStratLimit, 0.8)	
+	
+	-- Check if we've nearly finished the capturing of critical points
+	local iCritLimit = 1.0 - (1.0 - iStratLimit) / 2
+	if (oTargetPoint:GetCaptureProgress() >= iCritLimit) then
+		return true
+	end
+	
+	-- Check if we've nearly finished the capturing of strategic points
+	if (oTargetPoint:GetCaptureProgress() >= iStratLimit and not oTargetPoint:IsStrategicObjective()) then
+		return true
+	end
+	return false
+end
+
+-- Arkhan 01.2006: Returns the position of a near unit which is closer to the target than me
+function Tactic:GetCloseSquadPosition()
+
+	-- Get a good target position to keep army together
+	local vMyPosition = self.squad_ai:GetPosition()
+	local vTargetPosition = self.target
+	local iClosestRangeToTarget = distance_sqr(self.target, vMyPosition)
+	for oSquad in military_manager:GetSquads() do
+	
+		-- Check if squad is valid
+		if (oSquad:IsValid()) then
+		
+			-- Calculate distance to me and to target
+			local vPosition = oSquad:GetPosition()
+			local iDistanceToMe = distance_sqr(vPosition, vMyPosition)
+			if (iDistanceToMe > sqr(35)) then
+				
+				local iDistanceToTarget = distance_sqr(vPosition, self.target)
+				if (iDistanceToTarget < sqr(35) and iDistanceToTarget < iClosestRangeToTarget) then
+					iClosestRangeToTarget = iDistanceToTarget
+					vTargetPosition = vPosition
+				end
+			end
+		end
+	end
+	return vTargetPosition
+end
+
+-- Arkhan 02.2006: Gets the closest enemy unit for melee
+function Tactic:GetClosestUnitForMelee(iRange)
+
+	-- Quick check
+	if (not cpu_manager:CloseEnemyUnits(self.target, iRange)) then
+		return nil
+	end
+
+    -- Get closest infantry enemy unit to target position
+    local oEnemyUnit = cpu_manager.cpu_player:FindFirstEnemy(self.target, iRange, 1)
+    if (oEnemyUnit ~= nil and not oEnemyUnit:IsRanged() and oEnemyUnit:GetMaxTroopers() == 1) then
+    	oEnemyUnit = cpu_manager.cpu_player:FindFirstInfantryEnemy(self.target, iRange, 1)
+    end
+	return oEnemyUnit
+end
+
+-- Arkhan 02.2006: Gets the closest enemy turret for melee
+function Tactic:GetClosestBuildingForMelee(iRange)
+
+	-- Quick check
+	if (not cpu_manager:CloseEnemyBuildings(self.target, iRange)) then
+		return nil
+	end
+
+	-- Check for closest listening post to target position
+	local oStrategicPoint = resource_manager:FindFirstStrategicPoint(self.target, iRange)
+	if (oStrategicPoint ~= nil and oStrategicPoint:HasListeningPost() and not cpu_manager:IsFriendly(oStrategicPoint:Owner())) then
+		return oStrategicPoint:GetEntity()
+	end
+	
+	-- Check for closest building to target position
+	local oBuilding = cpu_manager.cpu_player:FindFirstBaseEnemy(self.target, iRange, 1)
+	if (oBuilding ~= nil) then
+		return oBuilding:GetEntity()
+	end
+	return nil
+end
+
+-- Arkhan 05.2006: Makes a gather move
+function Tactic:GatherMove(vPos)
+
+	aitrace("Tactic: Gather move...")
+
+	-- Set time of last gather move
+	self.m_iLastGatherMove = g_iGMT
+
+	-- Make a simple move to the gather position
+	self.target = Vector3f(vPos)
+	cpu_manager:DoMove(self.squad_ai, self.target, false, "GatherState")
+end
+
+-- Arkhan 05.2006: Check if the unit is gathering
+function Tactic:CheckGatherMove()
+
+	-- Check if we're doing a gather move at the moment
+	if (g_iGMT > self.m_iLastGatherMove + 15 or self.squad_ai:IsIdle()) then
+		return false
+	end
+	
+	-- Stop gather move if we've allied support in close range
+	local vSquadPosition = self.squad_ai:GetPosition()
+	local iCloseRange = sqr(35)
+	local IsInRange = function(oAlliedSquad)
+		
+		-- Check if allied squad is current squad
+		if (iSquadID == oAlliedSquad:GetID()) then
+			return false
+		end
+		
+		-- Check distance from allied squad to current squad
+		if (distance_sqr(oAlliedSquad:GetPosition(), vSquadPosition) < iCloseRange) then
+			return true
+		end
+	end
+	if (cpu_manager:FindFirstFriendly(IsInRange) ~= nil) then
+		return false
+	end
+	return true
+end
+
+function Tactic:TryDisownFlags()
+	
+	-- Check if we are able to capture
+	if (not self.squad_ai:CanCapture() or self.squad_ai:IsCapturing() or g_iGMT < self.m_iNextDisownCheck or
+		self.squad_ai:IsAttacking() or self.squad_ai:WasRecentlyHurt()) then
+		return false
+	end
+	
+	-- Check unit strength
+	local iUnitStrength = self:GetUnitStrength()
+	local bExpendable = false
+	if (iUnitStrength < 150 or (g_iGMT > DefendChokePointPlan.HarassingTime * 60 and iUnitStrength < cpu_manager:GetArmyStrength() / 5)) then
+		bExpendable = true
+	end
+	
+	-- Check if we can allow the squad to capture a flag
+	local vSquadPos = self.squad_ai:GetPosition()
+	if (not bExpendable and distance_sqr(vSquadPos, self.target) > sqr(50)) then
+		return false
+	end
+	self.m_iNextDisownCheck = g_iGMT + 5
+	
+	-- Search a flag for capturing
+	local oStrategicPoint = resource_manager:FindFirstStrategicPoint(vSquadPos, 35)
+	if (oStrategicPoint ~= nil) then
+	
+		-- Check owner
+		local iOwner = oStrategicPoint:Owner()
+		if (iOwner == 0 and (self:CanOnlyDecap() or (oStrategicPoint:IsStrategicObjective() and not bExpendable))) then
+			return false
+		end
+	
+		-- Check if strat can be captured
+		if (not oStrategicPoint:HasListeningPost() and not cpu_manager:IsFriendly(iOwner)) then
+		
+			-- Check threat
+			local vStratPos = oStrategicPoint:GetPosition()
+			if (cpu_manager:CloseEnemyUnits(vStratPos, 35) and cpu_manager.terrain_analyzer:HasThreat(vStratPos, 35)) then
+				return false
+			end
+			self.squad_ai:DoDefault(oStrategicPoint:GetEntity())
+			return true
+		end
+	end
+	return false
+end
+
+function Tactic:AvoidStealthTroops()
+
+	if (self.stateID == Tactic.StateID.AvoidStealth and not self:CheckForStealthTroops()) then 
+	  	  
+		if (self.m_eSubStateID == self.stateID) then
+			self.m_eSubStateID = Tactic.StateID.NoState
+		end
+		self.stateID = Tactic.StateID.NoState
+		
+		-- Go back in the fray - reset my state
+		Tactic.SetState( self, self:GetState() )
+	end
+end
+
+-- Avoid stealth troops if we can't detect
+function Tactic:CheckForStealthTroops()
+
+	-- Ranged squads stationary, hurt and away from home base
+	local vSquadPos = self.squad_ai:GetPosition()
+	local bCheckAvoidStealth = (self.squad_ai:IsRanged() and self.squad_ai:WasRecentlyHurt() and
+								not self.squad_ai:IsDetector() and not self.squad_ai:IsCapturing() and
+								not self.squad_ai:IsInStateMove() and not self.squad_ai:IsBroken() and
+								not self.squad_ai:IsAttacking())
+						 
+	-- Don't leave if we are in state of disengage
+	if (self.stateID ~= Tactic.StateID.AvoidStealth and not bCheckAvoidStealth) then
+		self.m_iDancing = 0
+		return false
+	end
+	
+	-- Check for stealth troops
+	if (cpu_manager.cpu_player:FindFirstInfiltratedEnemy(vSquadPos, 35, 1) == nil) then
+		return false
+	end
+	      
+	-- Check for a safe destination
+	if (not self:MoveToDisengage()) then
+	
+		-- Check if we dance for the first time
+		if (self.stateID ~= Tactic.StateID.NoState) then
+			self.tolerance = self.tolerance + 10    
+		else
+			self.tolerance = self.tolerance_default
+		end
+		self.squad_ai:DoMoveToClosestSafePoint(self.safe_point, self.tolerance)
+	end
+		
+	-- Set state
+	local state_func, state_name = self:GetSubState()
+	if (state_func ~= self.AvoidStealthTroops) then
+		Tactic.SetSubState( self, self.AvoidStealthTroops, "AvoidStealth" )
+		self.squad_ai:DoSetStance( SquadAI.STANCE_StandGround )
+		self.stateID = Tactic.StateID.AvoidStealth
+	end
+	
+	-- Set avoid stealth state
+	self.m_eSubStateID = self.stateID
+	return true
+end
+

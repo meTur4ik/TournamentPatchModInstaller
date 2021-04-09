@@ -1,0 +1,110 @@
+class 'CommandSquadTactic' (InfantryTactic)
+
+
+CommandSquadTactic.SpecialAbilities = 
+{
+	{ nil, "guard_priest_fanatical", Ability.PredicateFilters.IsInCombat, nil },
+}
+
+CommandSquadTactic.PosAbilities = 
+{
+	{ nil, "guard_strafing_run", Ability.Filters.CloseEnemy, 6 },
+}
+
+CommandSquadTactic.TargetAbilities = 
+{
+	{ nil, "guard_psyker_lightning_arc", Ability.Filters.CloseInfantryEnemy, 4 },
+	{ nil, "guard_psyker_strip_soul", Ability.Filters.CloseCommanderEnemy, 1 },
+}
+
+
+function CommandSquadTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.UtilityFunctions.InitAbilitiesTable(CommandSquadTactic.SpecialAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(CommandSquadTactic.PosAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(CommandSquadTactic.TargetAbilities)
+
+	self:SetName("CommandSquad Tactic")
+
+end
+
+
+function CommandSquadTactic:DoAbilities()
+
+	Tactic.UtilityFunctions.DoAbilities(CommandSquadTactic.SpecialAbilities,self.squad_ai,Ability.DoAbility)
+	Tactic.UtilityFunctions.DoAbilities(CommandSquadTactic.PosAbilities,self.squad_ai,Ability.DoAbilityPos)
+	Tactic.UtilityFunctions.DoAbilities(CommandSquadTactic.TargetAbilities,self.squad_ai,Ability.DoAbilityTarget)
+
+end
+
+
+function CommandSquadTactic:IsAttacker()
+	-- assassinate win condition -- never attack
+	return not cpu_manager.assassinate
+end
+
+
+function CommandSquadTactic:UpgradeAndReinforce()
+
+	if not self.squad_ai:IsReinforcing() then
+
+		-- always try for the actual leader first
+		if not self.squad_ai:IsReinforcing() then
+			if self.squad_ai:CanReinforce( false, 0 ) then
+				self.squad_ai:DoReinforce( false, 0 )
+			end
+		end
+	end
+--[[
+	if Tactic.Options.can_reinforce == false then
+		return
+	end
+
+	if self:CanSpendMoney() == false then
+		return
+	end
+
+	--if I am broken, don't upgrade/reinforce!
+	if self:IsAffectedByMorale() and self.squad_ai:IsBroken() then
+		return
+	end
+]]	
+	if not self.squad_ai:IsReinforcing() then
+
+		-- try for different types of squad members
+		local commissarIndex = 0
+		local psykerIndex = 1
+		local priestIndex = 2
+	
+		local numCommissars = self.squad_ai:GetLeaderCount( commissarIndex )
+		local numPsykers = self.squad_ai:GetLeaderCount( psykerIndex)
+		local numPriests = self.squad_ai:GetLeaderCount( priestIndex )
+
+		-- Desired number of each leader type
+		local desiredCommissars = 1
+		local desiredPsykers = 2
+		local desiredPriests = 1
+		
+		local squadMax = self.squad_ai:GetMaxLeaderCount()
+		if squadMax > 4 then
+			-- research done - we want 1 priest and 1 more psyker
+			desiredPsykers = 3
+			desiredPriests = 2
+		end
+
+		-- Desired order of reinforcing
+		if numPriests < desiredPriests then
+			if self.squad_ai:CanReinforce( true, priestIndex ) then
+				self.squad_ai:DoReinforce( true, priestIndex )
+			end
+		elseif numCommissars < desiredCommissars then
+			if self.squad_ai:CanReinforce( true, commissarIndex ) then
+				self.squad_ai:DoReinforce( true, commissarIndex )
+			end
+		elseif numPsykers < desiredPsykers then
+			if self.squad_ai:CanReinforce( true, psykerIndex ) then
+				self.squad_ai:DoReinforce( true, psykerIndex )
+			end
+		end
+	end
+end

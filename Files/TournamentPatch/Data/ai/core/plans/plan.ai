@@ -1,0 +1,378 @@
+----------------------------------------
+-- File: 'plan.ai'
+-- Edited by Thudmeizer @ 06.03.2005
+-- Edited by LarkinVB   @ 15.08.2005
+
+--? @module AI
+--? @group Plan
+class 'Plan'
+
+Plan.Events =
+{
+	OnStart = "OnStart",
+	OnFailure = "OnFailure"
+}
+
+Plan.DebugInfo = {}
+
+Plan.DebugInfo[ AIResource.AI_Base ] = "bases"
+Plan.DebugInfo[ AIResource.AI_Squad ] = "squads"
+Plan.DebugInfo[ AIResource.AI_Building ] = "buildings"
+Plan.DebugInfo[ AIResource.AI_StrategicPoint ] = "strat pts"
+
+--? @shortdesc Ctor
+--? @args CpuPlayer.ComponentType
+--? @result void
+function Plan:__init( module )
+
+	dbAssert( module ~= nil )
+
+	if cpu_manager.components[ module ] then
+		self.complete = false
+	else
+		--do not run this plan: module is off
+		self.complete = true 
+	end
+		
+	self.status = "Initialized"
+	
+	self.locked_resources = {}
+	
+	self.state = nil
+	self.statename = "No state"
+	
+	self.plan_name = nil
+	
+	--do not run this plan: module is off
+	self:SetNeeds( "No needs", Plan.NeedsFulfilled )
+	self:SetWants( "No wants", Plan.WantsFulfilled )
+	
+	--this is used so we can only lock resources during our critical section (needs and wants fulfillment)
+	self.lock_mutex = false
+
+	self.observers = {}
+	
+end
+
+function Plan:AddObserver( object ) 
+
+	table.insert( self.observers, object )
+
+end
+
+function Plan:RemoveObserver( object )
+	
+	for i in self.observers do
+		if self.observers[i] == object then
+			table.remove( self.observers, i )
+			return
+		end
+	end
+	
+	--should never reach here
+	dbBreak()
+	
+end
+
+function Plan:OnEvent( event )
+
+	for i in self.observers do
+		self.observers[i]:OnPlanEvent( event )
+	end
+
+end
+
+function Plan:GetDebugInfo()
+	
+	local debug_info = {}
+	--count the resources I have and group them
+	for i in self.locked_resources do
+	
+		if debug_info[self.locked_resources[i]:GetType()] ~= nil then
+			debug_info[ self.locked_resources[i]:GetType() ] = debug_info[ self.locked_resources[i]:GetType() ] + 1
+		else
+			debug_info[self.locked_resources[i]:GetType()] = 1
+		end
+	
+	end
+	
+	local debug_print = ""
+	
+	for i = 0, table.getn( Plan.DebugInfo) do
+	
+		if debug_info[i] ~= nil then
+			debug_print = debug_print..Plan.DebugInfo[i].."("..debug_info[i]..") "
+		end
+		
+	end
+	
+	return debug_print
+end
+
+--? @args float priority
+--? @result void
+function Plan:SetPriority( priority )
+	self.priority = priority
+end
+
+--? @args 
+--? @result float
+function Plan:GetPriority()
+	dbAssert( self.priority ~= nil )
+	return self.priority
+end
+
+--? @shortdesc Set the name of the plan
+--? @args 
+--? @result void
+function Plan:SetName( name )
+	self.plan_name = name
+end
+
+--? @shortdesc Get the name of the plan
+--? @args 
+--? @result string
+function Plan:GetName()
+	dbAssert( self.plan_name ~= nil )
+	return self.plan_name
+end
+
+--? @shortdesc Lock the resource (take ownership)
+--? @args Resource resource
+--? @result void
+function Plan:LockResource( resource, designer )
+
+	dbAssert(resource ~= nil)
+	dbAssert( not resource:IsLocked() )
+	
+	if designer ~= nil then
+		resource:DesignerLock()
+	else
+		resource:Lock()
+	end
+	
+	table.insert(self.locked_resources, resource)
+end
+
+--? @shortdesc Set the current status of the plan
+--? @args 
+--? @result void
+function Plan:SetStatus( status )
+	self.status = status
+end
+
+--? @shortdesc Get the current status of the plan
+--? @args 
+--? @result string
+function Plan:GetStatus()
+	return self.status
+end
+
+--? @shortdesc Set the current state of the plan
+--? @args string statename, function state
+--? @result void
+function Plan:SetState( statename, state, log_it )
+	dbAssert( state ~= nil )
+	self.state = state
+	self.statename = statename
+
+	if log_it then
+		local gmt = g_iGMT
+		local mint = math.floor( gmt / 60 )
+		local sec = math.mod( gmt, 60 )
+	
+		local req = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition )
+		local power = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power )
+		local req_rate = resource_manager:GetResourceRate( ResourceAmount.RT_Requisition )
+		local power_rate = resource_manager:GetResourceRate( ResourceAmount.RT_Power )
+		
+		local squad_max = build_manager:GetSquadCapCurrentMax()
+		local squad_left = build_manager:GetSquadCapLeft()
+		local support_max = build_manager:GetSupportCapCurrentMax()
+		local support_left = build_manager:GetSupportCapLeft()
+		
+   end
+end
+
+
+--? @shortdesc Get the state name and function of this plan
+--? @args 
+--? @result string, function
+function Plan:GetState()
+	return self.statename, self.state
+end
+
+--? @shortdesc Unlocks all resources this plan owns
+--? @args 
+--? @result void
+function Plan:UnlockAll()
+	for i in self.locked_resources do
+		if not self.locked_resources[i]:IsLocked() then
+			local name = self:GetName()
+			print(name)
+			dbBreak()
+		else
+			if self.locked_resources[i]:GetType() == AIResource.AI_Squad then
+				local tactic = self.locked_resources[i]:GetTactic()
+				dbAssert( tactic ~= nil )
+				tactic:SetState( Tactic.States.Idle )
+			end
+			self.locked_resources[i]:Unlock()
+		end
+	end
+	
+	locked_resources = {}
+end
+
+--? @shortdesc Returns true if this plan owns a resource of id and type
+--? @args int id, AIResource.AI_ResourceType res_type
+--? @extdesc
+--? Resource types: \n
+--?			AI_Base \n
+--?			AI_Squad \n
+--?			AI_Building\n 
+--?			AI_StrategicPoint \n
+--? @result string
+function Plan:HasResource( id, res_type )
+	
+	for i in self.locked_resources do
+		if(	(self.locked_resources[i]:GetID() == id) and (self.locked_resources[i]:GetType() == res_type) ) then
+			return true
+		end
+	end
+		
+	return false
+	
+end
+
+--? @shortdesc Unlocks a resource that this plan has locked
+--? @args Resource resource
+--? @result void
+function Plan:UnlockResource( resource )
+	dbAssert( resource ~= nil )
+	local num_items = table.getn( self.locked_resources )
+	for i = num_items, 1, -1 do
+		if(	(self.locked_resources[i]:GetID() == resource:GetID() ) and (self.locked_resources[i]:GetType() == resource:GetType() ) ) then
+			self.locked_resources[i]:Unlock()
+			
+			if self.locked_resources[i]:GetType() == AIResource.AI_Squad then
+				local tactic = self.locked_resources[i]:GetTactic()
+				dbAssert( tactic ~= nil )
+				tactic:SetState( Tactic.States.Idle )
+			end
+			
+			table.remove( self.locked_resources, i )
+			return
+		end
+	end
+end
+
+--? @shortdesc Set whether this plan is ready to be deleted
+--? @args bool complete
+--? @result void
+function Plan:SetComplete( complete )
+	self.complete = complete 
+end
+
+--? @shortdesc Returns true if this plan is ready to be deleted
+--? @args 
+--? @result bool
+function Plan:IsComplete()
+	return self.complete
+end
+
+--? @shortdesc Set the needs function
+--? @args function needs
+--? @result void
+function Plan:SetNeeds( needs_name, needs )
+	self.needs_name = needs_name
+	self.needs = needs
+end
+
+--? @shortdesc Get the current needs function
+--? @args 
+--? @result string needsname, function needs
+function Plan:GetNeeds()
+	return self.needs_name, self.needs
+end
+
+--? @shortdesc Set the wants function
+--? @args function wants
+--? @result void
+function Plan:SetWants( wants_name, wants )
+	self.wants_name = wants_name
+	self.wants = wants
+end
+
+--? @shortdesc Get the current wants function
+--? @args 
+--? @result string wantsname, function wants
+function Plan:GetWants()
+	return self.wants_name, self.wants
+end
+
+--? @shortdesc Run the current state
+--? @args 
+--? @result void
+function Plan:Update()
+	if( self:IsComplete() == true ) then
+		return
+	end
+
+	self.state( self )
+end
+
+--? @shortdesc Grab your needs
+--? @args 
+--? @result void
+function Plan:Needs()
+	if( self:IsComplete() == true ) then
+		return
+	end
+	
+	dbAssert( self.needs ~= nil )
+	dbAssert( not self.lock_mutex )
+	
+	--critical section
+	self.lock_mutex = true
+	self.needs( self )
+	self.lock_mutex = false
+	
+end
+
+--? @shortdesc Grab your wants
+--? @args 
+--? @result void
+function Plan:Wants()
+	if( self:IsComplete() == true ) then
+		return
+	end
+	
+	dbAssert( self.wants ~= nil )
+	dbAssert( not self.lock_mutex )
+	
+	--critical section
+	self.lock_mutex = true
+	self.wants( self )
+	self.lock_mutex = false
+	
+end
+
+--? @shortdesc State you go into when all else fails
+--? @args 
+--? @result void
+function Plan:InvalidState()
+	--do nothing
+end
+
+--? @shortdesc Use this need function when you don't need anything
+--? @args 
+--? @result void
+function Plan:NeedsFulfilled()
+end
+
+--? @shortdesc Use this want function when you don't want anything (preposterous!)
+--? @args 
+--? @result void
+function Plan:WantsFulfilled()
+end

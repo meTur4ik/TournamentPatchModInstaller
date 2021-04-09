@@ -1,0 +1,90 @@
+class 'TombSpyderTactic' (VehicleTactic)
+
+function TombSpyderTactic:__init( squad_ai ) super( squad_ai )
+	
+	self.lastused_harvestspawn_time = cpu_manager.cpu_player:GetGameTime()
+	self.min_harvestspawn_time = 480 -- 60 seconds to wait between spawn tactic 
+
+	self.timedHarvestAbility = Timer( TombSpyderTactic.DoHarvestAbility, self, 5 )
+	self.timedDirectSpawnAbility = Timer( TombSpyderTactic.DoDirectSpawnAbility, self, 5 )
+	
+	self:SetName("Tomb Spyder Tactic")
+	
+end
+
+function TombSpyderTactic:DoAbilities()
+
+	self.timedHarvestAbility:Call()
+	self.timedDirectSpawnAbility:Call()
+	
+end
+
+function TombSpyderTactic:DoHarvestAbility()
+
+	local current_time =  cpu_manager.cpu_player:GetGameTime()
+	
+	-- turn on harvesting
+	if (self.squad_ai:CanHarvest(true)) then
+		self.squad_ai:DoHarvest(true)
+	end
+	
+	local difficulty = cpu_manager.cpu_player:GetDifficultyLevel()
+	local min_spawn_health = math.min(difficulty * 0.05,0.3) + 0.20
+	
+	-- spawn squads if near death
+	if self.squad_ai:IsInCombat() and self.squad_ai:GetHealthPercentage() < min_spawn_health and
+		self.lastused_harvestspawn_time + self.min_harvestspawn_time < current_time then		
+		local buildchannel_ai
+		
+		-- get corresponding buildchannel for this unit
+		for e in self.squad_ai:GetEntities() do
+			buildchannel_ai = build_manager:GetBuildChannelFromID(e:GetID())
+			if (buildchannel_ai ~= nil) then
+				break
+			end
+		end
+		
+		-- spawn random units based on AI difficulty level
+		if (buildchannel_ai ~= nil) then
+			local slots = buildchannel_ai:GetNumberOfItems(BuildChannelAI.PQ_Squad)
+			local build_chances = difficulty
+			local built_units = 0
+			local chance
+			
+			for chance = 1,build_chances do -- try to build this many units
+				local cnt
+				for cnt = 1,slots do -- try fixed number of times to find a working slot
+					local idx = math.random(0,slots-1)
+					local unit_id = buildchannel_ai:GetItemIDAt(BuildChannelAI.PQ_Squad,idx)
+				
+					if (buildchannel_ai:CanAddToQueue(BuildChannelAI.PQ_Squad,unit_id) == BuildChannelAI.CANBUILD_Ok) then
+						buildchannel_ai:BuildSquad(unit_id)
+						built_units = built_units + 1
+						break
+					end
+				end
+			end
+			
+			-- if we built everything we could, use current time for last harvest, otherwise scale last harvest time to allow building units sooner
+			if (built_units >= build_chances or build_chances <= 0) then
+				self.lastused_harvestspawn_time = current_time
+			else
+				local unbuilt = build_chances - built_units
+				self.lastused_harvestspawn_time = current_time - ((unbuilt * self.min_harvestspawn_time) / build_chances)
+			end
+		end
+	end
+end
+
+function TombSpyderTactic:DoDirectSpawnAbility()
+	local min_spawn_health = 0.90
+
+-- scarab reinforcement is a large power drain, so for now, don't build
+--[[
+	if (self.squad_ai:GetHealthPercentage() > min_spawn_health) then
+		if (self.squad_ai:CanDirectSpawn()) then
+			self.squad_ai:DoDirectSpawn()
+		end
+	end
+]]
+end

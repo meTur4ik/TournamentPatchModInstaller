@@ -1,0 +1,358 @@
+class 'TauBuildBaseStrategy' (BuildBaseStrategy)
+
+
+TauBuildBaseStrategy.ResearchOrder =
+{
+	{ 1, "tau_stealth_suit_damage_research" },
+	
+	{ 2, 	"tau_anti_grav_research" },
+	{ 2,  "tau_feral_leap_research" },
+	{ 2, 	"tau_improved_power_source_research" },
+	{ 2, 	"tau_target_lock" },
+	{ 2, 	"tau_missile_barrage_research" },
+	{ 2, 	"tau_teachings_of_kauyon_research" },
+	{ 2, 	"tau_teachings_of_montka_research" },
+
+	{ 3, 	"tau_improved_metallurgy" },
+	{ 3, 	"tau_targeting_optics" },	
+}
+
+TauBuildBaseStrategy.ResourceResearchOrder =
+{
+	{ 2, 	"tau_power_research" },
+	{ 2, 	"tau_requisition_research" },
+
+	{ 3, 	"tau_power_research_2" },
+	{ 3, 	"tau_requisition_research_2" },
+}
+
+function TauBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+
+	-- Limit tactics
+	-- NOTE: These #'s are horrifically dependent on balance changes, we should
+	-- scan the costs of all structures / add-ons / researches that let us tier up 
+	-- and figure out a min from that
+	self.spend_now_req = 400
+	self.spend_later_req = 600
+	self.spend_now_pow = 75
+	self.spend_later_pow = 150
+
+	self.generator_name = "tau_plasma_generator"
+	self.bigger_generator_id = cpu_manager.stats:GetBuildingID("tau_thermoplasma_generator")
+
+	self.hq_building_name = "tau_hq"
+	self.hq_building_id = cpu_manager.stats:GetBuildingID( self.hq_building_name )
+	
+	self.vehicle_building_name = "tau_vehicle_building"
+	self.vehicle_building_id = cpu_manager.stats:GetBuildingID( self.vehicle_building_name )
+	
+	self.infantry_building_name = "tau_barracks"
+	self.infantry_building_id = cpu_manager.stats:GetBuildingID( self.infantry_building_name )
+	self.infantry_building2_name = "tau_kroot_nest"
+	self.infantry_building2_id = cpu_manager.stats:GetBuildingID( self.infantry_building2_name )
+
+	self.post_addon_id = cpu_manager.stats:GetAddOnID( "addon_tau_list_post_1" )
+	self.post_addon2_id = cpu_manager.stats:GetAddOnID( "addon_tau_list_post_2" )
+	
+	self.tier2_building_name = "tau_research_building"
+	self.tier2_building_id = cpu_manager.stats:GetBuildingID( self.tier2_building_name )
+
+	self.tier3_building1_name = "tau_shrine_of_montka"
+	self.tier3_building1_id = cpu_manager.stats:GetBuildingID( self.tier3_building1_name )
+
+	self.tier3_building2_name = "tau_shrine_of_kauyon"
+	self.tier3_building2_id = cpu_manager.stats:GetBuildingID( self.tier3_building2_name )
+
+	self.tier4_building_name = "tau_shrine_of_purpose"
+	self.tier4_building_id = cpu_manager.stats:GetBuildingID( self.tier4_building_name )
+
+	self.tier3_research1_name = "tau_teachings_of_montka_research"
+	self.tier3_research1_id = cpu_manager.stats:GetResearchID( self.tier3_research1_name )
+
+	self.tier3_research2_name = "tau_teachings_of_kauyon_research"
+	self.tier3_research2_id = cpu_manager.stats:GetResearchID( self.tier3_research2_name )
+
+	self.ethereal_name = "tau_ethereal_squad"
+	self.ethereal_id = cpu_manager.stats:GetSquadID( self.ethereal_name )
+end
+
+
+function TauBuildBaseStrategy:EvaluateSquadCap()
+
+	local tierLevel = self:GetTierLevel()
+	local max_squadcap = build_manager:GetSquadCapTotalMax()
+	local max_vehiclecap = build_manager:GetSupportCapTotalMax()
+	
+	if (tierLevel == 1 and build_manager:GetSquadCapCurrentMax() < max_squadcap ) then
+		-- goto tier 2
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		build_type.name = self.tier2_building_name
+		self:TryBuild( build_type )
+	end
+
+	if (tierLevel == 2 and build_manager:GetSquadCapCurrentMax() < max_squadcap ) then
+		-- goto tier 3
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		
+		if (math.random(1,2) == 1) then
+			build_type.name = self.tier3_building1_name
+		else
+			build_type.name = self.tier3_building2_name
+		end
+		
+		self:TryBuild( build_type )
+	end
+
+	if (tierLevel == 3 and build_manager:GetSupportCapCurrentMax() <  max_vehiclecap) then
+		-- goto tier 4
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		build_type.name = self.tier4_building_name
+		self:TryBuild( build_type )
+	end
+
+end
+
+
+function TauBuildBaseStrategy:DoSecondaryBuildings()
+
+	local tierLevel = self:GetTierLevel()
+	if tierLevel >=3 then
+
+		-- count how many structures we have	
+		local num_vehicle_buildings = 0
+		local num_infantry_buildings = 0
+		local num_infantry2_buildings = 0
+		self.num_hq = 0
+	
+		for build_channel in build_manager:GetBuildChannelAIs() do
+	
+			if build_channel:GetBlueprintID() == self.vehicle_building_id then
+				num_vehicle_buildings = num_vehicle_buildings + 1
+			end
+		
+			if build_channel:GetBlueprintID() == self.infantry_building_id then
+				num_infantry_buildings = num_infantry_buildings + 1
+			end
+
+			if build_channel:GetBlueprintID() == self.infantry_building2_id then
+				num_infantry2_buildings = num_infantry2_buildings + 1
+			end
+
+			if build_channel:GetBlueprintID() == self.hq_building_id then
+				self.num_hq = self.num_hq + 1
+			end
+		end
+
+		-- build secondary vehicle buildings
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 800 then
+
+			local bBuild = false
+
+			if tierLevel == 2 and num_vehicle_buildings < 2 then
+				bBuild = true
+			elseif num_vehicle_buildings < 3 then
+				bBuild = true
+			end
+
+			if bBuild == true then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.vehicle_building_name
+				self:TryBuild( build_type )
+			end
+		end
+
+		-- build secondary infantry
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 1000 then
+
+			local bBuild = false
+
+			if tierLevel == 2 and num_infantry_buildings < 2 then
+				bBuild = true
+			elseif num_infantry_buildings < 3 then
+				bBuild = true
+			end
+
+			if bBuild == true then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.infantry_building_name
+				self:TryBuild( build_type )
+			end
+
+			bBuild = false
+
+			if tierLevel == 2 and num_infantry2_buildings < 2 then
+				bBuild = true
+			elseif num_infantry2_buildings < 3 then
+				bBuild = true
+			end
+
+			if bBuild == true then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.infantry_building2_name
+				self:TryBuild( build_type )
+			end
+
+		end
+
+		-- build secondary HQ
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 1000 then
+
+			if tierLevel >= 3 and self.num_hq < 2 then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.hq_building_name
+				self:TryBuild( build_type )
+			end
+		end
+	end
+	
+end
+
+
+function TauBuildBaseStrategy:DoResearch()
+
+	local tierLevel = self:GetTierLevel()
+
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,TauBuildBaseStrategy.ResearchOrder,tierLevel)
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,TauBuildBaseStrategy.ResourceResearchOrder,tierLevel)
+
+end
+
+
+function TauBuildBaseStrategy:DoBuildUnits()
+
+	local tierLevel = self:GetTierLevel()
+
+	if tierLevel >= 4 then
+		if	build_manager:CanBuildSquad( self.ethereal_id ) then
+			
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Squad
+			build_type.name = self.ethereal_name
+			self:TryBuild( build_type )
+		end
+	end
+
+	BuildBaseStrategy.DoBuildUnits( self )
+
+end
+
+
+function TauBuildBaseStrategy:UpdateTierLevel() 
+
+	self.tierLevel = 1
+
+	-- test for tier4
+	for build_channel in build_manager:GetBuildChannelAIs() do
+		if (build_channel:GetBlueprintID() == self.tier4_building_id and 
+			 build_channel:ConstructionDone()) then
+			self.tierLevel = 4
+			return
+		end
+	end
+	
+	-- test for tier3
+	if (cpu_manager.cpu_player:IsResearchComplete(self.tier3_research1_name) or 
+		cpu_manager.cpu_player:IsResearchComplete(self.tier3_research2_name)) then
+		self.tierLevel = 3
+		return
+	end
+
+	-- test for tier 3 and 2
+	for build_channel in build_manager:GetBuildChannelAIs() do
+		if ((build_channel:GetBlueprintID() == self.tier3_building1_id or 
+				build_channel:GetBlueprintID() == self.tier3_building2_id) and 
+			 build_channel:ConstructionDone()) then
+			self.tierLevel = 3
+			return
+		elseif (build_channel:GetBlueprintID() == self.tier2_building_id and 
+				build_channel:ConstructionDone()) then
+			 self.tierLevel = 2
+		end
+	end
+	
+end
+
+
+function TauBuildBaseStrategy:DevalueUnitByTier( unit_stats )
+
+	local devalue = 0
+
+--[[
+	local tierLevel = self:GetTierLevel()
+
+	if tierLevel == 2 then
+
+		if unit_stats:GetSquadName() == "tau_stealth_team_squad" then
+			devalue = VALUE_PER_TIER * 2
+		end
+
+	elseif tierLevel == 3 then
+		if unit_stats:GetSquadName() == "tau_stealth_team_squad" then
+			devalue = VALUE_PER_TIER * 3
+		end
+
+	elseif tierLevel >= 4 then
+
+		if unit_stats:GetSquadName() == "tau_stealth_team_squad" then
+			devalue = VALUE_PER_TIER * 4
+		end
+	end
+]]
+
+	return devalue
+end
+
+function TauBuildBaseStrategy:CalculateDetectorDemand()
+
+	-- don't build detector units if enemy has no stealth units
+	if (cpu_manager.cpu_player:FindFirstInfiltratedEnemy(Vector3f(0,0,0),1000,1) == nil) then
+		return
+	end
+	
+	-- build stealth detectors: vespid
+	local detector_name = "tau_vespid_auxiliary_squad"
+	local bpid = cpu_manager.stats:GetSquadID(detector_name)	
+	local s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(bpid)
+	
+	if (s_cnt == 0) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Squad
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+	
+	-- build stealth detectors: pathfinder
+	detector_name = "tau_pathfinder_squad"
+	bpid = cpu_manager.stats:GetSquadID(detector_name)	
+	s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(bpid)
+	local b_cnt = cpu_manager.player_stats:GetNumSquads() - s_cnt
+	
+	if (s_cnt < (b_cnt / 3) + 4) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Squad
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+	
+end
+
+function TauBuildBaseStrategy:BuildStructureAddons()
+
+	local tierLevel = self:GetTierLevel()
+
+	if ( self:PlanExists( "Build AddOn Plan", self.post_addon_id ) == false ) then 
+		self.AddPlan( self, BuildAddOnPlan( self.post_addon_id ) )
+	end
+
+	if ( tierLevel >= 2 and self:PlanExists( "Build AddOn Plan", self.post_addon2_id ) == false ) then 
+		self.AddPlan( self, BuildAddOnPlan( self.post_addon2_id ) )
+	end
+end
+

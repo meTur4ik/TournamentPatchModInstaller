@@ -1,0 +1,25 @@
+class 'HaemonculusTactic' (InfantryTactic)
+
+
+function HaemonculusTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Haemonculus Tactic")
+	
+end
+
+function HaemonculusTactic:DoAbilities()
+
+	if not self.squad_ai:TrySoulDestruction(15, 10, 4, 8) then
+		aitrace("soul destuction")
+	else
+		local numCorpses = self.squad_ai:GetNumCorpses(20);	
+		
+		if (numCorpses > 0) then
+			aitrace("cannibalize")
+			print("DE haemonculus cannibalize")
+			self.squad_ai:DoCannibalize();
+		end
+	end
+	
+end
+

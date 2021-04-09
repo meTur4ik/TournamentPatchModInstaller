@@ -1,0 +1,29 @@
+----------------------------------------
+-- File: 'hellhoundtactic.ai'
+-- Edited by Arkhan		@ 09.11.2006
+
+class 'HellhoundTactic' (GuardVehicleTactic)
+
+Hellhound = {}
+
+function HellhoundTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Hellhound Tactic")
+end
+
+function HellhoundTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Hellhound.burn_id == nil) then
+		Hellhound.burn_id = cpu_manager.stats:GetAbilityID("guard_let_it_burn")
+	end
+end
+
+function HellhoundTactic:DoAbilities()
+
+	-- Try to use 'Let it Burn' (Hellhound)
+	Ability.DoAbilityTarget(self.squad_ai, Hellhound.burn_id, Ability.Filters.CloseEnemy, 6)
+	
+	-- Call standard method
+	GuardVehicleTactic.DoAbilities(self)
+end

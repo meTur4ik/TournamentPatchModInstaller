@@ -1,0 +1,36 @@
+----------------------------------------
+-- File: 'SistersLivingSainttactic.ai'
+-- Edited by Thudmeizer @ 22.03.2008
+
+class 'SistersLivingSaintTactic' (SistersInfantryTactic)
+
+SistersLivingSaint = {}
+
+function SistersLivingSaintTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Living Saint Tactic")
+end
+
+function SistersLivingSaintTactic:AlwaysAttack()
+	return true
+end
+
+function SistersLivingSaintTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (SistersLivingSaint.flame_id == nil) then
+		SistersLivingSaint.flame_id = cpu_manager.stats:GetAbilityID( "sisters_ardent_flame" )
+	end
+end
+
+function SistersLivingSaintTactic:DoAbilities()
+
+	Ability.DoAbilityPos( self.squad_ai, SistersLivingSaint.flame_id, Ability.Filters.CloseEnemy, 12 ) 
+
+	-- We are dying, lower requisites for attacks
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+
+	Ability.DoAbilityPos( self.squad_ai, SistersLivingSaint.flame_id, Ability.Filters.CloseEnemy, 6 ) 
+	end
+end
+

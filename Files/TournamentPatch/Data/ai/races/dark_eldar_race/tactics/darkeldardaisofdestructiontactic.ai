@@ -1,0 +1,30 @@
+----------------------------------------
+-- File: 'darkeldardaisofdestructiontactic.ai'
+-- Edited by Thudmeizer @ 24.10.2008
+
+class 'DarkEldarDaisOfDestructionTactic' (DarkEldarVehicleTactic)
+
+DarkEldarDaisOfDestruction = {}
+
+function DarkEldarDaisOfDestructionTactic:__init( squad_ai ) super( squad_ai )
+	
+	self:SetName("Dark Eldar Dais of Destruction Tactic")
+end
+
+function DarkEldarDaisOfDestructionTactic:InitAbilities()
+
+	if (DarkEldarDaisOfDestruction.darklance_id == nil) then
+		DarkEldarDaisOfDestruction.darklance_id = cpu_manager.stats:GetAbilityID( "dark_eldar_darklance_sweep" )	
+	end
+end
+
+function DarkEldarDaisOfDestructionTactic:DoAbilities()
+
+	-- Send massive darklance blast against enemy forces!
+	Ability.DoAbilityPos( self.squad_ai, DarkEldarDaisOfDestruction.darklance_id, Ability.Filters.CloseEnemy, 8 ) 
+
+	-- We are dying, lower requisites for attacks
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+		Ability.DoAbilityPos( self.squad_ai, DarkEldarDaisOfDestruction.darklance_id, Ability.Filters.CloseEnemy, 5 )
+	end
+end

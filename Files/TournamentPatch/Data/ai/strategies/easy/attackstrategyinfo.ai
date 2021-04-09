@@ -1,0 +1,67 @@
+--EASY
+AttackStrategyInfo = 
+{
+
+	eldar_race =
+	{
+		stop_attack_rating = -INT_MAX,
+		min_units = 2,
+		max_army_percentage = 0.30,
+	},
+	
+	chaos_marine_race =
+	{
+		stop_attack_rating = -INT_MAX,
+		min_units = 2,
+		max_army_percentage = 0.30,
+	},
+	
+	ork_race =
+	{
+		stop_attack_rating = -INT_MAX,
+		min_units = 2,
+		max_army_percentage = 0.30,
+	},
+	
+	space_marine_race =
+	{
+		stop_attack_rating = -INT_MAX,
+		min_units = 2,
+		max_army_percentage = 0.30,
+	},
+	
+	guard_race =
+	{
+		stop_attack_rating = -INT_MAX,
+		min_units = 2,
+		max_army_percentage = 0.30,
+	},
+
+	tau_race =
+	{
+		stop_attack_rating = -INT_MAX,
+		min_units = 2,
+		max_army_percentage = 0.30,
+	},
+	
+	necron_race =
+	{
+		stop_attack_rating = -INT_MAX,
+		min_units = 2,
+		max_army_percentage = 0.30,
+	},
+	
+	sisters_race =
+	{
+		stop_attack_rating = -INT_MAX,
+		min_units = 2,
+		max_army_percentage = 0.30,
+	},
+
+	dark_eldar_race =
+	{
+		stop_attack_rating = -INT_MAX,
+		min_units = 2,
+		max_army_percentage = 0.30,
+	},
+}

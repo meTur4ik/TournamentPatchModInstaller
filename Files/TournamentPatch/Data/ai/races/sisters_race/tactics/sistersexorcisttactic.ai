@@ -1,0 +1,37 @@
+----------------------------------------
+-- File: 'sistersexorcisttactic.ai'
+-- Created by Arkhan 	        @ 16.03.2008
+-- Edited by Thudmeizer		@ 26.10.2008
+
+class 'SistersExorcistTactic' (SistersVehicleTactic)
+
+SistersExorcistTank = {}
+
+function SistersExorcistTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Exorcist Tank Tactic")
+end
+
+function SistersExorcistTactic:InitAbilities()
+	
+	-- Init ability ID's
+	if (SistersExorcistTank.hkmissiles_id == nil) then
+		SistersExorcistTank.hkmissiles_id = cpu_manager.stats:GetAbilityID( "sisters_hk_missiles" )	
+	end
+end
+
+function SistersExorcistTactic:DoAbilities()
+
+	local hkChance = math.random(1,100)
+
+	-- Check if we are attacking and not in home base
+	if (self.squad_ai:IsAttacking() and self.squad_ai:CanDoAbility(SistersExorcistTank.hkmissiles_id)) then
+		if ( (cpu_manager.terrain_analyzer:HasThreat( self.squad_ai:GetPosition(), 35 ) and hkChance > 25)
+		or (cpu_manager.terrain_analyzer:HasThreat( self.squad_ai:GetPosition(), 55 ) and hkChance > 75) ) then
+		
+			-- Launch HK Missiles at either Vehicles or Buildings (SistersExorcist)
+			Ability.DoAbilityTarget(self.squad_ai, SistersExorcistTank.hkmissiles_id, Ability.Filters.CloseVehicleEnemy, 2)
+    		Ability.DoAbilityTargetEntity( self.squad_ai, SistersExorcistTank.hkmissiles_id, Ability.EntityFilters.CloseBaseEntityEnemy, 2)
+		end
+	end
+end

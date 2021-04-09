@@ -1,0 +1,33 @@
+----------------------------------------
+-- File: 'helltalontactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'HellTalonTactic' (ChaosMarineVehicleTactic)
+
+HellTalon = {}
+
+function HellTalonTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Hell Talon Tactic")
+end
+
+function HellTalonTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (HellTalon.biotoxin_id == nil) then
+		HellTalon.biotoxin_id = cpu_manager.stats:GetAbilityID( "chaos_biotoxin_rocket" )
+	end
+end
+
+function HellTalonTactic:DoAbilities()
+	
+	Ability.DoAbilityPos( self.squad_ai, HellTalon.biotoxin_id, Ability.Filters.CloseSquadEnemy, 2 ) 
+	Ability.DoAbilityPos( self.squad_ai, HellTalon.biotoxin_id, Ability.Filters.CloseMonsterEnemy, 1 )
+	Ability.DoAbilityPos( self.squad_ai, HellTalon.biotoxin_id, Ability.Filters.CloseCommanderEnemy, 1 )
+
+	-- We are dying, lower requisites for attacks
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+
+		Ability.DoAbilityPos( self.squad_ai, HellTalon.biotoxin_id, Ability.Filters.CloseSquadEnemy, 1 ) 
+	end
+end

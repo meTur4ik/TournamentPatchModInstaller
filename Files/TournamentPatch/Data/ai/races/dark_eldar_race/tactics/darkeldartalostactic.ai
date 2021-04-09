@@ -1,0 +1,42 @@
+----------------------------------------
+-- File: 'darkeldartalostactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'DarkEldarTalosTactic' (DarkEldarVehicleTactic)
+
+DarkEldarTalos = {}
+
+function DarkEldarTalosTactic:__init( squad_ai ) super( squad_ai )
+	
+	self:SetName("Dark Eldar Talos Tactic")
+end
+
+function DarkEldarTalosTactic:InitAbilities()
+
+	if (DarkEldarTalos.wildfire_id == nil) then
+		DarkEldarTalos.wildfire_id = cpu_manager.stats:GetAbilityID( "dark_eldar_wildfire" )	
+	end
+end
+
+function DarkEldarTalosTactic:DoAbilities()
+
+	-- Target area to activate wildfire  
+	Ability.DoAbilityArea( self.squad_ai, DarkEldarTalos.wildfire_id, Ability.Filters.CloseEnemy, 15, 6 ) 
+
+	-- We are dying, lower requisites for attacks
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+		Ability.DoAbilityArea( self.squad_ai, DarkEldarTalos.wildfire_id, Ability.Filters.CloseEnemy, 10, 3 )
+	end
+	
+	-- Check if we can cannibalize
+	local vSquadPos = self.squad_ai:GetPosition()
+	if (not self.squad_ai:IsInCombat() and self.squad_ai:GetHealthPercentage() > 0.4 and self.squad_ai:IsIdle() and
+		not cpu_manager.terrain_analyzer:HasThreat(vSquadPos, 50)) then
+
+		-- Check if we have corpses in range
+		local numCorpses = self.squad_ai:GetNumCorpses(20);
+		if (numCorpses > 0) then
+			self.squad_ai:DoCannibalize();
+		end
+	end
+end

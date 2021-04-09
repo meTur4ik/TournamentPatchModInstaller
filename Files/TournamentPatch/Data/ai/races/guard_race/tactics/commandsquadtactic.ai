@@ -1,0 +1,191 @@
+----------------------------------------
+-- File: 'commandsquadtactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'CommandSquadTactic' (GuardInfantryTactic)
+
+
+CommandSquadTactic.SpecialAbilities = 
+{
+	{ nil, "guard_priest_fanatical",                Ability.Filters.IsInCombat },
+}
+
+CommandSquadTactic.PosAbilities = 
+{
+	{ nil, "guard_strafing_run",			Ability.Filters.CloseEnemy, 6 },
+}
+
+CommandSquadTactic.TargetAbilities = 
+{
+	{ nil, "guard_psyker_lightning_arc", 		Ability.Filters.CloseSquadEnemy, 1 },
+	{ nil, "guard_psyker_strip_soul", 		Ability.Filters.CloseCommanderEnemy, 1 },
+	{ nil, "guard_curse_machine_spirits", 		Ability.Filters.CloseVehicleEnemy, 1 },
+}
+
+
+function CommandSquadTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Leader Tactic")
+	
+	-- Command squad is able to enter a bunker
+	self.m_bBunkerSquad = true
+end
+
+function CommandSquadTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (CommandSquadTactic.SpecialAbilities[1][1] == nil) then
+		for i in CommandSquadTactic.SpecialAbilities do
+			local ability_id = cpu_manager.stats:GetAbilityID( CommandSquadTactic.SpecialAbilities[i][2] )
+			CommandSquadTactic.SpecialAbilities[i][1] = ability_id
+		end
+	end
+	
+	if (CommandSquadTactic.PosAbilities[1][1] == nil) then
+		for i in CommandSquadTactic.PosAbilities do
+			local ability_id = cpu_manager.stats:GetAbilityID( CommandSquadTactic.PosAbilities[i][2] )
+			CommandSquadTactic.PosAbilities[i][1] = ability_id
+		end
+	end
+	
+	if (CommandSquadTactic.TargetAbilities[1][1] == nil) then
+		for i in CommandSquadTactic.TargetAbilities do
+			local ability_id = cpu_manager.stats:GetAbilityID( CommandSquadTactic.TargetAbilities[i][2] )
+			CommandSquadTactic.TargetAbilities[i][1] = ability_id
+		end
+	end
+end
+
+function CommandSquadTactic:DoAbilities()
+
+	for i in CommandSquadTactic.SpecialAbilities do
+		local ability_id = CommandSquadTactic.SpecialAbilities[i][1]
+		if ability_id ~= nil then
+
+		local filter = CommandSquadTactic.SpecialAbilities[i][3]
+			Ability.DoAbility( self.squad_ai, ability_id, filter ) 
+		end
+	end
+
+	for i in CommandSquadTactic.PosAbilities do
+		local ability_id = CommandSquadTactic.PosAbilities[i][1]
+		if ability_id ~= nil then
+
+			local filter = CommandSquadTactic.PosAbilities[i][3]
+			local squad_count = CommandSquadTactic.PosAbilities[i][4]
+			Ability.DoAbilityPos( self.squad_ai, ability_id, filter, squad_count ) 
+		end
+	end
+
+	for i in CommandSquadTactic.TargetAbilities do
+		local ability_id = CommandSquadTactic.TargetAbilities[i][1]
+		if ability_id ~= nil then
+
+			local filter = CommandSquadTactic.TargetAbilities[i][3]
+			local squad_count = CommandSquadTactic.TargetAbilities[i][4]
+			Ability.DoAbilityTarget( self.squad_ai, ability_id, filter, squad_count ) 
+		end
+	end
+end
+
+-- Assassinate win condition -- never attack
+function CommandSquadTactic:IsAttacker()
+
+	-- Never attack in assassinate game mode
+	if (cpu_manager.assassinate) then
+		return false
+	end
+	
+	-- Attack if we have more than one squad member
+	if (self.squad_ai:GetNumTroopers() > 1) then
+		return true
+	end
+	return self:IsCommanderAttacker()
+end
+
+-- Assassinate win condition -- never defend
+function CommandSquadTactic:IsDefender()
+
+	-- Never defend in assassinate game mode
+	if (cpu_manager.assassinate) then
+		return false
+	end
+	
+	-- Defend if we have more than one squad member
+	if (self.squad_ai:GetNumTroopers() > 1) then
+		return true
+	end
+	return self:IsCommanderDefender()
+end
+
+function CommandSquadTactic:Reinforce()
+
+	-- Allow free reinforcing during harassing time
+	if (g_iGMT > DefendChokePointPlan.HarassingTime * 60) then
+
+		-- If there are no ressources available, don't upgrade!
+		if (not Tactic.Options.can_reinforce) then
+			return
+		end
+	end
+
+	if (not self.squad_ai:IsReinforcing()) then
+
+		-- Always try for the actual leader first
+		if (self.squad_ai:CanReinforce( false, 0 )) then
+			self.squad_ai:DoReinforce( false, 0 )
+			return
+		end
+
+		-- Try for different types of squad members
+		local commissarIndex = 0
+		local psykerIndex = 1
+		local priestIndex = 2
+	
+		-- Get current leader count
+		local numCommissars = self.squad_ai:GetLeaderCount( commissarIndex )
+		local numPsykers = self.squad_ai:GetLeaderCount( psykerIndex)
+		local numPriests = self.squad_ai:GetLeaderCount( priestIndex )
+
+		-- Desired number of each leader type
+		local desiredCommissars = 0
+		local desiredPsykers = 0
+		local desiredPriests = 2
+		
+		-- If squad size research is done want a psyker
+		local squadMax = self.squad_ai:GetMaxLeaderCount()
+		if (squadMax >= 4) then
+			desiredCommissars = 0
+			desiredPsykers = 1
+			desiredPriests = 3
+		end
+		
+		-- Check if the enemy has infiltrators
+		if (cpu_manager:EnemyHasUnitInfiltrators() or cpu_manager:EnemyHasBaseInfiltrators()) then
+		
+			-- Make sure we have a psyker
+			if (numPsykers <= 0) then
+				desiredPsykers = 1
+				desiredPriests = 1
+				desiredCommissars = 0
+			end
+		end
+
+		-- Desired order of reinforcing
+		if (numPsykers < desiredPsykers) then
+			if self.squad_ai:CanReinforce( true, psykerIndex ) then
+				self.squad_ai:DoReinforce( true, psykerIndex )
+			end
+		elseif (numPriests < desiredPriests) then
+			if self.squad_ai:CanReinforce( true, priestIndex ) then
+				self.squad_ai:DoReinforce( true, priestIndex )
+			end
+
+		elseif (numCommissars < desiredCommissars) then
+			if self.squad_ai:CanReinforce( true, commissarIndex ) then
+				self.squad_ai:DoReinforce( true, commissarIndex )
+			end
+		end
+	end
+end
+

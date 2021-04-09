@@ -1,0 +1,19 @@
+----------------------------------------
+-- File: 'nightbringertactic.ai'
+-- Edited by Thudmeizer @ 17.10.2006
+
+class 'NightBringerTactic' (NecronInfantryTactic)
+
+function NightBringerTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Night Bringer Tactic")
+end
+
+-- Don't return to Necron Lord
+function NightBringerTactic:DoAbilities()
+
+end
+
+function NightBringerTactic:AlwaysAttack()
+	return true
+end

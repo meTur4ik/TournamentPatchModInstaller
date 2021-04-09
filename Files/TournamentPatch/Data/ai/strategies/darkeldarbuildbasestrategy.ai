@@ -1,0 +1,457 @@
+class 'DarkEldarBuildBaseStrategy' (BuildBaseStrategy)
+
+
+DarkEldarBuildBaseStrategy.ResearchOrder =
+{
+	{ 1, "dark_eldar_infiltration_mandrake_research" },	
+	{ 1, "dark_eldar_poisoned_blades_research" },
+	
+	{ 2, "dark_eldar_upgrade_soulseeker_ammunition" },	
+	{ 2, "dark_eldar_upgrade_vehicle_armor" },	
+	{ 2, "dark_eldar_range_increase_research" },	
+	{ 2, "dark_eldar_upgrade_mandrake_melee" },	
+	{ 2, "dark_eldar_upgrade_destructor" },	
+	{ 2, "dark_eldar_upgrade_power_scythe" },	
+	
+	{ 3, "dark_eldar_wildfire_research" },	
+	{ 3, "dark_eldar_upgrade_commander_health_2" },	
+	{ 3, "dark_eldar_upgrade_agonizer" },	
+	{ 3, "dark_eldar_upgrade_vehicle_armor_2" },	
+	
+	{ 4, "dark_eldar_dais_research" },	
+}
+
+DarkEldarBuildBaseStrategy.ResourceResearchOrder =
+{
+	{ 2, 	"dark_eldar_upgrade_requisition_1" },
+	{ 2, 	"dark_eldar_upgrade_power_1" },
+
+	{ 3, 	"dark_eldar_upgrade_requisition_2" },
+	{ 3, 	"dark_eldar_upgrade_power_2" },
+
+	{ 4, 	"dark_eldar_soulharvest_research" },
+}
+
+DarkEldarBuildBaseStrategy.PostWychCultResearchOrder =
+{
+	{ 2, 	"dark_eldar_upgrade_commander_health" },
+	{ 2, 	"dark_eldar_crucible_of_malediction_research" },
+	{ 2, 	"dark_eldar_soul_destruction_research" },
+	{ 2, 	"dark_eldar_torture_amp_research" },
+}
+
+
+function DarkEldarBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+
+	-- Limit tactics
+	-- NOTE: These #'s are horrifically dependent on balance changes, we should
+	-- scan the costs of all structures / add-ons / researches that let us tier up 
+	-- and figure out a min from that
+	self.spend_now_req = 400
+	self.spend_later_req = 600
+	self.spend_now_pow = 75
+	self.spend_later_pow = 150
+
+	self.generator_name = "dark_eldar_plasma_generator"
+	self.bigger_generator_id = cpu_manager.stats:GetBuildingID( "dark_eldar_thermo_plasma" )
+	
+	self.hq_building_name = "dark_eldar_hq"
+	self.hq_building_id = cpu_manager.stats:GetBuildingID( self.hq_building_name )
+
+	self.research_building_name = "dark_eldar_haemonculus_laboratory"
+	self.research_building_id = cpu_manager.stats:GetBuildingID( self.research_building_name )
+	
+	self.vehicle_building_name = "dark_eldar_skimmer_shop"
+	self.vehicle_building_id = cpu_manager.stats:GetBuildingID( self.vehicle_building_name )
+	
+	self.infantry_building_name = "dark_eldar_hall_of_blood"
+	self.infantry_building_id = cpu_manager.stats:GetBuildingID( self.infantry_building_name )
+	
+	self.infantry_building2_name = "dark_eldar_hall_of_blood"
+	self.infantry_building2_id = cpu_manager.stats:GetBuildingID( self.infantry_building_name )
+
+	self.post_addon_id  = cpu_manager.stats:GetAddOnID( "addon_dark_eldar_list_post_1" )
+	self.post_addon2_id = cpu_manager.stats:GetAddOnID( "addon_dark_eldar_list_post_2" )
+
+	self.torture_pit_addon		= "addon_dark_eldar_slave_graveyard"
+	self.gruesome_display_addon = "addon_dark_eldar_gruesome_display"
+	self.torture_pit_addon_id	   = cpu_manager.stats:GetAddOnID( self.torture_pit_addon )
+	self.gruesome_display_addon_id = cpu_manager.stats:GetAddOnID( self.gruesome_display_addon )
+	
+	self.tier2_addon_id = cpu_manager.stats:GetAddOnID( "addon_dark_eldar_hq_1" )
+	self.tier3_addon_id = cpu_manager.stats:GetAddOnID( "addon_dark_eldar_hq_2" )
+
+	self.soul_cage_name = "dark_eldar_soul_cage"
+	self.soul_cage_id = cpu_manager.stats:GetBuildingID( self.soul_cage_name )
+	
+	self.slave_chamber_name = "dark_eldar_slave_caravel"
+	self.slave_chamber_id = cpu_manager.stats:GetBuildingID( self.slave_chamber_name )
+
+	self.wych_cult_name = "dark_eldar_wych_cult_arena"
+	self.wych_cult_id = cpu_manager.stats:GetBuildingID( self.wych_cult_name )
+
+	self.slave_chamber_addon_count = 0
+	self.slave_flipflop = false
+end
+
+
+function DarkEldarBuildBaseStrategy:EvaluateSquadCap()
+
+--  print("EvaluateSquadCap")
+
+	local tierLevel = self:GetTierLevel()
+
+-- print("EvaluateSquadCap: tier" .. tierLevel)
+	
+	-- evaluate squad cap
+	local num_slave_chambers = 0
+	for build_channel in build_manager:GetBuildChannelAIs() do
+		if (build_channel:GetBlueprintID() == self.slave_chamber_id) then
+				num_slave_chambers = num_slave_chambers + 1
+		end
+	end
+
+-- print("EvaluateSquadCap: num_slave_chambers" .. num_slave_chambers)
+	
+	-- tier 1, go tier 2
+	if((tierLevel == 1) and (num_slave_chambers >= 1)) then
+		if not self:PlanExists( "Build AddOn Plan", self.tier2_addon_id ) then 
+			self.AddPlan( self, BuildAddOnPlan( self.tier2_addon_id ) )
+-- print("EvaluateSquadCap: add tier2")
+		end
+	end
+
+	-- tier 2, go tier 3
+	local player_stats = cpu_manager.player_stats
+	local infantry_building_count	= player_stats:GetNumBasesByBPID(self.infantry_building_id,true)
+	local vehicle_building_count	= player_stats:GetNumBasesByBPID(self.vehicle_building_id,true)
+	local wych_cult_count			= player_stats:GetNumBasesByBPID(self.wych_cult_id,true)
+-- print("EvaluateSquadCap: infantry_building_count " .. infantry_building_count)
+-- print("EvaluateSquadCap: vehicle_building_count " .. vehicle_building_count)
+-- print("EvaluateSquadCap: wych_cult_count " .. wych_cult_count)
+	if (vehicle_building_count >= 1) and (infantry_building_count >= 1) and (wych_cult_count >= 1) and (tierLevel == 2) then
+		if not self:PlanExists( "Build AddOn Plan", self.tier3_addon_id ) then
+-- print("EvaluateSquadCap: add tier3")
+				self.AddPlan( self, BuildAddOnPlan( self.tier3_addon_id ) )
+		end
+	end
+	
+	-- tier 3, go tier 4
+	if (tierLevel == 3) then
+		if not self:PlanExists( "Build AddOn Plan", self.tier3_addon_id ) then
+-- print("EvaluateSquadCap: add tier4 ")
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.soul_cage_name
+				self:TryBuild( build_type )
+		end
+	end
+	
+end
+
+
+function DarkEldarBuildBaseStrategy:DoSecondaryBuildings()
+
+-- print("DoSecondaryBuildings")
+
+	local tierLevel = self:GetTierLevel()
+
+-- print("DoSecondaryBuildings: tier" .. tierLevel)
+	
+	if tierLevel >=2 then
+
+		-- count how many structures we have	
+		local num_vehicle_buildings = 0
+		local num_infantry_buildings = 0
+		self.num_hq = 0
+	
+		for build_channel in build_manager:GetBuildChannelAIs() do
+	
+			if build_channel:GetBlueprintID() == self.vehicle_building_id then
+				num_vehicle_buildings = num_vehicle_buildings + 1
+			end
+		
+			if build_channel:GetBlueprintID() == self.infantry_building_id then
+				num_infantry_buildings = num_infantry_buildings + 1
+			end
+
+			if build_channel:GetBlueprintID() == self.hq_building_id then
+				self.num_hq = self.num_hq + 1
+			end
+		end
+
+-- print("DoSecondaryBuildings: num_vehicle_buildings" .. num_vehicle_buildings)
+-- print("DoSecondaryBuildings: num_infantry_buildings" .. num_infantry_buildings)
+
+		-- build secondary vehicle buildings
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 800 then
+
+			local bBuild = false
+
+			if tierLevel == 2 and num_vehicle_buildings < 2 then
+				bBuild = true
+			elseif num_vehicle_buildings < 3 then
+				bBuild = true
+			end
+
+			if bBuild == true then
+			
+-- print("DoSecondaryBuildings: build vehicle building")
+			
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.vehicle_building_name
+				self:TryBuild( build_type )
+			end
+		end
+
+		-- build secondary infantry
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 1000 then
+
+			local bBuild = false
+
+			if tierLevel == 2 and num_infantry_buildings < 2 then
+				bBuild = true
+			elseif num_infantry_buildings < 3 then
+				bBuild = true
+			end
+
+			if bBuild == true then
+-- print("DoSecondaryBuildings: build infantry building")
+			
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.infantry_building_name
+				self:TryBuild( build_type )
+			end
+		end
+
+		-- build secondary HQ
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 1000 then
+
+			if tierLevel >= 3 and self.num_hq < 2 then
+-- print("DoSecondaryBuildings: build HQ")
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.hq_building_name
+				self:TryBuild( build_type )
+			end
+		end
+	end
+end
+
+function DarkEldarBuildBaseStrategy:DoBuildUnits()
+
+-- print("DoBuildUnits")
+
+	local tierLevel = self:GetTierLevel()
+
+-- print("DoBuildUnits: tier"..tierLevel)
+
+	-- build slave chambers
+-- print("DoBuildUnits: GetSquadCapCurrentMax " .. build_manager:GetSquadCapCurrentMax())
+-- print("DoBuildUnits: GetSquadCapTotalMax " .. build_manager:GetSquadCapTotalMax())
+-- print("DoBuildUnits: GetSquadCapLeft " .. build_manager:GetSquadCapLeft())
+-- print("DoBuildUnits: self.squad_cap_threshold " .. self.squad_cap_threshold)
+	
+	if build_manager:GetSquadCapCurrentMax() < build_manager:GetSquadCapTotalMax() and
+		build_manager:GetSquadCapLeft() <= self.squad_cap_threshold+1 then
+
+-- print("DoBuildUnits: build slave chamber")
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Building
+			build_type.name = self.slave_chamber_name
+			self:TryBuild( build_type )
+	end
+
+	BuildBaseStrategy.DoBuildUnits( self )
+
+end
+
+function DarkEldarBuildBaseStrategy:DoResearch()
+
+-- print("DoResearch")
+
+	local tierLevel = self:GetTierLevel()
+
+-- print("DoResearch: tier " .. tierLevel)
+
+	-- Ensure we have Armoury research building	
+	local player_stats = cpu_manager.player_stats
+	local building_count = player_stats:GetNumBasesByBPID(self.research_building_id,true)
+	local infantry_building_count = player_stats:GetNumBasesByBPID(self.infantry_building_id,true)
+
+-- print("DoResearch: building_count " .. building_count)
+-- print("DoResearch: infantry_building_count " .. infantry_building_count)
+	
+	if (infantry_building_count >= 1) and (building_count == 0) and (tierLevel >= 2) and
+		(not self:PlanExists("Build Building Plan",self.research_building_id)) then
+-- print("DoResearch: build research building ")
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		build_type.name = self.research_building_name
+		self:TryBuild( build_type)
+	end
+	
+	-- post wych-cult researches
+	for build_channel in build_manager:GetBuildChannelAIs() do
+		if (build_channel:GetBlueprintID() == self.wych_cult_id) then
+-- print("DoResearch: post wych cult research ")
+
+				BuildBaseStrategy.UtilityFunctions.DoResearch(self,DarkEldarBuildBaseStrategy.PostWychCultResearchOrder, tierLevel)
+		end
+	end
+	
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,DarkEldarBuildBaseStrategy.ResearchOrder,tierLevel)
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,DarkEldarBuildBaseStrategy.ResourceResearchOrder,tierLevel)
+	
+end
+
+
+function DarkEldarBuildBaseStrategy:UpdateTierLevel()
+
+	self.tierLevel = 1
+
+	for base in military_manager:GetBases() do
+	
+		if base:HasAddOn( self.tier3_addon_id ) then
+
+			-- we still have the proper add-on
+			local num_soul_cage = 0
+			for build_channel in build_manager:GetBuildChannelAIs() do
+				if (build_channel:GetBlueprintID() == self.soul_cage_id) then
+					num_soul_cage = num_soul_cage + 1
+				end
+			end
+			if(num_soul_cage > 1) then
+				self.tierLevel = 4
+				break
+			else
+				self.tierLevel = 3
+				break
+			end
+
+		elseif base:HasAddOn( self.tier2_addon_id ) then
+			self.tierLevel = 2
+		end
+	end
+end
+
+
+function DarkEldarBuildBaseStrategy:DevalueUnitByTier( unit_stats )
+
+	local devalue = 0
+
+	local tierLevel = self:GetTierLevel()
+
+	if tierLevel == 2 then
+		if unit_stats:GetSquadName() == "space_marine_squad_scout" then
+			devalue = VALUE_PER_TIER
+		elseif unit_stats:GetSquadName() == "space_marine_squad_assault" then
+			devalue = VALUE_PER_TIER
+		end
+
+	elseif tierLevel == 3 then
+		if unit_stats:GetSquadName() == "space_marine_squad_scout" then
+			devalue = VALUE_PER_TIER * 2
+		elseif unit_stats:GetSquadName() == "space_marine_squad_assault" then
+			devalue = VALUE_PER_TIER * 2
+		elseif unit_stats:GetSquadName() == "space_marine_squad_tactical" then
+			devalue = VALUE_PER_TIER
+		end
+
+	elseif tierLevel == 4 then
+
+		if unit_stats:GetSquadName() == "space_marine_squad_scout" then
+			devalue = VALUE_PER_TIER * 3
+		elseif unit_stats:GetSquadName() == "space_marine_squad_assault" then
+			devalue = VALUE_PER_TIER * 3
+		elseif unit_stats:GetSquadName() == "space_marine_squad_tactical" then
+			devalue = VALUE_PER_TIER * 2
+		elseif unit_stats:GetSquadName() == "space_marine_squad_dreadnought" then
+			devalue = VALUE_PER_TIER
+		elseif unit_stats:GetSquadName() == "space_marine_squad_dreadnought_hellfire" then
+			devalue = VALUE_PER_TIER
+		elseif unit_stats:GetSquadName() == "space_marine_squad_land_speeder" then
+			devalue = VALUE_PER_TIER
+		end
+	end
+
+	return devalue
+end
+
+function DarkEldarBuildBaseStrategy:CalculateDetectorDemand()
+
+	-- don't build detector units if enemy has no stealth units
+	if (cpu_manager.cpu_player:FindFirstInfiltratedEnemy(Vector3f(0,0,0),1000,1) == nil) then
+		return
+	end
+	
+	-- build stealth detectors: haemonculus 
+	local detector_name = "dark_eldar_squad_haemonculus"
+	local bpid = cpu_manager.stats:GetSquadID(detector_name)
+	local s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(bpid)	
+	if (s_cnt < 1) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Squad
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+
+	-- build stealth detectors: wych 
+	detector_name = "dark_eldar_squad_wych"
+	bpid = cpu_manager.stats:GetSquadID(detector_name)
+	s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(bpid)	
+	if (s_cnt < 1) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Squad
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+	
+end
+
+function DarkEldarBuildBaseStrategy:BuildStructureAddons()
+
+-- print("BuildStructureAddons")
+
+	local tierLevel = self:GetTierLevel()
+
+-- print("BuildStructureAddons: tier " .. tierLevel)
+
+	local player_stats = cpu_manager.player_stats
+	local slave_chamber_count	= player_stats:GetNumBasesByBPID(self.slave_chamber_id,true)
+
+-- print("BuildStructureAddons: slave_chamber_count " .. slave_chamber_count)
+-- print("BuildStructureAddons: self.slave_chamber_addon_count " .. self.slave_chamber_addon_count)
+	
+	if(slave_chamber_count > self.slave_chamber_addon_count) then
+-- print("BuildStructureAddons: build slave chamber addon ")
+		if(self.slave_flipflop == false) then
+-- print("BuildStructureAddons: build slave chamber torture pit ")
+			self.DeletePlan(self, self.torture_pit_addon)
+			self.AddPlan( self, BuildAddOnPlan( self.gruesome_display_addon_id ) )
+			self.slave_flipflop = true
+		else
+-- print("BuildStructureAddons: build slave chamber gruesome ")
+			self.DeletePlan(self, self.gruesome_display_addon)
+			self.AddPlan( self, BuildAddOnPlan( self.torture_pit_addon_id) )
+			self.slave_flipflop = false
+		end
+		
+		self.slave_chamber_addon_count = self.slave_chamber_addon_count + 1
+		
+	end
+	
+	if (tierLevel >=2 and self:PlanExists( "Build AddOn Plan", self.post_addon_id ) == false ) then 
+-- print("BuildStructureAddons: build post addon")
+		self.AddPlan( self, BuildAddOnPlan( self.post_addon_id ) )
+	end
+	
+	if (tierLevel >= 3 and resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 500 and
+		self:PlanExists( "Build AddOn Plan", self.post_addon2_id ) == false ) then 
+-- print("BuildStructureAddons: build post addon2")
+		self.AddPlan( self, BuildAddOnPlan( self.post_addon2_id ) )
+	end
+
+end

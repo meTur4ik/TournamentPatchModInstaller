@@ -1,0 +1,61 @@
+----------------------------------------
+-- File: 'baddoktactic.ai'
+-- Edited by LarkinVB   @ 31.07.2005
+
+class 'BadDokTactic' (OrkInfantryTactic)
+
+BadDok = {}
+
+function BadDokTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("BadDok Tactic")
+end
+
+function BadDokTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (BadDok.fightin_juice == nil) then
+		BadDok.fightin_juice = cpu_manager.stats:GetAbilityID( "ork_fightin_juice" )
+	end
+	if (BadDok.nuke == nil) then
+		BadDok.nuke = cpu_manager.stats:GetAbilityID( "tau_nuke" )
+	end
+end
+
+function BadDokTactic:DoAbilities()
+
+	Ability.DoAbilityTarget( self.squad_ai, BadDok.fightin_juice, Ability.Filters.CloseHurt )
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+		Ability.DoAbilityPos(self.squad_ai, BadDok.nuke, Ability.Filters.CloseEnemy, 8)
+		Ability.DoAbilityPos(self.squad_ai, BadDok.nuke, Ability.EntityFilters.CloseBaseEntityEnemy, 2)
+	else
+		Ability.DoAbilityPos(self.squad_ai, BadDok.nuke, Ability.Filters.CloseEnemy, 12)
+		Ability.DoAbilityPos(self.squad_ai, BadDok.nuke, Ability.EntityFilters.CloseBaseEntityEnemy, 3)
+	end
+end
+
+-- Should only attack/defend when attached
+function BadDokTactic:IsAttacker()
+	return (self.squad_ai:CanDoAbility(BadDok.nuke) or self:IsCommanderAttacker())
+end
+
+function BadDokTactic:IsDefender()
+	return (self.squad_ai:CanDoAbility(BadDok.nuke) or self:IsCommanderDefender())
+end
+
+function BadDokTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update( self )) then
+		return
+	end
+	
+	-- Attach to squad
+	if (self:TryAttachSquad(false, false, 1000, 250, nil) == nil) then
+		self:TryAttachSquad(true, false, 1000, 250, nil)
+	end
+end

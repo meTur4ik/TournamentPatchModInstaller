@@ -1,0 +1,40 @@
+----------------------------------------
+-- File: 'darkeldarmandraketactic.ai'
+-- Created by Arkhan		@ 06.04.2008
+
+class 'DarkEldarMandrakeTactic' (DarkEldarInfantryTactic)
+
+function DarkEldarMandrakeTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Mandrake Tactic")
+end
+
+function DarkEldarMandrakeTactic:Reinforce()
+
+	-- Check if we are reinforcing
+	if (self.squad_ai:IsReinforcing()) then
+		return
+	end
+	
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+	
+	-- Don't reinforce squads in critical condition
+	if (self.squad_ai:GetNumTroopers() <= self.squad_ai:GetMaxTroopers() / 3 and self.squad_ai:IsUnderAttack()) then
+		return
+	end
+
+	-- Check resources
+	local iRequisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	if ((iRequisition < 800 or self.m_bPowerCost) and not Tactic.Options.can_reinforce) then
+		return
+	end
+	
+	-- Always try to reinforce, as long as I have money
+	if (self.squad_ai:CanReinforce( false, 0 ) and cpu_manager:GetTierLevel() >= 2) then
+		self.squad_ai:DoReinforce( false, 0 )
+	end
+end
+

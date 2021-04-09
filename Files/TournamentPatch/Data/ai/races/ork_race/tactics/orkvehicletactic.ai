@@ -1,0 +1,46 @@
+----------------------------------------
+-- File: 'orkvehicletactic.ai'
+-- Edited by Thudmeizer		@ 26.10.2008
+
+class 'OrkVehicleTactic' (VehicleTactic)
+
+function OrkVehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Ork Vehicle Tactic")
+end
+
+-- Check if the vehicle should dance away in melee
+function OrkVehicleTactic:CheckVehicleDance(sName)
+
+	if (sName == "ork_squad_trukk" or
+		sName == "ork_squad_wartrak" or
+		sName == "ork_squad_looted_tank") then
+		return true
+	end
+	return false
+end
+
+function OrkVehicleTactic:DoAbilities()
+
+    -- SearchLight Scripts (Combat = On, No Combat = Off)
+    if (playing_night_map == 1) then
+    
+		local light1_id = cpu_manager.stats:GetAbilityID( "ork_searchlight_trukk" )
+		Ability.DoAbility( self.squad_ai, light1_id, Ability.Filters.IsInCombat ) 
+	
+		local light2_id = cpu_manager.stats:GetAbilityID( "ork_searchlight_wartrak" )
+		Ability.DoAbility( self.squad_ai, light2_id, Ability.Filters.IsInCombat ) 
+	
+		local light3_id = cpu_manager.stats:GetAbilityID( "ork_searchlight_killakan" )
+		Ability.DoAbility( self.squad_ai, light3_id, Ability.Filters.IsInCombat ) 
+	
+		local light4_id = cpu_manager.stats:GetAbilityID( "ork_searchlight_lemanruss" )
+		Ability.DoAbility( self.squad_ai, light4_id, Ability.Filters.IsInCombat ) 
+	
+		local light5_id = cpu_manager.stats:GetAbilityID( "ork_lighthalo_squiggoth" )
+		Ability.DoAbility( self.squad_ai, light5_id, Ability.Filters.IsInCombat ) 
+	end
+
+	-- Call standard method
+	VehicleTactic.DoAbilities(self)
+end

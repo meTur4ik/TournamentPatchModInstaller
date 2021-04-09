@@ -1,0 +1,108 @@
+class 'BuildOrderStrategy' (Strategy)
+
+function BuildOrderStrategy:__init( info ) super( info )
+
+	self.complete = false
+	
+	if self.info == nil then
+		self.complete = true
+		return
+	end
+	
+	self:PerformBuildPlans()
+
+end
+
+function BuildOrderStrategy:GetName()
+	return "BuildOrderStrategy"
+end
+
+function BuildOrderStrategy:PerformBuildPlans()
+	
+	local building_orders = {}
+	local squad_orders = {}
+	
+	for i in self.info do
+		local current_build_order = self.info[ i ]
+		local skip_item = false
+
+		local plan = nil
+		if current_build_order[1] == "squad" then	
+			
+			if (squad_orders[current_build_order[2]] == nil) then
+				squad_orders[current_build_order[2]] = 1
+			else
+				squad_orders[current_build_order[2]] = squad_orders[current_build_order[2]] + 1
+			end
+	
+			local id = cpu_manager.stats:GetSquadID( current_build_order[2] )
+			
+			if (cpu_manager.player_stats:GetNumSquadsByBPID(id) < squad_orders[current_build_order[2]]) then
+				plan = BuildUnitPlan( id, true )
+			else
+				skip_item = true
+			end
+		elseif current_build_order[1] == "flag_capture" then
+
+			plan = CapturePlan( cpu_manager.cpu_player:GetStartingPosition(), true )
+
+		elseif current_build_order[1] == "post_builder" then
+
+			plan = ResourcePlan( true )
+		
+		elseif current_build_order[1] == "building" then
+	
+			if (building_orders[current_build_order[2]] == nil) then
+				building_orders[current_build_order[2]] = 1
+			else
+				building_orders[current_build_order[2]] = building_orders[current_build_order[2]] + 1
+			end
+
+			local id = cpu_manager.stats:GetBuildingID( current_build_order[2] )
+
+			if (cpu_manager.player_stats:GetNumBasesByBPID(id,false) < building_orders[current_build_order[2]]) then
+				plan = BuildBuildingPlan( id, cpu_manager.cpu_player:GetStartingPosition(), true )
+			else
+				skip_item = true
+			end
+		elseif current_build_order[1] == "research" then
+	
+			local id = cpu_manager.stats:GetResearchID( current_build_order[2] )
+			plan = BuildResearchPlan( id, true )
+		
+		elseif current_build_order[1] == "addon" then
+	
+			local id = cpu_manager.stats:GetAddOnID( current_build_order[2] )
+			plan = BuildAddOnPlan( id, true )
+		
+		end	
+	
+		if (not skip_item) then
+			dbAssert( plan ~= nil )
+	
+			self:AddPlan( plan )
+		end
+	end
+	
+	self.complete = true
+end
+
+function BuildOrderStrategy:Update()
+
+	--FIXME: update timer, and quit out if timer reaches over limit
+	if self.complete == true then
+		self:PostEvent( Strategy.Events.OnSuccess )
+		return
+	end
+	
+	--check that we're not being attacked
+	--if I'm being attacked, create defend plans
+	for base in military_manager:GetBases() do
+		if cpu_manager.terrain_analyzer:HasThreat( base:GetPosition(), 15 ) then
+			self:PostEvent( Strategy.Events.OnSuccess )
+		end
+	end
+
+	-- superclass
+	Strategy.Update(self)
+end

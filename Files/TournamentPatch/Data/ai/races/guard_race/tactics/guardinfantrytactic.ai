@@ -1,0 +1,64 @@
+----------------------------------------
+-- File: 'guardinfantrytactic.ai'
+-- Edited by Thudmeizer		@ 26.10.2008
+
+class 'GuardInfantryTactic' (InfantryTactic)
+
+function GuardInfantryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Guard Infantry Tactic")
+	
+	-- Guard infantry is able to enter transport vehicles
+	local sSquadName = squad_ai:GetSquadName()
+	if (sSquadName == "guard_squad_ogryns") then
+		self.m_iTransportable = 2
+	else
+		self.m_iTransportable = 1
+	end
+end
+
+function GuardInfantryTactic:AddTargetAbilities()
+	table.insert(InfantryTactic.TargetAbilities, { nil, "guard_kasrkin_frag_grenades", Ability.Filters.CloseSquadEnemy, 1, 0 })
+end
+
+function GuardInfantryTactic:AddCommanders()
+	table.insert(self.commander, { "guard_squad_command_squad", true })
+end
+
+function GuardInfantryTactic:DoAbilities()
+
+	-- I might have these attached
+	if (self.squad_ai:IsAttached()) then
+	
+		if (self.squad_ai:HasSquadAttached("guard_squad_commissar")) then
+			CommissarTactic.InitAbilities( self )
+			CommissarTactic.DoAbilities( self )
+		elseif (self.squad_ai:HasSquadAttached("guard_squad_psyker")) then
+			PsykerTactic.InitAbilities( self )
+			PsykerTactic.DoAbilities( self )
+		elseif (self.squad_ai:HasSquadAttached("guard_squad_priest")) then
+			PriestTactic.InitAbilities( self )
+			PriestTactic.DoAbilities( self )
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end
+
+function GuardInfantryTactic:CheckForDetach()
+
+	-- Detach commander from broken/capturing. guards stay attached
+	if ((self.squad_ai:IsBroken() or self.squad_ai:IsCapturing()) and
+		(self.squad_ai:IsInCombat() or self.squad_ai:WasRecentlyHurt()) and
+		not self.squad_ai:HasSquadAttached( "guard_squad_commissar" ) and
+		not self.squad_ai:HasSquadAttached( "guard_squad_priest" ) and
+		not self.squad_ai:HasSquadAttached( "guard_squad_psyker" )) then 
+		
+		self.squad_ai:DoDetachSquad()
+		self.squad_ai:DoSetDefaultMeleeStance()
+	end
+
+	-- Call basic detach method
+	InfantryTactic.CheckForDetach(self)
+end

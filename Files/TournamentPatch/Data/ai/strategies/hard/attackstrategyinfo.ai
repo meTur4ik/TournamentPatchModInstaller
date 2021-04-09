@@ -1,0 +1,67 @@
+--HARD
+AttackStrategyInfo = 
+{
+
+	eldar_race =
+	{
+		stop_attack_rating = -100,
+		min_units = 1,
+		max_army_size = 1500,
+	},
+	
+	chaos_marine_race =
+	{
+		stop_attack_rating = -100,
+		min_units = 1,
+		max_army_size = 1500,
+	},
+	
+	ork_race =
+	{
+		stop_attack_rating = -100,
+		min_units = 1,
+		max_army_size = 1500,
+	},
+	
+	space_marine_race =
+	{
+		stop_attack_rating = -100,
+		min_units = 1,
+		max_army_size = 1500,
+	},
+	
+	guard_race =
+	{
+		stop_attack_rating = -100,
+		min_units = 3,
+		max_army_size = 1500,
+	},
+
+	tau_race =
+	{
+		stop_attack_rating = -100,
+		min_units = 3,
+		max_army_size = 1500,
+	},
+
+	necron_race =
+	{
+		stop_attack_rating = -100,
+		min_units = 3,
+		max_army_size = 1500,
+	},
+
+	sisters_race =
+	{
+		stop_attack_rating = -100,
+		min_units = 1,
+		max_army_size = 1500,
+	},
+
+	dark_eldar_race =
+	{
+		stop_attack_rating = -100,
+		min_units = 1,
+		max_army_size = 1500,
+	},
+}

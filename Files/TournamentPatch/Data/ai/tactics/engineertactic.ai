@@ -1,0 +1,143 @@
+class 'EngineerTactic' (InfantryTactic)
+
+function EngineerTactic:__init( squad_ai ) super( squad_ai )
+
+	self.tagged_flag = nil
+
+	-- should we hold this engineer back?
+	--[[
+	if Tactic.Engineers.num_currrently_resourcing < Tactic.Engineers.num_reserved_for_resourcing then
+		self.go_to_post = true
+		Tactic.Engineers.num_currrently_resourcing = Tactic.Engineers.num_currrently_resourcing + 1
+	else
+		self.go_to_post = false
+	end
+	]]
+
+	self.go_to_post = false
+
+	self:SetName("Engineer Tactic")
+
+end
+
+
+function EngineerTactic:IsAttacker()
+	return false
+end
+
+
+function EngineerTactic:IsDefender()
+	return false
+end
+
+
+function EngineerTactic:Update()
+
+	if self.go_to_post == true then
+		Tactic.Engineers.num_currrently_resourcing = Tactic.Engineers.num_currrently_resourcing + 1
+	end
+	
+	Tactic.Engineers.total_engineer_count = Tactic.Engineers.total_engineer_count + 1
+
+	-- state machine
+	if not InfantryTactic.Update( self ) then
+		return false
+	end
+	
+	if self.tagged_flag == nil and not self.squad_ai:IsLocked() and not self.squad_ai:IsInStateMove() then
+		self:GoToNextPost()
+	end
+	
+	-- locked, so don't stay close to the flag
+	if self.squad_ai:IsLocked() and self.tagged_flag ~= nil then
+		--release the flag
+		self.tagged_flag:TagFlagForEngineer( false )
+		self.tagged_flag = nil
+	end
+	
+	return true
+end
+
+
+function EngineerTactic:IsAffectedByMorale()
+
+	return self.squad_ai:IsBuilding() == 0
+end
+
+
+function EngineerTactic:GoToNextPost()
+
+	-- only attempt repair if we can, and if we are healthy
+	if not self.squad_ai:CanRepair() or self.squad_ai:GetHealthPercentage() < 0.60 then
+		return
+	end
+	
+	local ai_position = nil
+	local best_point = nil
+	local best_type = Tactic.Variant.SquadAI
+	local best_distance = -1
+	local from_pos = self.squad_ai:GetPosition()
+
+	-- find the closest squad that can be repaired
+	for ai in military_manager:GetSquads() do
+		if ai:IsValid() then
+			ai_position = ai:GetPosition()
+			if distance_sqr( ai_position, from_pos ) < 2000 and
+				not cpu_manager.terrain_analyzer:HasThreat( ai_position, 20 ) and ai:CanBeRepaired() and
+				ai:GetHealthPercentage() < 0.90 then
+				local curr_distance = distance_sqr( ai_position, from_pos )
+				if best_point == nil then
+					best_point = ai
+					best_distance = curr_distance
+					best_type = Tactic.Variant.SquadAI
+				elseif curr_distance < best_distance then
+					best_point = ai
+					best_distance = curr_distance
+					best_type = Tactic.Variant.SquadAI
+				end
+			end
+		end
+	end
+
+	-- find the closest base that can be repaired 
+	for ai in military_manager:GetBases() do
+		if ai:IsValid() then
+			ai_position = ai:GetPosition()
+			if distance_sqr( ai_position, from_pos ) < 2000 and
+				not cpu_manager.terrain_analyzer:HasThreat( ai_position, 20 ) and ai:CanBeRepaired() and
+				ai:GetHealthPercentage() < 0.90 then
+				local curr_distance = distance_sqr( ai_position, from_pos )
+				if best_point == nil then
+					best_point = ai
+					best_distance = curr_distance
+					best_type = Tactic.Variant.BaseAI
+				elseif curr_distance < best_distance then
+					best_point = ai
+					best_distance = curr_distance
+					best_type = Tactic.Variant.BaseAI
+				end
+			end
+		end
+	end
+
+	if (best_point ~= nil and 
+		not cpu_manager.terrain_analyzer:HasThreatOnPath( from_pos, best_point:GetPosition(), 15 )) then
+		if (best_type == Tactic.Variant.SquadAI) then
+			aitrace("repairing squad")
+			self.squad_ai:DoRepairSquad(best_point)			
+		elseif (best_type == Tactic.Variant.BaseAI) then
+			aitrace("repairing base")
+			self.squad_ai:DoRepairBase(best_point)
+		end
+	else
+		aitrace("returning to a home base")
+		local base = cpu_manager:FindClosestBase( self.squad_ai:GetPosition(), 0 )
+		if base ~= nil then
+				local base_distance = distance_sqr( base:GetPosition(), from_pos )
+				if base_distance > 100 then
+					self.squad_ai:DoMove( base:GetPosition() )
+			end
+		end
+	end
+
+end

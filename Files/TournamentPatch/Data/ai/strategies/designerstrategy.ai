@@ -1,0 +1,258 @@
+import( 'Strategies/strategy.ai' )
+
+class 'DesignerStrategy' (Strategy)
+
+function DesignerStrategy:__init() super()
+
+	self.demand_table = {}
+	self.class_preference = {}
+	self.waypoints = {}
+	
+	--listen to know when to increment
+	cpu_manager:AddListener( CpuManager.Events.BuildSquad, self, DesignerStrategy.BuildSuccess )
+	cpu_manager:AddListener( CpuManager.Events.TryBuildPrereq, self, DesignerStrategy.BuildSuccess )
+	
+	--listen to know when to change the waypoints
+	cpu_manager:AddListener( CpuManager.Events.BuildSquad, self, DesignerStrategy.ProcessWaypoints )
+	
+	self.state = DesignerStrategy.ClassPreference
+	self.current_waypoint = nil
+	
+end
+
+function DesignerStrategy:GetName()
+	return "DesignerStrategy"
+end
+
+function DesignerStrategy:BuildSuccess( sbpid )
+
+	if( self.demand_table[sbpid] == nil ) then
+		return
+	end
+	
+	-- increment after being chosen
+	self.demand_table[sbpid][1] = self.demand_table[sbpid][1] + self.demand_table[sbpid][2]	
+	
+end
+
+function DesignerStrategy:DemandTable()
+
+	-- demand the one with the smallest demand value
+	local sbpid = -1
+	local curr_demand = 0
+	local chosen = 1
+	
+	for i in self.demand_table do
+		local name = cpu_manager.stats:GetSquadName( i )
+		local temp = self.demand_table[i][1]
+		if( sbpid == -1 ) or ( curr_demand > self.demand_table[i][1] ) then
+			sbpid = i
+			curr_demand = self.demand_table[i][1]
+		end
+	end
+	
+	--no wanted squads
+	if( sbpid == -1 ) then
+		return
+	end
+	
+	-- you REALLY want to build this
+	self:SetSquadDemand( sbpid, VALUE_PROMOTE_BUILD )
+
+end
+
+function DesignerStrategy:ClassPreference()
+
+	local rand = math.random()
+	local total = 0
+
+	--add them up
+	for i in self.class_preference do
+		total = total + self.class_preference[i]
+	end
+	
+	rand = rand*total
+	total = 0
+	
+	--choose a class
+	for i in self.class_preference do
+		total = total + self.class_preference[i]
+		if( rand < total ) then 
+			self:IncClassInfluence( i, VALUE_PROMOTE_BUILD )
+			return
+		end
+	end
+end
+
+
+function DesignerStrategy:Update()
+
+	self.state(self)
+
+	-- flag whether or not we're overriding the build base wants
+	if table.getn(self.demand_table) > 0 or table.getn(self.class_preference) > 0 then
+		aitrace("using designer preferences")
+		cpu_manager:SetUsingDesignerPreference( true )
+
+		--figure out the demand for specific units
+		for unit_stats in cpu_manager.stats:GetUnitStats( cpu_manager.cpu_player:GetPlayerRace() ) do
+
+			local unit_id = unit_stats:GetID()
+			local demand = 0
+
+			-- check if this squad type is locked out
+			if not build_manager:CanBuildSquad( unit_id ) then
+				demand = VALUE_LOCK_BUILD
+			else
+				-- dynamic influence on each squad type (squad cap / designers, enemy efficiency, etc.)
+				local class_demand = self:GetClassInfluence( unit_stats:GetClass() ) * unit_stats:GetClassRating()
+
+				-- Get the unit's average effectivness by the effectivness demands
+				local effectdemand = 0
+				for class = 0, UnitStatsAI.UC_Count - 1 do
+					effectdemand = effectdemand + ( self:GetEffectivenessDemand( class ) * unit_stats:GetEffectivenessRating( class ) )
+				end
+
+				effectdemand = effectdemand / (UnitStatsAI.UC_Count - 1)
+
+				--adjust for ETA
+				local eta = 0
+				local prereq = CpuPrerequisites( cpu_manager.cpu_player, unit_stats:GetSquadName(), CpuPrerequisites.BT_Squad )
+				eta = 10 * eta
+
+				demand = class_demand + effectdemand - eta
+			end
+
+			self:SetSquadDemand( unit_id, demand )
+		end
+
+		--build the highest demanded unit
+		local id, demand = self:GetHighestDemandedSquad()
+		if id ~= nil and demand > VALUE_CAP then
+
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Squad
+			build_type.name = cpu_manager.stats:GetSquadName( id )
+			self:TryBuild( build_type )
+		end
+
+	else
+		aitrace("not using designer preferences")
+		cpu_manager:SetUsingDesignerPreference( false )
+	end
+
+	-- get the unlocked squads, and tell them to go to the current waypoint
+	if( self.current_waypoint ~= nil ) then
+		for squadai in military_manager:GetUnlockedSquads() do
+		
+			if squadai:IsValid() then
+				local pos = squadai:GetSquad():GetPosition()
+	
+				--check idling and proximity
+				if( squadai:IsIdle() and not squadai:IsEngineer() and not self:InWaypointProximity( pos ) ) then
+					--ok, move and find a new waypoint to use
+					squadai:DoAttackMove( self.current_waypoint )
+					self:ProcessWaypoints()
+				end
+			end
+			
+		end
+	end
+	
+	-- superclass
+	Strategy.Update(self)
+end
+
+
+function DesignerStrategy:InWaypointProximity( pos )
+
+	for i in self.waypoints do
+		
+		--check if there is any preference
+		if( self.waypoints[i] > 0 ) then
+			local waypoint_pos = cpu_manager.terrain_analyzer:GetMarkerPositionByID( i )
+			local proximity = cpu_manager.terrain_analyzer:GetMarkerProximityByID( i )
+		
+			--check within proximity
+			if( distance( waypoint_pos, pos ) <= proximity ) then
+				return true
+			end
+		end
+		
+	end
+
+	return false
+end
+
+
+function DesignerStrategy:SetBuildDemand( name, starting_demand, increment )
+
+	self:ResetClassPreferences()
+	local id = cpu_manager.stats:GetSquadID( name )
+	self.demand_table[id] = { starting_demand, increment }
+end
+
+
+function DesignerStrategy:ResetBuildTable()
+	self.state = DesignerStrategy.ClassPreference
+	self.demand_table = {}
+end
+
+
+function DesignerStrategy:SetClassPreference( unit_class, pref )
+	
+	dbAssert( type(pref) == "number" )
+	self:ResetBuildTable()
+	self.class_preference[ unit_class ] = pref
+end
+
+
+function DesignerStrategy:ResetClassPreferences()
+	
+	self.state = DesignerStrategy.DemandTable
+	self.class_preference = {}
+end
+
+
+function DesignerStrategy:GetClassPreferences()
+	dbAssert( type(self.class_preference) == "table" )
+	return self.class_preference
+end
+
+
+function DesignerStrategy:GetDemandTable()
+	dbAssert( type(self.demand_table) == "table" )
+	return self.demand_table
+end
+
+
+function DesignerStrategy:ProcessWaypoints()
+
+	local total = 0
+	local rand = math.random()
+	
+	for i in self.waypoints do
+		total = total + self.waypoints[i]
+	end
+
+	rand = rand*total
+	total = 0
+
+	self.current_waypoint = nil
+	
+	--find the waypoinit we want at this time
+	for i in self.waypoints do
+		total = total + self.waypoints[i]
+		if( rand < total ) then 
+			self.current_waypoint = cpu_manager.terrain_analyzer:GetMarkerPositionByID( i )
+			return
+		end
+	end
+
+end
+
+
+function DesignerStrategy:AssignWaypoint( id, preference )
+	self.waypoints[id] = preference
+	self:ProcessWaypoints()
+end

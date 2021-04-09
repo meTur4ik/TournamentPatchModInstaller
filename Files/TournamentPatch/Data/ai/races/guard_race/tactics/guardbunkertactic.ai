@@ -1,0 +1,13 @@
+----------------------------------------
+-- File: 'guardbunkertactic.ai'
+-- Edited by Arkhan		@ 07.01.2007
+
+class 'GuardBunkerTactic' (BaseTactic)
+
+function GuardBunkerTactic:__init( base_ai ) super( base_ai )
+
+	self:SetName("Guard Bunker Tactic")
+	
+	-- Building is a bunker
+	self:AddToBunkerList()
+end

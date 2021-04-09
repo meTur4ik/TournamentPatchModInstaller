@@ -1,0 +1,34 @@
+----------------------------------------
+-- File: 'nobztactic.ai'
+-- Edited by Thudmeizer   @ 26.10.2006
+
+class 'NobzTactic' (OrkInfantryTactic)
+
+function NobzTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Nobz Tactic")
+end
+
+function NobzTactic:Reinforce()
+
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+   
+	-- If there are no ressources available, don't upgrade!
+	if (not Tactic.Options.can_reinforce) then
+		return
+	end
+	
+	-- Reinforce
+	if (not self.squad_ai:IsReinforcing()) then
+		if self.squad_ai:CanReinforce( true, 0 ) then			
+			self.squad_ai:DoReinforce( true, 0 )
+		elseif self.squad_ai:CanReinforce( false, 0 ) then
+			self.squad_ai:DoReinforce( false, 0 )
+		end
+	end
+
+end
+

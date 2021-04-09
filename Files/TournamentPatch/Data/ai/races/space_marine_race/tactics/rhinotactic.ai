@@ -1,0 +1,111 @@
+----------------------------------------
+-- File: 'rhinotactic.ai'
+-- Edited by Arkhan         @ 23.11.2007
+
+class 'RhinoTactic' (SpaceMarineVehicleTactic)
+
+Rhino = {}
+
+function RhinoTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Rhino Tactic")
+	
+	Tactic.AssignStateFunction( self, Tactic.States.Idle, RhinoTactic.BeginIdleState )
+	Tactic.AssignStateFunction( self, Tactic.States.Hold, RhinoTactic.BeginHoldState )
+	Tactic.AssignStateFunction( self, Tactic.States.Retreat, RhinoTactic.BeginRetreatState )
+	Tactic.AssignStateFunction( self, Tactic.States.Attack, RhinoTactic.BeginAttackState )
+	
+	-- Vehicle is a light transport
+	self.m_iTransportVehicle = 1
+	self.m_iTransportSlots = 2
+end
+
+function RhinoTactic:IsAttacker()
+	return (self.m_iUnloadTries > 0 or self.squad_ai:CanDoAbility(Rhino.smoke_id))
+end
+
+function RhinoTactic:IsDefender()
+	return (self.m_iUnloadTries > 0 or self.squad_ai:CanDoAbility(Rhino.smoke_id))
+end
+
+function RhinoTactic:BeginIdleState()
+	self:TransportMove()
+	Tactic.SetSubState(self, self.IdleState, "Holding")
+end
+
+function RhinoTactic:BeginHoldState()
+	self:TransportMove()
+	Tactic.SetSubState(self, self.HoldState, "Holding")
+end
+
+function RhinoTactic:BeginRetreatState()
+	self:TransportMove()
+	Tactic.SetSubState( self, self.HoldState, "Holding" )
+end
+
+function RhinoTactic:BeginAttackState()
+	self:TransportMove()
+	Tactic.SetSubState(self, self.AttackingState, "Attacking")
+end
+
+function RhinoTactic:TransportMove()
+
+	-- Check if we're busy
+	if (self:IsInSubState() or self:CheckGatherMove()) then
+		return
+	end
+	
+	-- Check move delay
+	if (g_iGMT < self.m_iMoveDelay + 3 and self:IsMoving()) then
+		return
+	end
+
+	-- Try to unload troops
+	local vSquadPos = self.squad_ai:GetPosition()
+	local iDistance = distance_sqr(self.target, vSquadPos)	
+	if (self:UnloadTroops(iDistance)) then
+		self.m_iMoveDelay = g_iGMT
+		return
+	end
+		
+	-- Check distance
+	if (self.squad_ai:WasRecentlyHurt()) then
+		cpu_manager:DoMove(self.squad_ai, cpu_manager.start_pos, false, "RetreatMove")
+		self.m_iMoveDelay = g_iGMT
+		return
+	elseif (iDistance > sqr(35)) then
+		cpu_manager:DoMove(self.squad_ai, self.target, false, "TransportMove")
+	elseif (iDistance > sqr(20) and not cpu_manager.terrain_analyzer:HasThreat(vSquadPos, 35)) then
+		cpu_manager:DoMove(self.squad_ai, self.target, false, "TransportMove")
+	else
+		self.squad_ai:DoStop()
+	end
+	self.m_iMoveDelay = g_iGMT
+end
+
+function RhinoTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Rhino.smoke_id == nil) then
+		Rhino.smoke_id = cpu_manager.stats:GetAbilityID( "marines_smoke_launchers" )	
+	end
+end
+
+function RhinoTactic:DoAbilities()
+
+	-- Check if we can launch smoke
+	if (self.squad_ai:CanDoAbility(Rhino.smoke_id)) then
+	
+		-- Search a squad
+		local iRange = self.squad_ai:GetAbilityRange(Rhino.smoke_id)
+		local oUnit = Ability.Filters.CloseHurt(self.squad_ai:GetPosition(), iRange, 1)
+		if (oUnit ~= nil and oUnit:IsInCombat() and cpu_manager:GetUnitStrength(oUnit) > 150) then
+			self.squad_ai:DoSpecialAbilitySquad(Rhino.smoke_id, oUnit:GetSquad())
+		end
+	end
+
+	-- Call standard method
+	SpaceMarineVehicleTactic.DoAbilities(self)
+end
+
+

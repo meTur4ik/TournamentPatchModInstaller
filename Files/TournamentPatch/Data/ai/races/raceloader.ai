@@ -1,0 +1,169 @@
+----------------------------------------------------------------------------------------------
+-- File: 'raceloader.ai'
+-- Created by Arkhan	@ 22.01.2006
+-- Edited by Thudmeizer @ 01.02.2006
+-- Edited by Corsix     @ 17.02.2006
+
+import( 'Races/null_race.ai')
+
+class 'RaceLoader'
+
+-- ****************************************************************************************************
+-- ** AVAILABLE RACES
+-- ****************************************************************************************************
+
+function RaceLoader:AddRaces()
+
+    -- Check which races are used in the current game
+    local aLoadedAis = {}
+
+    for oPlayer in cpu_manager.stats:GetPlayerStats() do
+    
+        -- Get the race name
+        local sRace = oPlayer:GetPlayerRaceName()
+        
+        -- Add this race (if we haven't already)
+        local bLoadedThisRace = false
+        for sTemp,sLoadedRace in ipairs(aLoadedAis) do
+            if (sLoadedRace == sRace) then
+                bLoadedThisRace = true
+            end
+        end
+        if (not bLoadedThisRace) then
+            pcall(import ,'Races/' .. sRace .. '/Loader.ai')
+            if (_G[sRace] ~= nil) then
+                table.insert(self.m_aRaceAIRepository, _G[sRace]())
+            else
+                table.insert(self.m_aRaceAIRepository, null_race(sRace))
+            end
+            table.insert(aLoadedAis, sRace)
+        end
+    end
+end
+
+-- ****************************************************************************************************
+-- ** AVAILABLE RACES
+-- ****************************************************************************************************
+
+
+-- Constructor: Inits the race loader
+function RaceLoader:__init(sRaceName, eDifficulty)
+
+	-- Store attributes
+	self.m_eDifficulty = eDifficulty
+	
+	-- Race AI repository
+	self.m_aRaceAIRepository = {}
+	self:AddRaces()
+	
+	-- Set player race
+	self.m_oPlayerRace = nil
+	for iLoop1 in self.m_aRaceAIRepository do
+		
+		-- Check race name
+		local oRace = self.m_aRaceAIRepository[iLoop1]
+		if (oRace:GetRaceName() == sRaceName) then
+			self.m_oPlayerRace = oRace
+		end
+	end
+	dbAssert(self.m_oPlayerRace ~= nil)
+end
+
+-- Inits global race info
+function RaceLoader:InitGlobalRaceInfo()
+
+	-- Init global race info of all available races
+	print("RaceLoader: Init global race info...")
+	for iLoop1 in self.m_aRaceAIRepository do
+		
+		-- Init global race info
+		local oRace = self.m_aRaceAIRepository[iLoop1]
+		if (not oRace:LoadGlobalInfo()) then
+			print("RaceLoader: Loading of global race info for "..oRace:GetRaceName().." FAILED!!!")
+			return false
+		end
+	end
+	return true
+end
+
+-- Inits the player race
+function RaceLoader:InitPlayerRace()
+
+	-- Load player race
+	print("RaceLoader: Init "..self.m_oPlayerRace:GetRaceName().."...")
+	if (not self.m_oPlayerRace:LoadRace(self.m_eDifficulty)) then
+		print("RaceLoader: Initialisation of "..self.m_oPlayerRace:GetRaceName().." FAILED!")
+		return false
+	end
+	return true
+end
+
+-- Creates the build base strategy of the player race
+function RaceLoader:CreateBuildBaseStrategy()
+
+	-- Return build base strategy
+	print("RaceLoader: Create build base strategy of race AI "..self.m_oPlayerRace:GetRaceName().."...")
+	return self.m_oPlayerRace:CreateBuildBaseStrategy()
+end
+
+-- Creates a squad tactic
+function RaceLoader:CreateTactic(oSquadAI)
+
+	-- Check for squad tactic
+	local oTactic = self.m_oPlayerRace:CreateTactic(oSquadAI)
+	if (oTactic ~= nil) then
+		return oTactic
+	end
+		
+	-- No tactic found
+	return nil
+end
+
+-- Creates a base tactic
+function RaceLoader:CreateBaseTactic(oBuilding)
+
+	-- Check for base tactic
+	local oTactic = self.m_oPlayerRace:CreateBaseTactic(oBuilding)
+	if (oTactic ~= nil) then
+		return oTactic
+	end
+
+	-- No tactic found
+	return nil
+end
+
+-- Gets an information about a race
+function RaceLoader:GetRaceInfo(sRace, sType)
+
+	-- Get race
+	for iLoop1 in self.m_aRaceAIRepository do
+		
+		-- Get race
+		local oRace = self.m_aRaceAIRepository[iLoop1]
+		
+		-- Check race name
+		if (oRace:GetRaceName() == sRace) then
+			return oRace:GetInfo(sType)
+		end
+	end
+	return nil
+end
+
+--function RaceLoader:GetBuildingThreat(sRace, sBuildingName)
+function RaceLoader:GetBuildingType(sRace, sBuildingName)
+
+	-- Check for custom stat at all available races
+	for iLoop1 in self.m_aRaceAIRepository do
+		
+		-- Get race
+		local oRace = self.m_aRaceAIRepository[iLoop1]
+		
+		-- Check race name
+		if (oRace:GetRaceName() == sRace) then
+			return oRace:GetBuildingType(sBuildingName)
+		end
+	end
+	
+	-- Race not found
+	return nil, 0
+end

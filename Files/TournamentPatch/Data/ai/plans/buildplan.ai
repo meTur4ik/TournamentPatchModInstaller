@@ -1,0 +1,85 @@
+class 'BuildPlan' (Plan)
+
+function BuildPlan:__init( module ) super( module )
+	
+	-- the thing i'm trying to build
+	self.item_id = nil
+	self.item_name = nil
+
+	-- the builder from where I'm building from
+	self.builder = nil
+	
+	--used to account for delay before building begins
+	self.started_building = false
+	
+	--three tries to wait for build, then quit out
+	self.time_out = 1
+end
+
+
+-- the id of the thing we're building
+function BuildPlan:SetItemID( item_id )
+	self.item_id = item_id
+end
+
+function BuildPlan:SetItemName( item_name )
+	self.item_name = item_name
+end
+
+function BuildPlan:SetBuilder( builder )
+	self.builder = builder
+	Plan.LockResource( self, builder )
+end
+
+function BuildPlan:IsEqual( plan_name, item_id )
+	dbAssert( self.plan_name ~= nil )
+	return ( Plan.GetName( self ) == plan_name ) and ( self.item_id == item_id )
+end
+
+
+function BuildPlan:Retry()
+	--do nothing by default
+end
+
+
+function BuildPlan:BuildingState()
+	dbAssert( self.builder ~= nil )
+	dbAssert( self.item_name ~= nil )
+
+	--am i building yet?
+	if self.builder:IsBuilding() == self.item_id then
+		
+		aitrace ("currently building a "..self.item_name)
+		
+		if self.started_building == false then
+			self.started_building = true
+			self:OnEvent( Plan.Events.OnStart )
+		end
+		
+	elseif self.started_building == true then
+		-- done building!
+		Plan.SetComplete(self, true)
+	else
+		self.time_out = self.time_out + 1
+		
+		if self.time_out > 3 then
+			self:Retry()
+			self.time_out = 0
+		end
+		
+		aitrace("still waiting to begin: "..self.item_name)
+		
+	end
+	
+end
+
+function BuildPlan:Update()
+	--quit out if our builder died
+	if self.builder ~= nil and not self.builder:IsValid() then
+		self:SetComplete( true)
+		return
+	end
+	
+	Plan.Update( self )
+	
+end

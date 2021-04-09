@@ -1,0 +1,75 @@
+class 'TauCommanderTactic' (LeaderTactic)
+
+function TauCommanderTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Tau Commander Tactic")
+	
+	self.ability_snaretrap_id = cpu_manager.stats:GetAbilityID( "tau_snare_trap")
+	self.lastused_ability_snaretrap_time = cpu_manager.cpu_player:GetGameTime()
+	self.lastused_ability_snaretrap_position = squad_ai:GetPosition()
+	
+	self.min_snaretrap_requisition = 400 -- amount of requisition to have before typical use
+	self.min_snaretrap_time = 240 -- 30 seconds to wait between use, in possibly same location 
+	self.min_snaretrap_distance = squad_ai:GetAbilityRange( self.ability_snaretrap_id ) * 2 -- min distance between consecutive throws
+
+end
+
+
+--NOTE: TauCommander must never be be attached to another squad (current doesn't) because it depends upon per object values
+-- (e.g., must have typeof(self) == "TauCommanderTactic")
+function TauCommanderTactic:DoAbilities()
+
+	LeaderTactic.DoAbilities(self)
+
+	local id = self.ability_snaretrap_id		
+	local range = self.squad_ai:GetAbilityRange( id )
+
+	-- if surrounded, try to use the snare trap
+	if self.squad_ai:IsInCombat() then
+		local enemy_count = 4		
+		local target = nil
+		
+		target = Ability.Filters.CloseEnemy( self.squad_ai:GetPosition(), range, enemy_count )
+		
+		if target ~= nil then
+			self:DoSpecialAbilitySnareTrap(target:GetPosition(),true)
+		end
+	end
+
+	if (math.random(1,2) == 1) then
+		local target = nil
+		
+		target = Ability.Filters.CloseStrategicPoint( self.squad_ai:GetPosition(), range, 0 )
+		
+		if target ~= nil then
+			self:DoSpecialAbilitySnareTrap(target:GetPosition(),false)
+		end
+	else
+		local offset = Vector3f(0.5,0,0.5)
+		
+		-- game can crash if position is directly under commander
+		self:DoSpecialAbilitySnareTrap(self.squad_ai:GetPosition() + offset,false)
+	end
+
+end
+
+function TauCommanderTactic:DoSpecialAbilitySnareTrap(position,skip_prereqs)
+	local id = self.ability_snaretrap_id
+	local current_time = cpu_manager.cpu_player:GetGameTime()
+	local current_requisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	local last_time = self.lastused_ability_snaretrap_time
+	local last_pos = self.lastused_ability_snaretrap_position
+	local min_requisition = self.min_snaretrap_requisition
+	local min_time = self.min_snaretrap_time 
+	local min_distance = self.min_snaretrap_distance
+		
+	if (skip_prereqs or 
+		(current_requisition > min_requisition and current_time - last_time > min_time) or 
+		(current_requisition > min_requisition and distance(position,last_pos) > min_distance)) then
+		if self.squad_ai:CanDoAbility( id ) then
+			self.squad_ai:DoSpecialAbilityPos( id, position )
+			self.lastused_ability_snaretrap_time = current_time
+			self.lastused_ability_snaretrap_position = position
+		end
+	end
+end

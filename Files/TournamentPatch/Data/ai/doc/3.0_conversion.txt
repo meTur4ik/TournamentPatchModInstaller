@@ -1,0 +1,28 @@
+
+1.) Replace core folder
+
+2.) Replace files in SCAR folder (The previous folder \SCAR\AISupport is not needed anymore an can be deleted)
+
+3.) Changes in all race folders:
+
+a.) Add the following lines to the GetInfo(sType) function in the loader.ai file: (Example)
+
+	elseif (sType == "HarassingLeader") then
+		return "chaos_squad_lord"
+	elseif (sType == "AutoConstructBuildings") then
+		return false
+
+AutoConstructBuildings is only true for Dark Eldar. HarassingLeader should always be the T1 commander unit.
+
+
+b.) Replace the ForceTech() functions in the race specific buildbasestrategy.ai files
+
+Remark: Chaos and SM have a special condition for build program 2. You might have to modify this part if your build programs are different from the original ones.
+
+
+c.) Add HQEmergency() function in necronbuildbasestrategy.ai file.
+
+
+d.) There are lots of race optimizations. If you have a look on the updated files, you might get some ideas how to optimize your own AI files.
+    If your mod AI isn't too different from the original, it might be wise to copy the delivered race AI's completely.
+    

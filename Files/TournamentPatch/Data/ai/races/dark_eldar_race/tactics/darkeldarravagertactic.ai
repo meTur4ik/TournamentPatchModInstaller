@@ -1,0 +1,28 @@
+----------------------------------------
+-- File: 'darkeldarravagertactic.ai'
+-- Edited by Thudmeizer @ 23.10.2008
+
+class 'DarkEldarRavagerTactic' (DarkEldarVehicleTactic)
+
+DarkEldarRavager = {}
+
+function DarkEldarRavagerTactic:__init( squad_ai ) super( squad_ai )
+	
+	self:SetName("Dark Eldar Ravager Tactic")
+end
+
+function DarkEldarRavagerTactic:InitAbilities()
+
+	if (DarkEldarRavager.horrorfex_id == nil) then
+		DarkEldarRavager.horrorfex_id = cpu_manager.stats:GetAbilityID( "dark_eldar_horrorfex" )	
+	end
+end
+
+function DarkEldarRavagerTactic:DoAbilities()
+
+	if (self.squad_ai:IsInCombat()) then
+
+		-- Send bomb against enemy infantry
+		Ability.DoAbilityPos( self.squad_ai, DarkEldarRavager.horrorfex_id, Ability.Filters.CloseSquadEnemy, 1 ) 
+	end
+end

@@ -1,0 +1,13 @@
+class 'CultistTactic' (InfantryTactic)
+
+function CultistTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Cultist Tactic")
+
+end
+
+
+function CultistTactic:UpgradeAndReinforce()
+	-- These suck, don't build 'em
+	return
+end

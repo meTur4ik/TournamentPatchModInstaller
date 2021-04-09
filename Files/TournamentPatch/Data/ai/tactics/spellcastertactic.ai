@@ -1,0 +1,69 @@
+class 'SpellCasterTactic' (InfantryTactic)
+
+
+SpellCasterTactic.SpecialAbilities = 
+{
+	{ nil, "marines_word_of_emperer", 		Ability.PredicateFilters.IsInCombat, nil },
+	{ nil, "ork_power_of_waagh", 				Ability.PredicateFilters.IsInCombat, nil },
+
+	{ nil, "guard_assassin_assassinate",		Ability.PredicateFilters.IsInCombat, nil },
+}
+
+SpellCasterTactic.PosAbilities = 
+{
+	{ nil, "marines_smite", 							Ability.Filters.CloseEnemy, 4 },
+	{ nil, "chaos_corruption",						Ability.Filters.CloseEnemy, 6 },
+	{ nil, "tau_death_pulse", 						Ability.Filters.CloseEnemy, 5 },
+}
+
+SpellCasterTactic.TargetAbilities = 
+{
+	{ nil, "chaos_chains_of_torment", 			Ability.Filters.CloseEnemy, 4 },
+	{ nil, "chaos_doombolt", 						Ability.Filters.CloseEnemy, 4 },
+
+	{ nil, "guard_psyker_lightning_arc", 		Ability.Filters.CloseInfantryEnemy, 4 },
+	{ nil, "guard_psyker_strip_soul", 			Ability.Filters.CloseCommanderEnemy, 1 },
+
+-- NOTE: This is an extension, not an ability...
+--	{ nil, "tau_holographic_projection", 		Ability.Filters.MaxCostSquad, 1 },	
+}
+
+
+function SpellCasterTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.UtilityFunctions.InitAbilitiesTable(SpellCasterTactic.SpecialAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(SpellCasterTactic.PosAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(SpellCasterTactic.TargetAbilities)
+
+	self:SetName("Spell Caster Tactic")
+
+end
+
+function SpellCasterTactic:DoAbilities()
+
+	self:DoPossessAbility()
+
+	Tactic.UtilityFunctions.DoAbilities(SpellCasterTactic.SpecialAbilities,self.squad_ai,Ability.DoAbility)
+	Tactic.UtilityFunctions.DoAbilities(SpellCasterTactic.PosAbilities,self.squad_ai,Ability.DoAbilityPos)
+	Tactic.UtilityFunctions.DoAbilities(SpellCasterTactic.TargetAbilities,self.squad_ai,Ability.DoAbilityTarget)
+
+end
+
+function SpellCasterTactic:DoPossessAbility()
+	if self.squad_ai:IsInCombat() then
+		if self.squad_ai:CanPossess() then
+			self.squad_ai:DoPossess()
+		end
+	end
+end
+
+function SpellCasterTactic:Update()
+
+	if not InfantryTactic.Update( self ) then
+		return false
+	end
+
+	self:TryAttachSquadMelee()
+	
+	return true
+end

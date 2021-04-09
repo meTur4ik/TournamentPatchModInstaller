@@ -1,0 +1,151 @@
+----------------------------------------
+-- File: 'tombspydertactic.ai'
+-- Edited by Thudmeizer @ 28.03.2007
+
+class 'TombSpyderTactic' (NecronVehicleTactic)
+
+function TombSpyderTactic:__init( squad_ai ) super( squad_ai )
+	
+	self:SetName("Tomb Spyder Tactic")
+	
+	self.m_iLastUsedHarvestSpawnTime = g_iGMT
+
+	self.timedHarvestAbility = Timer( TombSpyderTactic.DoHarvestAbility, self, 5 )
+	
+	self.m_bScarabSpawner = false
+end
+
+function TombSpyderTactic:IsScarabSpawner()
+	return self.m_bScarabSpawner
+end
+
+-- Don't upgrade
+function TombSpyderTactic:Upgrade()
+
+end
+
+function TombSpyderTactic:DoAbilities()
+
+	-- Try to spawn harvest units
+	if (self.timedHarvestAbility ~= nil) then
+		self.timedHarvestAbility:Call()
+	else
+		TombSpyderTactic.DoHarvestAbility(self)
+	end
+	
+	-- Try to spawn attack scarabs
+	if (self.m_bScarabSpawner and self.squad_ai:GetHealthPercentage() > 0.8) then
+
+		-- Try to spawn scarabs
+		if (self.squad_ai:CanDirectSpawn()) then
+			self.squad_ai:DoDirectSpawn()
+		end
+    end
+end
+
+function TombSpyderTactic:DoHarvestAbility()
+
+	-- Check if we can harvest
+	if (self.squad_ai:IsInCombat() or cpu_manager.terrain_analyzer:HasThreat(self.squad_ai:GetPosition(), 35)) then
+		
+		-- Deactivate harvest ability
+		if (self.squad_ai:CanHarvest(false)) then
+			self.squad_ai:DoHarvest(false)
+		end
+		
+	elseif (self.squad_ai:CanHarvest(true)) then
+	
+		-- Activate harvest ability
+		self.squad_ai:DoHarvest(true)
+	end
+		
+	-- Spawn squads if in combat
+	if (self.squad_ai:IsInCombat() and g_iGMT > self.m_iLastUsedHarvestSpawnTime + 30) then
+		
+		local buildchannel_ai
+		
+		-- Get corresponding buildchannel for this unit
+		for e in self.squad_ai:GetEntities() do
+			buildchannel_ai = build_manager:GetBuildChannelFromID(e:GetID())
+			if (buildchannel_ai ~= nil) then
+				break
+			end
+		end
+		
+		-- Spawn random units
+		if (buildchannel_ai ~= nil) then
+		
+			local slots = buildchannel_ai:GetNumberOfItems(BuildChannelAI.PQ_Squad)
+			local built_units = 0
+			local chance
+			
+			-- Try fixed number of times to find a working slot
+			for chance = 1, 6 do
+				
+				local idx = math.random(0, slots - 1)
+				local unit_id = buildchannel_ai:GetItemIDAt(BuildChannelAI.PQ_Squad, idx)
+			
+				if (buildchannel_ai:CanAddToQueue(BuildChannelAI.PQ_Squad,unit_id) == BuildChannelAI.CANBUILD_Ok) then
+					buildchannel_ai:BuildSquad(unit_id)
+					built_units = built_units + 1
+				end
+			end
+			
+			-- If we built everything we could, use current time for last harvest, otherwise scale last harvest time to allow building units sooner
+			if (built_units > 0) then
+				self.m_iLastUsedHarvestSpawnTime = g_iGMT
+			end
+		end
+	end
+end
+
+function TombSpyderTactic:CheckScarabSpawners()
+
+	-- Check spawn conditions
+	local iPower = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power )
+	if (cpu_manager:HQThreat() or cpu_manager:GetCriticalThreat() > 0 or iPower < 1200) then
+		self.m_bScarabSpawner = false
+		self.m_bNeedRepair = false
+		return
+	end
+
+	-- Search other tomb spyders
+	local iSquadID = self.squad_ai:GetID()
+	local iSquadCount = 0
+	for oSquad in military_manager:GetSquads() do
+	
+		if (oSquad:IsValid() and oSquad:GetID() ~= iSquadID and
+			oSquad:GetSquadName() == "necron_tomb_spyder_squad") then
+			
+			-- Check if the tomb spyder is a scarab spawner
+			if (oSquad:GetTactic():IsScarabSpawner()) then
+				self.m_bScarabSpawner = false
+				return
+			end
+			iSquadCount = iSquadCount + 1
+		end
+	end
+	if (iSquadCount >= 0) then
+		self.m_bScarabSpawner = true
+	else
+		self.m_bScarabSpawner = false
+	end
+end
+
+function TombSpyderTactic:Update()
+
+    if (self:IsComplete()) then
+        return
+    end
+
+    -- State machine
+    if (not VehicleTactic.Update(self)) then
+        return
+    end
+    
+    -- Check scarab spawners
+    --TombSpyderTactic.CheckScarabSpawners(self)
+    if (self.m_bScarabSpawner) then
+    	self.m_bNeedRepair = true
+    end
+end

@@ -1,0 +1,74 @@
+----------------------------------------
+-- File: 'harbingerdronestactic.ai'
+-- Edited by Thudmeizer @ 26.10.2006
+
+class 'HarbingerDronesTactic' (TauVehicleTactic)
+
+function HarbingerDronesTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.AssignStateFunction( self, Tactic.States.Idle, HarbingerDronesTactic.BeginIdleState )
+	Tactic.AssignStateFunction( self, Tactic.States.Hold, HarbingerDronesTactic.BeginHoldState )
+	Tactic.AssignStateFunction( self, Tactic.States.Retreat, HarbingerDronesTactic.BeginRetreatState )
+	Tactic.AssignStateFunction( self, Tactic.States.Attack, HarbingerDronesTactic.BeginAttackState )
+	
+	self:SetName("Harbinger Drones Tactic")
+	self:SetState(Tactic.States.Attack)
+end
+
+function HarbingerDronesTactic:AlwaysAttack()
+	return true
+end
+
+function HarbingerDronesTactic:BeginIdleState()
+	HarbingerDronesTactic.DoAttack(self)
+end
+
+function HarbingerDronesTactic:BeginHoldState()
+	HarbingerDronesTactic.DoAttack(self)
+end
+
+function HarbingerDronesTactic:BeginAttackState()
+	HarbingerDronesTactic.DoAttack(self)
+end
+
+function HarbingerDronesTactic:BeginRetreatState()
+	HarbingerDronesTactic.DoAttack(self)
+end
+
+function HarbingerDronesTactic:DoAttack()
+
+	-- Check move delay
+	if (g_iGMT < self.m_iMoveDelay + 5 and self.squad_ai:IsInStateAttackMove() and not self.squad_ai:IsIdle()) then
+		return
+	end
+
+	-- Check if we are in combat
+	if (self.squad_ai:IsInCombat()) then
+		return
+	end
+
+	-- Get closest enemy
+	self.target = self:SearchTarget()
+	
+	-- Attack move to target
+	self.squad_ai:DoAttackMove(self.target)
+	self.m_iMoveDelay = g_iGMT	
+end
+
+function HarbingerDronesTactic:SearchTarget()
+
+	-- Search closest enemy unit in range
+	local iProximityDistance = 70
+	local vDronePos = self.squad_ai:GetPosition()
+	local oEnemy = cpu_manager.cpu_player:FindFirstEnemy(vDronePos, iProximityDistance, 1)
+	if (oEnemy ~= nil) then
+		return oEnemy:GetPosition()
+	end
+	
+	-- Search closest enemy building in range
+	oEnemy = cpu_manager.cpu_player:FindFirstBaseEnemy(vDronePos, iProximityDistance, 1)
+	if (oEnemy ~= nil) then
+		return oEnemy:GetPosition()
+	end
+	return vDronePos
+end

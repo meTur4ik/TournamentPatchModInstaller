@@ -1,0 +1,25 @@
+class 'TauEtherealTactic' (SpellCasterTactic)
+
+function TauEtherealTactic:__init( squad_ai ) super( squad_ai )
+	
+	self.timedDirectSpawnAbility = Timer( TauEtherealTactic.DoDirectSpawnAbility, self, 5 )
+	
+	self:SetName("Ethereal Tactic")
+	
+end
+
+function TauEtherealTactic:DoAbilities()
+
+	SpellCasterTactic.DoAbilities(self)
+
+	self.timedDirectSpawnAbility:Call()
+	
+end
+
+function TauEtherealTactic:DoDirectSpawnAbility()
+
+	if (self.squad_ai:IsInCombat() and self.squad_ai:CanDirectSpawn()) then
+		self.squad_ai:DoDirectSpawn()
+	end
+
+end

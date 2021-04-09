@@ -1,0 +1,552 @@
+Dawn Of Skirmish *SOUL STORM EXPANSION ONLY* V3.2 RELEASE and Acknowledgements (May 2009)
+================================================================================================
+
+Meet the Cast:
+==============
+
+Thudo (Thudmeizer)..>> Team Lead/Coder/Gfx/Bonafied Cheerleader
+ArkhanTheBlack......>> Lead Coder/Scripter 
+LarkinVB............>> Lead Coder/Scripter/Beta Tester
+Cultist.............>> Additional Heroes Special optimizations 
+Corsix..............>> Coding assistance
+Dark40K.............>> Coding assistance
+Zenoth..............>> Beta Tester
+Inquisitor..........>> Beta Tester/Assistance with camera mod
+Troubadour..........>> Beta Tester
+Smokeskin...........>> Beta Tester
+Dreddnott...........>> Beta Tester
+ThetaOrion..........>> Beta Tester
+Malkor..............>> Beta Tester
+FinalDeath..........>> Beta Tester
+QuietDeath..........>> Beta Tester
+JBird...............>> Beta Tester
+Slash...............>> Beta Tester
+
+
+Introduction
+============
+
+Prepare for a more enhanced Dawn Of War - Soul Storm skirmish experience!
+
+This project started after the release of Dawn Of War with the intent to bring to the global DoW community a more intense and satisfying AI opponent on the field of war. We hope you will agree that has been achieved with the understanding more is to be done in the future. Our work continues to evolve and in the coming months will make current efforts pale in comparison. However, you have to start somewhere and hot damn what a jumpstart!
+
+Its been a slice from start to, well, continuing! We're so looking forward to enhancing the AI even further in the coming months! 
+
+
+A Personal Thanks
+=================
+
+At this time I would like to personally thank all the participating members of the team:
+
+ArkhanTheBlack, LarkinVB, Excedrin, and Corsix, as well as our beta testers, Malkor, Zenoth, ThetaOrion, FinalDeath, Troubadour, Slash, JBird, QuietDeath, Smokeskin, Dreddnott and  (all who keep our work "in-perspective" and "on-track" with our ultimate goals of achieving the most competitive DoW AI opponent we can create!). 
+
+Its through your dedication, patience, and technical expertise that allowed the work to commence and prosper. Without you fellers, there'd be a pittence of work compared to the greatness this project has become. We've come a long way and do sincerely hope to continue our expert correspondance into the future of the product.
+
+CutterShane (Original idea and implementation of the Heroes mod)
+
+Alex Gnome (Original idea and implementation of the Camera mod)
+
+
+Disclaimer
+==========
+
+This is to acknowledge that we take no personal responsibility for any hardware damage or data corruption brought forth by the use or installation of this DoW modification. As used, this modification works "as is" and has been thoroughly tested and should not cause any major problems. In the event, however, that something serious does occur, it is up to the user(s) of their computer(s) to make appropriate backups before any attempt is made to install the following DoW modification. Use at your own risk.
+
+
+Whats In The Package?
+====================
+
+o Main Installation Package containing the Enhanced DoW AI scripts (contains ONLY those .ai files that our team altered)
+o Dawn Of Skirmish SS V3.2 dowai.txt (what your reading)
+o Doc folder containing information how to add your own faction to the AI project. 
+
+
+Installation
+============
+
+Piece of Cake! Run the executable and it will extract to where your <installed Dawn Of War folder> is. 
+
+Once installed, run the newly placed shortcut on your desktop "DOW Skirmish AI V3.2" or from StartMenu/Programs/"Dawn Of War Skirmish AI Mod". You will know if the modification is running when on the top-left section of the Dawn Of War Main Menu it will display: Dawn Of Skirmish V3.2. 
+
+To uninstall this modification, go back to StartMenu/Programs/"DOW Skirmish AI Mod" and choose "Remove Dawn Of Skirmish AI Mod" to remove the modification from Dawn Of War. 
+
+**NOTE** 
+
+This version of the AI mod will only work with the Soul Storm Expansion.
+
+
+What's new in Dawn of Skirmish SS AI 3.2?
+=========================================
+
+o Map data base which allows improved pathing checks for enemy units (Must be activated!!!)
+o Eldar fortress map crash should be fixed (Hopefully)
+o Other fixes and improvements
+
+
+Extended camera zoom modes
+==========================
+Optional installation feature which adds two files camera_high.lua and camera_low.lua to the Dowai_mod\Data folder.
+If you dislike them you can deselect them during installation or just delete them if you already installed them.
+The default view is almost the same like vanilla therefore you shouldn't notice much difference until you start
+to zoom in or out. Thanks to Alex Gnome for the original discovery of the camera settings.
+
+
+AI Highspeed Setting
+====================
+Option set in the game mode panel at the setup of a game.
+
+People who experience heavy lag and sync problems in multiplayer should try this option.
+Some AI calculations are simplified or skipped to increase performance.
+But beware, the AI could be slightly weaker because of that.
+
+
+Heroes Special Mod
+==================
+Option set in the game mode panel at the setup of a game.
+Activates the Heroes Special mod which is a rework of CutterShanes exceptional Heroes mod, that specializes
+only on the unit experience system. Have a look at the Heroes Special readme file for further information.
+There's also a Heroes Special modding document which describes the inclusion and modification of Heroes Special
+for other mods.
+
+
+Massive Battles Mod
+===================
+Was also part of Cuttershanes original Heroes Mod. Increases the squad and support cap maximum by 50%.
+Therefore all players can build squads and vehicles up to 30 squad and 30 support cap. (Except Orcs)
+
+
+Fortress Mod
+============
+Use this if you prefer defensive games with stronger turrets, mines and fortified listening posts. The AI will
+also build more turrets and mines as in normal games.
+
+
+AI Donation System
+==================
+Option set in the game mode panel at the setup of a game.
+
+- All races donate requisition if they own more than 800
+
+- All races demand requisition if they own less than 200
+
+- All races donate power if they own more than 600 (Necrons: more than 1100)
+
+- All races demand power if they own less than 200 (Necrons: less than 400)
+
+
+AI Config Panel
+===============
+
+There are several options you can change for each difficulty level to adjust the AI behaviour to you liking.
+
+1.) Dancing
+~~~~~~~~~~~
+Dancing is the ability to run away with ranged units if they are attacked in melee.
+There are three possible settings:
+a) Off		=>	Dancing is not used at all
+b) Standard	=>	The AI is restricted to only dance with one unit at a time
+c) Godlike	=>	The AI will dance with several units at a time if necessary
+
+2.) Attack Delay
+~~~~~~~~~~~~~~~~
+This forces the AI to wait with an attack until a specif time has passed.
+You can adjust this time in two minute steps from 0 to 20 minutes.
+
+3.) Tech Speed
+~~~~~~~~~~~~~~
+With an increased teching speed, the AI will spend its resources more on teching than on building troops.
+With a decreased teching speed, the AI will spend its resources more on building troops than on teching.
+
+4.) Teching Handicap
+~~~~~~~~~~~~~~~~~~~~
+A handicap will slow down the teching of an AI. It will also hoard more ressources
+instead of spending it immediately for units or buildings.
+You can give allies an handicap or opponents. If you give allies a handicap, all
+AI's allied with a human player are affected. If you give opponents a handicap, all
+AI's not allied with a human player are affected. You can use this behaviour for
+example to weaken AI opponents if you don't feel good enough to face them at full
+strength. Or you want the exact opposite, a real challenge, and weaken your own
+allies, so you have to do more yourselve.
+
+5.) Allow alternative strategies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+All AI's have 4 different strategies:
+
+- A solid allround strategy
+- A special ranged strategy
+- A special melee strategy
+- A vehicle fast tech strategy
+
+If alternative strategies are activated, the AIs will choose one of those strategies at the start by
+random, though the chances of each strategy are influenced by opponent and map size. If deactivated,
+the AI will always choose the solid allround strategy.
+
+6.) Early Harassing
+~~~~~~~~~~~~~~~~~~~
+This allows commanders and combat troops to make an attack at an extremly early state to
+avoid opposing scout capturing strategic points. If successfull, this can severly cripple
+the opponents ressource income and decide the game at a very early state. On the other side,
+harassing can also lead to a quick sacrifice of troops, which gives the opponent an advantage.
+Harassing is only possible in the first 4 minutes.
+
+7.) Dynamic Production Buildings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The AI normally builds more troop production buildings if it has excess ressources. This allows
+often an outproducing of the opponenr who can't replace its losses fast enough.
+Bear in mind that the AI might still build more troop production because of other reasons. IG for
+example need to build them to increase their squad and support caps. In this case those buildings
+are normally only built a bit later. This can also hurt the balance between the races since some
+of them are affected more and others less of it.
+
+8.) Build Relic units
+~~~~~~~~~~~~~~~~~~~~~
+If deactivated, the AI won't build any Relic units like the Baneblade from the Imperial Guard or the Chaos
+Bloodthirster.
+
+9.) Build turrets
+~~~~~~~~~~~~~~~~~~~~~
+If deactivated, the AI won't build any turrets (except Orc Waagh Banners).
+
+10.) Build mines
+~~~~~~~~~~~~~~~~~~~~~
+If deactivated, the AI won't build any mines.
+
+
+History of changes:
+===================
+
+v3.1 Changes:
+~~~~~~~~~~~~~
+
+o Some optimizations of heroes special by Cultist
+o Eldar use Fleet of Foot now more efficient
+o Fixed a builder teleport bug
+o Dark Eldar don't use their abilities out of sight anymore
+o Invisible troops are only engaged by melee troops if they are attacking
+o Removed an inefficient Dark Eldar build strategy (Hellion strategy)
+o Additional smaller fixes
+o Some improvements to handle alternative addons for other mods by Dark40K
+
+v3.0 Changes:
+~~~~~~~~~~~~~
+
+o New AI's for Dark Eldar and Sisters of Battle
+o Old races ported and optimized for SS
+o AI harassing improved
+o AI attacks more often
+o AI upgrades heavy weapons and leaders more often
+o Builders can assist with building and repair friendly buildings and vehicles
+o Heroes Special Mod updated with new races and campaign
+o New Massive Battles Mod to increase army size of all players
+o New Fortress Mod to increase strength of turrets, mines and posts if you want more defensive battles
+o Countless smaller fixes
+
+Issues: Unfortunately, the unit jumping got a bit unstable in SS. We've fixed it as far as possible,
+        but we can't give a 100 % guaranty that it's stable on all machines since it's a hard coded
+        problem, which only Relic can fix.
+
+v2.6 Changes:
+~~~~~~~~~~~~~~
+o AI forces should attack more reliable now (They shouldn't get stuck anymore during attack gathering)
+o Defense behaviour improved
+o Some bug fixes
+o AI donations are automatically deactivated in multiplayer mode to avoid sync problems
+o Note: No update for the Witch Hunters necessary since they already use this version
+
+v2.5 Changes:
+~~~~~~~~~~~~~~
+o Improved AI speed (less lag)
+o AI Highspeed option is now more than twice as fast as before to please people with low end computers (much less lag)
+o Some more race optimizations
+o Attack and defense behaviour improved
+o Some bug fixes
+o Heroes Special is now activated in campaign mode
+
+v2.4 Changes:
+~~~~~~~~~~~~~~
+o Fixed bunkering and transport code
+o Fixed AI donations code
+o Teleport builders teleport now to build positions
+o Fixed a problem with tier 1 to 2 AI force techs
+o Fixed a bug with the Tau Commander not jumping and not throwing snare traps
+o Improved Commissar execute ability
+o Additional AI improvements (like always)
+
+v2.3 Changes:
+~~~~~~~~~~~~~~
+o Various balancing adjustments to DC patch 1.2
+o IG bunkering and transport code now work without 'AI SCAR support' (Thanks to Relic for adding the AI functions!)
+o AI SCAR support replaced by AI Donations (Don't activate if you experience lag or sync errors)
+o Save game reload bug fixed (No more fatal AI errors after reloading)
+o Fixed some Heroes bugs which allowed cheating or resulted in SCAR errors after a save game reload
+o Improved AI vs stealth troops
+o Additional AI improvements (like always)
+o Added extended camera zoom modes to allow to zoom out with the mouse wheel (Optional installation feature)
+
+v2.2 Changes:
+~~~~~~~~~~~~~~
+o Rework of large parts of the code to increase the performance, get rid of lags and and fix the MP sync problems
+o IG bunkering (Only with activated 'AI SCAR support' option in the game options)
+o Transport code (Only with activated 'AI SCAR support' option in the game options)
+o Units enter buildings for deepstriking
+o Improved capturing, jumping, harassing, attack and defense behaviour
+o Race specific build order and tactic improvements
+o Lots of bug fixes
+o Includes Heroes Special mod, which allows units to gain experience levels (Activate 'Heroes' in the game options to use that)
+
+v2.1 Changes:
+~~~~~~~~~~~~~~
+o Very strong performance improvements (Try it, you will notice it!)
+o New AI Highspeed option available for people with lag problems
+o Eldar attack bug fixed
+o Damaged vehicle dancing around HQ bug fixed
+o Fixed several other bugs
+
+v2.0 Changes:
+~~~~~~~~~~~~~~
+o New races Tau and Necrons included
+o New AI resource donation system
+o New vehicle/building repair system
+o New detector code to handle the new infiltration system in DC
+o Improved building placement system
+o Improved assassination game mode
+o More AI control panel options
+o Corsix Mod Manager
+o One hell of a lot of other fixes and improvements
+
+v1.95 Changes:
+~~~~~~~~~~~~~~
+o Fixed some performance problems
+o Fixed log file bug
+o Various other slight fixes
+
+v1.9 Changes:
+~~~~~~~~~~~~~~
+o Better adjustment to patch 1.5 balance changes (More troops, slower teching)
+o Fixed some performance problems with 1.8
+o Improved attack, defend and harassing behaviour
+o Fixed some attachment issues
+
+v1.8 Changes:
+~~~~~~~~~~~~~~
+o New AI control panel
+o Improved early harassing
+o Improved allied support
+o Improved capturing behaviour
+o Improved AI attack and defense
+o Powerfull AI's can split their forces to support allies
+
+v1.75 Changes:
+~~~~~~~~~~~~~~
+o Fixed an april fools joke which made the game load the vanilla AI instead of our AI :)
+
+v1.7 Changes:
+~~~~~~~~~~~~~
+o Future-Proofed the AI project by making it modular so mod teams could easily integrate their work seperate from the core AI logic.
+o Doc folder now present so everyone can learn how to build their own mod's AI. 
+o Major overhauls to attack/defend strategies especially during early game strat captures and harrassment.
+o Greatly improved attachment behaviour especially to Commanders.
+o Will now REPAIR damaged buildings around his main HQ on a regular basis.
+o Constructs mines at set intervals.
+o When safe, will re-build his base on another owned LP instead of at starting point if the area around his primary HQ is overthrown.
+o Will ALWAYS build its hierarchy of buildings even if the Startpoint has known problems (ie. 4p_MountainTrail @ StartPoint#3 using Eldar). 
+o EASY and STANDARD skills now "ramp up" more gradually toward HARD - this will cause less frustration to newer or less experienced players.
+o 'Take and Hold' game-mode behaviour improved.
+0 Various tactical enhancements for jumping units.
+o Improved allied support and HQ threat behaviour.
+o More intelligently builds and upgrades units.
+o And, as usual, many MANY other smaller/subtle tweaks/bugfixes/enhancements that you will eventually pick up as you play. 
+
+v1.6 Changes:
+~~~~~~~~~~~~~
+o New BuildProgram logic (4 each per faction) designed to simplify yet fully customize custom strategy builds.
+o "Rush Tactics" now implemented based on above - AI will surprise-rush using a random set unit strategy.
+o New AttackPlan logic.
+o New streamlined faction build files allow for much easier editing and configuration.
+o New building placement code added (Thanks Larkin!)
+o New JumpAttackMelee() logic makes jumping melee units much more effective.
+o Fixed math.random() - now fully calculates random values.
+o Buildings are now built reliable, regardless of the start point placing on the map.
+o Saved Game Bug should now be fixed!
+o Attack code to deal with Take and Hold Victory condition tested and seems to work.
+o SM AI will now favour a mix of both regular Dreads and Hellfire variants.
+o And, as usual, many MANY other smaller/subtle tweaks/bugfixes/enhancements that you will eventually pick up as you play. 
+
+v1.5 Changes:
+~~~~~~~~~~~~~
+o Fully Winter Assault compliant! We don't support pre-expansion game code - we've moved forward.
+o Little additional variation in attack and gather positions.
+o Imperial Guard will now build Sentinels and have better vehicle build orders.
+o Imperial Guard more aggressive as they're much better than expected first tier.
+o various unit abilities have been added and tweaked.
+o Fixed some ork squad problems (tankbusters now will reinforce).
+o Only reinforce basic trooper while capturing.
+o Fixed back/forth movement while squad tries to disown flag.
+o Reduced scan size for bigger generators.
+o Raised turret tolerance to avoid that single squads get killed by them.
+o Improved jump attack check.
+o AI will build second HQ at ally's main base (safety measure in case of being overthrown at original startpoint).
+o AI will better support allies on defense.
+o Optimized build order to pump out squads more often.
+o And, as usual, many MANY other smaller/subtle tweaks/bugfixes/enhancements that you will eventually pick up as you play. 
+
+v1.4 Changes:
+~~~~~~~~~~~~~
+o v1.40 Game-Code compliant!
+o Enhanced code to determine attack/defend behaviours.
+o Lowered Chaos' Sorceror and raised Ork's Stormboys build priorities.
+o Engineers should avoid suicide more often especially late-game.
+o Fixed Ork Nob Squad not using our own custom tactic scripts.
+o Uber units (ie. Chaos' Bloodthirster, Eldar's Avatar, and Ork's Squiggoth) should be more reliably built late-game.
+o As always, many MANY other smaller/subtle tweaks/bugfixes/enhancements that you will eventually pick up as you play.
+
+v1.3 Changes:
+~~~~~~~~~~~~~
+o AI dance/disengage code improved.
+o Improved attach/detach code (ie. Eldar Platforms won't attach CC squads). Hurt commanders will be more safe too.
+o No jump to locations squad can't leave on foot afterwards.
+o Fixed broken Relic code for attached squads with FoF.
+o Tweaked attack jump values.
+o Limited reinforcements while capturing.
+o Squad upgrades are now checked before reinforcements.
+o Weapon upgrades checked against closest, not common enemy.
+o Faster reaction time for fleet of foot toggle.
+o Fixed multiple grenade/bomb tossing bug.
+o Midcapturing disabled except for small maps.
+o Help ally under attack only if not too far away.
+o LP/turret addons are build with priority facing the enemy and only build with enough req.
+o Stricter limits and checks for secondary buildings.
+o Engineers more clever in choosing objectives.
+o Idle builders will help other builders finishing buildings!
+o Flexible researches being used to allow AI to more efficiently delegate costs to research items when needed.
+o Eldar will try to get best aspect warriors (Dark Reapers/Warp Spiders) out ASAP @ game start.
+o Eldar's Bonesingers try to jump to build location if possible.
+o Eldar's Warp spiders will jump attack weak ranged squads.
+o SM's Apothecary/Ork's BadDok will be built if there are squads to attach to and then attach more often.
+o Eldar's Farseer/SM's Librarian/ CSM's Sorceror try to use abilities while dying.
+o Orks build less rocket banners, Eldar more d-cannons.
+o Many MANY other smaller/subtle tweaks/bugfixes/enhancements that you will eventually pick up as you play.
+
+v1.2 Changes:
+~~~~~~~~~~~~~
+o Fully v1.30 game-code compliant (AI will be 85% efficient as under v1.30 due to aforementioned prereq bug).
+o Completely did away with personalities and established a more streamlined, efficient, and uniformed squad structure for the AI to choose from. This also has the positive effect of making future code changes much easier.
+o Squad limits reduced to only 2 types rather than 6 (for Harder/Insane skills). There was no need for more than 2.
+o Better optimized initial buildorder - now AI will quickly built what it needs and ramp up from there.
+o Removed some useless research items for the AI to research (ie. Infiltration) until expansion allows for the AI to use them.
+o Greatly tweaked the AI Demand system so AI will better choose the most effective units to use against enemies it faces (ie. Eldar AI will now build Dark Reapers/Warp Spiders earlier).
+o Added Eldar Hit&Run tactics (first generation code) that allows an Eldar AI to choose a random # of vehicle types it has and sends them on "surgical strikes" seperate from the normal attack group. Watch for these!
+o Enhanced Jump In/Jump Out logic for "jumpable" units. Can better assess threat and thus save themselves.
+o Optimized Warp In/Out (squad will look for nearest LP or friendly squad) for Eldar Bonesingers and WarpSpiders. 
+o Added more efficient code to allow SM's Apothecary and Ork's MadDoc to attach to squads more readily even if not hurt.
+o Unintended but highly desirable effect of running our AI mod and using v1.40 game-code: AI will use siege vehicles (ie. SM's Whirlwind or Ork's Looted Tank) in attack-ground stance on occasion. Prepare for major frustration!
+o Added the Ork Wartrukk to the Ork's buildable squads - like the Eldar Falcon tank, its a useful early-game offensive transport!
+o AI troops will now more likely retreat when broken.
+o Early Mid-capturing! AI will now be far more aggressive with taking control of the map early then simply capturing points around itself.
+o Large Generators and uber-units are built more frequently now.
+o AI will now detect whether to build an extra infantry squad based on how close enemies are on the map. This is to circumvent rushers near game-start.
+o AI will preform better under QuickStart.
+o General tweaking of the unit rating system (Eldar most effected).
+o General tweaking of squad limits (ie. more emphasis on shooty units and less on CC - AI can't efficiently use CC units at present). 
+ 
+
+v1.1 Changes:
+~~~~~~~~~~~~~
+o Greatly tweaked all build orders for all personalities for each skill (EASY skill unchanged). Now AI will be quick to field infantry and hold off early enemy rushes!
+o Secondary unit production buildings now built on the closest Listening Posts to the AI's startpoint rather than main base. This is to avoid excess clutter and allow uber-units to move out into combat (especially for Ork and Eldar).
+o Bigger Generators even more reliably detected and built.
+o Generators and Eldar Webgates are now mostly built behind or off nearest Listening Posts rather than in main base. This is to reduce clutter and allow for larger units to maneuver more easily. 
+o AI will build less turrets but "far more smartly" and with so little impact to his ecomony. This is a huge improvement over v1.0 where turrets can be built and used effectively with no negative ramifications to the AI's aggressiveness.
+o Removed the DEFENDER AI personality. Reason: Dawn Of War is about offense and turtlers don't win this game so neither should the AI reflect this gameplay tactic.
+o More unit abilities have been included for the AI to use in combat (ie. Landraider's Machine Spirit, GravPlatform and WarTrakk's Speed Boost, etc). You'll certainly notice new things on the battlefield!
+o Enabled Eldar's Fleet Of Foot ability for all Eldar infantry that can use it! Now watch them engage it to quickly reach distant points or disengage to enter into combat. 
+o Troop Dancing - preliminary code has been scripted for the AI to "dance his troops" around enemy weapon fire. You will notice this as you play.
+o AI will NOT reinforce broken squads as seen in v1.0. Reason: Broken squads are a waste of resources to bother reinforcing for the AI so it was the decision to remove it. This allows the AI to build fresh new troops back at main base and continue the fight!
+o Ork Sluggas, Stormboyz, Shootas, and Nobz now limited to 10 units per squad while TankBustas limited to 8. Grots still at 4 since, well, they get stuck! :)
+
+ 
+v1.0 Changes:
+~~~~~~~~~~~~~
+o Standard, Hard, and Harder/Insane AI difficulty settings tweaked (Easy not touched)
+o All primary buildings are built at or near main base instead on vulnerable expansions - ensures main assets are kept safe
+o Captured and built-upon Listening Posts are now randomly upgraded between Tier1 / Tier2
+o Builds a certain # of defensive turrets in main base and Listening Post expansions + randomly upgrades them between Tier1 / Tier2
+o Defensive turrets (at main base and on expansions) now point in the direction of the enemy
+o Rebuilds destroyed base defenses at main base and on expansions 
+o Made it easier for AIs to make the decision to build Large Generators on free Slag Heaps
+o HeadQuarters/Fortresses will more reliably upgrade to their highest tier
+o AI now researches his entire tech tree
+o All four sides will now build extra infantry/vehicle buildings if req/power allows for it
+o Squad and Hero units now use their "special abilities" more often and effectively (based on what is researched)
+o When squads become broken they are now reinforced
+o AI better utilizes his troops with more effective combinations
+o When allied with humans, an allied AI will more reliably help defend fellow allies and remains active, competitive, and offense-orientated
+o Allied AIs will attempt to "gang up" on one enemy player at a time when in a 2vs2 or 3vs3 game
+o Space Marine's Dreadnaught (not Hellfire) will now upgrade all weapons instead of using just a Flamer
+o Chaos Cultists allowed to reinforce to their max of 10 units per squad (their cheap meatshields early on!)
+o Eldar Banshees will now use their WarShout Ability in close combat
+o Ork Sluggas limted to 6 units per squad while Stormboyz, Shootas, and TankBustas limited to 8. Grots to 4
+o Ork BigMek now allowed to use his abilities even when attached to a squad
+o Chaos, Eldar, and Ork AIs will now more easily build uber-units when enough requisition/power is available
+o Made Hero and other Important Units more likely to attach to a squad when hurt
+o AI Personalities! Each AI opponent will randomly make use of one of the following templates when the HARD, HARDER and INSANE difficulties are used:
+a) Aggressor - Focused purely on a "rushed attack" and controlling territory, building only a few defensive turrets, low techer
+b) Defender - concentrated more towards defending allies and holding territory with heavy # of turrets/troops, regular techer
+c) Sieger - uses siege vehicles to roll slowly across the map laying waste, low turret construction, regular techer
+d) Platoon - uses infantry units more with vehicles as support, average turret construction, medium techer
+e) Standard - regular mix of all the above
+
+
+Future Objectives
+=================
+
+To Do:
+~~~~~~
+(Short Term)
+
+o Ensure Commander Unit is kept away OR minimizes his exposure to combat under Assassinate victory conditions
+o AI Squads should pursue enemies who are near defeat and deliever the final deathblow rather than halt the advance
+o AI Squads should better attack in large numbers rather than sacrifice single weak squads instead
+
+(Long Term)
+
+o Build 2-3 turrets around Large Generators
+o Creates a secondary HQ + unit production buildings w/ defensive turrets (randomly upgraded) all built away from the enemy
+o Inter AI communications between alliance games (better AI team coordination when defending fellow allies and assaulting enemy bases/LPs)
+
+
+Maybes (If Possible):
+~~~~~~
+o Squad-level awareness and effective use of Cover
+o Allow 1-2 Engineers to repair damaged idle vehicles at/near the battlefront (possible issue if vehicle group is called back to battle)
+o Before an AI Ally is conquered, he will tribute all his req/power to fellow players
+o Transporting infantry into combat using transports
+o Determine how to get the AI to use such things as Infiltrate and the Squiggoth's Rampage (both non-standard abilities)
+o Determine why AIs allied on a human team build up and attack more slowly than on a exclusively AI team
+
+Omitted:
+~~~~~~~
+o Adding vehicles that were removed for the AI to use (ie. Space Marines/Chaos Rhino) - Such vehicles aren't "yet" worth their battlefield reputation
+
+
+Known Issues
+============
+o Maps with limited Startpoint build space (ie. 4p_Biffys Peril) *may* still cause the AI to clutter buildings together thus disallowing some vehicles and even uber-units through. This will be rectified in subsequent releases.
+
+o Maps with limited check/strategy points where income gathering is somewhat low (ie. 8p_Penal Colony), the AI tends to struggle a little more than usual. Until we can determine a means to dynamically-change the AI's resource plans, it will flounder a little more than normal compared to maps with prolific resource points.
+
+=========
+Thanks everyone and especially to the Relic devs and THQ pubs for further bringing the Warhammer 40,000 universe alive to our PCs! Looking SO forward to the WinterAssault Expansion!
+
+
+Script Changes (from the original game to what we have today)
+==============
+Available upon request.
+
+
+Comments?
+=========
+Visit us at our home base: http://forums.revora.net/index.php?showforum=478
+You can also drop by the official Relicforums here: http://forums.relicnews.com/
+
+Cheers DoWers!

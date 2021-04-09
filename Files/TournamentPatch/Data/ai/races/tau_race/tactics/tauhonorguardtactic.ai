@@ -1,0 +1,14 @@
+----------------------------------------
+-- File: 'TauHonorGuardtactic.ai'
+-- Edited by Thudmeizer @ 02.11.2006
+
+class 'TauHonorGuardTactic' (TauInfantryTactic)
+
+function TauHonorGuardTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Tau Honor Guard Tactic")
+end
+
+function TauHonorGuardTactic:AlwaysAttack()
+	return true
+end

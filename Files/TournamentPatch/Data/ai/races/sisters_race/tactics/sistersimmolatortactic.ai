@@ -1,0 +1,60 @@
+----------------------------------------
+-- File: 'sistersimmolatortactic.ai'
+-- Created by Arkhan         @ 16.03.2008
+-- Edited by Thudmeizer	     @ 23.03.2008
+
+class 'SistersImmolatorTactic' (SistersVehicleTactic)
+
+SistersImmolatorTank = {}
+
+function SistersImmolatorTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Immolator Tactic")
+	
+	-- Check immolator count
+	if (SistersImmolatorTank.iCount == nil) then
+		SistersImmolatorTank.iCount = 1
+	else
+		SistersImmolatorTank.iCount = SistersImmolatorTank.iCount + 1
+	end
+	
+	-- Set update flag
+	self.m_bUpgrade = (math.mod(SistersImmolatorTank.iCount, 2) == 0)
+end
+
+function SistersImmolatorTactic:InitAbilities()
+	
+	-- Init ability ID's
+	if (SistersImmolatorTank.iConflagrationID == nil) then
+		SistersImmolatorTank.iConflagrationID = cpu_manager.stats:GetAbilityID( "sisters_conflagration" )	
+	end
+end
+
+function SistersImmolatorTactic:DoAbilities()
+
+	-- Check if we're in close combat
+	if (self.squad_ai:IsInCombat() and self.squad_ai:CanDoAbility(SistersImmolatorTank.iConflagrationID)) then
+	
+		-- Quick check
+		local vSquadPos = self.squad_ai:GetPosition()
+		if (cpu_manager:CloseEnemyUnits(vSquadPos, 5)) then
+ 
+			-- Target enemy infantry - Conflagration
+			local oEnemySquad = Ability.Filters.CloseEnemy(vSquadPos, 5, 1)
+			if (oEnemySquad ~= nil and not oEnemySquad:IsBroken()) then
+				self.squad_ai:DoSpecialAbility(SistersImmolatorTank.iConflagrationID)
+			end
+		end
+	end
+end
+
+function SistersImmolatorTactic:Upgrade()
+
+	-- Check upgrade flag
+	if (not self.m_bUpgrade) then
+		return
+	end
+	
+	-- Compute standard upgrade
+	VehicleTactic.Upgrade(self)
+end

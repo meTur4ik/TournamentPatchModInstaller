@@ -1,0 +1,291 @@
+----------------------------------------
+-- File: 'basetactic.ai'
+-- Edited by Arkhan		@ 07.01.2007
+
+class 'BaseTactic'
+
+BaseTactic.SpecialAbilities = {}
+BaseTactic.PosAbilities = {}
+BaseTactic.TargetAbilities = {}
+
+BaseTactic.UtilityFunctions =
+{
+	InitAbilitiesTable = function(abilities)
+		if table.getn(abilities) > 0 and abilities[1][1] == nil then
+			for i in abilities do
+				local ability_id = cpu_manager.stats:GetAbilityID( abilities[i][2] )
+				abilities[i][1] = ability_id
+			end
+		end
+	end,
+
+	-- if args is a table, set attribute ability_id to the id of the ability
+	SetArgAbilityID = function(abilities)
+		if table.getn(abilities) > 0 and abilities[1][1] ~= nil then
+			for i in abilities do
+				if (type(abilities[i][4]) == "table") then
+					abilities[i][4].ability_id = abilities[i][1]
+				end
+			end
+		end
+	end,
+	
+	DoAbilities = function(abilities,ai,do_functor)
+		for i in abilities do
+			local ability_id = abilities[i][1]
+			if ability_id ~= nil then
+
+				local filter = abilities[i][3]
+				local args = abilities[i][4]
+				do_functor( ai, ability_id, filter, args )
+			end
+		end
+	end,
+}
+
+--? @shortdesc ctor
+--? @args BaseAI base_ai
+--? @result void
+function BaseTactic:__init( base_ai )
+
+	dbAssert( base_ai ~= nil )
+	
+	self.base_ai = base_ai
+	self.status = "Initialized"
+	self.prev_sub_state = nil
+	
+	self.state = nil
+	self.state_function = nil
+	self.state_function_map = {}
+
+	self.tactic_name = nil
+	
+	self.state_function_map[ Tactic.States.Idle ] = BaseTactic.IdleState
+	self.state_function_map[ Tactic.States.Disabled ] = BaseTactic.StartDisabledState
+	
+	self.sub_state_name = "No Sub State"
+	
+	self.m_bBunker = false
+	self.m_iNextSquadReleaseTime = 0
+	
+	self.m_bCanDeepStrikeTroops = false
+	
+	self:SetState( Tactic.States.Idle )
+	
+	self:SetName("Base Tactic")
+end
+
+function BaseTactic:InitAbilities()
+	BaseTactic.UtilityFunctions.InitAbilitiesTable(BaseTactic.SpecialAbilities)
+	BaseTactic.UtilityFunctions.InitAbilitiesTable(BaseTactic.PosAbilities)
+	BaseTactic.UtilityFunctions.InitAbilitiesTable(BaseTactic.TargetAbilities)
+end
+
+function BaseTactic:IsComplete()
+	return not self.base_ai:IsValid()
+end
+
+--? @shortdesc Set the name of the plan
+--? @args name
+--? @result void
+function BaseTactic:SetName( name )
+	self.tactic_name = name
+end
+
+--? @shortdesc Get the name of the tactic
+--? @args 
+--? @result string
+function BaseTactic:GetName()
+	dbAssert( self.tactic_name ~= nil )
+	return self.tactic_name
+end
+
+function BaseTactic:CanDeepStrikeTroops()
+	return self.m_bCanDeepStrikeTroops
+end
+
+function BaseTactic:AddToBunkerList()
+	self.m_bBunker = true
+	cpu_manager:AddToBunkerList(self.base_ai:GetBaseName())
+end
+
+function BaseTactic:Update()
+	
+	local continue = true 
+	if self:GetState() == Tactic.States.Disabled then
+		continue = false
+	end
+	
+	if continue and self:IsComplete() then
+		continue = false
+	end
+	
+	if continue then
+		self.state_function( self )
+	end
+	
+	if (not continue) then
+		return false
+	end
+	
+	self:InitAbilities()
+
+	self:DoAbilities()
+	
+	self:BunkerCheck()
+
+	return true
+end
+
+function BaseTactic:BunkerCheck()
+
+	-- Check if building is a bunker
+	if (not self.m_bBunker or not self.base_ai:CanUnload()) then
+		return
+	end
+	
+	-- Check if bunker is occupied
+	local iID = self.base_ai:GetEntity():GetID()
+	if (cpu_manager:CheckOccupiedBunkers(iID)) then
+	
+		-- Set next squad release time
+		self.m_iNextSquadReleaseTime = g_iGMT + 10
+		return
+	end
+	
+	-- Check squad release time
+	if (self.m_iNextSquadReleaseTime <= 0 or g_iGMT < self.m_iNextSquadReleaseTime) then
+		return
+	end
+	
+	-- Check if bunkered troops are shooting or bunker health is critical
+	if (self.base_ai:IsAttacking() and self.base_ai:GetHealthPercentage() > 0.2) then
+
+		-- Set next squad release time
+		self.m_iNextSquadReleaseTime = g_iGMT + 10
+		return
+	end
+	
+	-- Try to release bunkered units
+	self.base_ai:DoUnload()
+	self.m_iNextSquadReleaseTime = 0
+end
+
+--? @shortdesc stay in the same state, but use a new state function (a substate)
+--? @args function state_function
+--? @result void
+function BaseTactic:SetSubState( state_function, sub_state_name )
+
+	dbAssert( state_function ~= nil )
+	
+	self.prev_sub_state = self.state_function
+	self.prev_sub_state_name = self.sub_state_name
+	
+	self.state_function = state_function
+	self.sub_state_name = sub_state_name
+
+end
+
+function BaseTactic:GetSubState()
+	return self.state_function, self.sub_state_name
+end
+
+function BaseTactic:GetPrevSubState()
+	
+	return self.prev_sub_state, self.prev_sub_state_name
+	
+end
+
+--? @shortdesc change the current state of the tactic and enter the starting state function 
+--? @extdesc will use IdleState if no appropriate beginning state function exists \n
+--? available states: \n
+--? Tactic.States.Idle \n
+--? Tactic.States.Attack \n
+--? Tactic.States.Hold \n
+--? @args Tactic.State state
+--? @result void
+function BaseTactic:SetState( state )
+
+	dbAssert( state ~= nil )
+	self.state = state
+	
+	--if you don't have a function for this, use idle state
+	if( self.state_function_map[ state ] == nil ) then
+		self.state_function = BaseTactic.IdleState
+	else
+		self.state_function = self.state_function_map[ state ]
+	end
+
+	--reset
+	self.sub_state_name = "Initialized"
+	self.prev_sub_state_name = "Initialized"
+	self.prev_sub_state = nil
+end
+
+--? @shortdesc returns the current state for this tactic
+--? @args 
+--? @result Tactic.State state
+function BaseTactic:GetState()
+	return self.state
+end
+
+--? @shortdesc assign the starting function to use when this tactic enters a state
+--? @args Tactic.State state, function state_func
+--? @result void
+function BaseTactic:AssignStateFunction( state, state_func )
+	
+	dbAssert( state_func ~= nil )
+	self.state_function_map[ state ] = state_func
+end
+
+--? @shortdesc state used when the tactic is not locked
+--? @args 
+--? @result void
+function BaseTactic:IdleState()
+
+end
+
+--? @shortdesc state used when a designer locks a resource
+--? @args 
+--? @result void
+function BaseTactic:StartDisabledState()
+	self:SetSubState( BaseTactic.DisabledState )
+end
+
+--? @shortdesc state used when the tactic should not do anything
+--? @args 
+--? @result void
+function BaseTactic:DisabledState()
+end
+
+--? @shortdesc set a target for the tactic. This target is a variant, so it may be of different types depending on the current state
+--? @extdesc available variants: \n
+--? Tactic.Variant.Vector \n
+--? Tactic.Variant.SquadAI \n
+--? Tactic.Variant.BaseAI \n
+--? @args Variant target
+--? @result void
+function BaseTactic:SetTarget( target, variant_type )
+
+	dbAssert( variant_type < Tactic.Variant.Invalid )
+	self.variant_type = variant_type
+	self.target = target
+end
+
+function BaseTactic:DoAbilities()
+
+	-- Compute special abilities
+	if (table.getn(BaseTactic.SpecialAbilities) > 0) then
+		BaseTactic.UtilityFunctions.DoAbilities(BaseTactic.SpecialAbilities, self.base_ai, Ability.DoAbility)
+	end
+
+	-- Compute pos abilities
+	if (table.getn(BaseTactic.PosAbilities) > 0) then
+		BaseTactic.UtilityFunctions.DoAbilities(BaseTactic.PosAbilities, self.base_ai, Ability.DoAbilityPos)
+	end
+	
+	-- Compute target abilities
+	if (table.getn(BaseTactic.TargetAbilities) > 0) then
+		BaseTactic.UtilityFunctions.DoAbilities(BaseTactic.TargetAbilities, self.base_ai, Ability.DoAbilityTarget)
+	end
+end

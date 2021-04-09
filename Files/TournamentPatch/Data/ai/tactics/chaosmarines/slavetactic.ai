@@ -1,0 +1,38 @@
+class 'SlaveTactic' (EngineerTactic)
+
+Slave = {}
+
+function SlaveTactic:__init( squad_ai ) super( squad_ai )
+
+	if Slave.forced_labour == nil then
+		Slave.forced_labour = cpu_manager.stats:GetAbilityID( "chaos_forced_labor" )
+	end
+
+	self.forced_labour = false
+
+	self:SetName("Slave Tactic")
+
+end
+
+
+function SlaveTactic:Update()
+
+	if not EngineerTactic.Update( self ) then
+		return false
+	end
+
+	if self.squad_ai:GetHealthPercentage() > 0.6 and self.squad_ai:IsBuildProgressing() then
+	
+		if not self.forced_labour then
+			self.squad_ai:DoSpecialAbility( Slave.forced_labour )
+			self.forced_labour = true
+		end
+	
+	elseif self.forced_labour then
+		
+		self.squad_ai:DoSpecialAbility( Slave.forced_labour )
+		self.forced_labour = false
+	end
+	
+	return true
+end

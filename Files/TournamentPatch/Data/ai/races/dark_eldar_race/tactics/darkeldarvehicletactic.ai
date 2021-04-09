@@ -1,0 +1,32 @@
+----------------------------------------
+-- File: 'darkeldarvehicletactic.ai'
+-- Edited by Thudmeizer         @ 24.10.2008
+
+class 'DarkEldarVehicleTactic' (VehicleTactic)
+
+function DarkEldarVehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Dark Eldar Vehicle Tactic")
+end
+
+-- Check if the vehicle should dance away in melee
+function DarkEldarVehicleTactic:CheckVehicleDance(sName)
+
+	if (sName == "dark_eldar_squad_reaver" or
+	    sName == "dark_eldar_squad_raider" or
+	    sName == "dark_eldar_squad_ravager" or
+	    sName == "dark_eldar_squad_dais_of_destruction") then
+		return true
+	end
+	return false
+end
+
+function DarkEldarVehicleTactic:CanOnlyDecap()
+
+	local sSquadName = self.squad_ai:GetSquadName()
+	if (sSquadName == "dark_eldar_squad_reaver") then
+		return true
+	end
+	return false
+end
+

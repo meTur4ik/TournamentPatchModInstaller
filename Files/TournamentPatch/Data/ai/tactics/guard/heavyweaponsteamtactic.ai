@@ -1,0 +1,48 @@
+class 'HeavyWeaponsTeamTactic' (InfantryTactic)
+
+
+function HeavyWeaponsTeamTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Guard Heavy Weapons Tactic")
+	
+	-- assume squad just entrenched
+	self.last_entrench_time = cpu_manager.cpu_player:GetGameTime()
+	self.uproot_wait_time = 80
+
+end
+
+function HeavyWeaponsTeamTactic:DoAbilities()
+
+	self:DoEntrenchAbility()
+	
+end
+
+function HeavyWeaponsTeamTactic:DoEntrenchAbility()
+
+	-- square of max distance to be away from target_pos (must be > 25) 
+	local max_distance_sqr = 625
+	
+	local target_pos = nil
+	if( self.variant_type == Tactic.Variant.Vector ) then
+		target_pos = self.target
+	elseif (self.variant_type == Tactic.Variant.SquadAI ) then
+		target_pos = self.target:GetPosition()				
+	elseif (self.variant_type == Tactic.Variant.BaseAI ) then
+		target_pos = self.target:GetPosition()				
+	end
+	
+	if (self.squad_ai:IsInCombat() or 
+		(target_pos ~= nil and distance_sqr(target_pos,self.squad_ai:GetPosition()) < (max_distance_sqr - 25))) then
+		if (self.squad_ai:CanEntrench(true)) then
+			self.squad_ai:DoEntrench(true)
+			self.last_entrench_time = cpu_manager.cpu_player:GetGameTime()
+		end
+	elseif (not self.squad_ai:WasRecentlyHurt() and 
+		cpu_manager.cpu_player:GetGameTime() > self.last_entrench_time + self.uproot_wait_time) then
+		if (target_pos ~= nil and distance_sqr(target_pos,self.squad_ai:GetPosition()) >= (max_distance_sqr + 25)) then
+			if (self.squad_ai:CanEntrench(false)) then
+				self.squad_ai:DoEntrench(false)
+			end
+		end
+	end
+end

@@ -1,0 +1,16 @@
+----------------------------------------
+-- File: 'devilfishtactic.ai'
+-- Edited by Arkhan         @ 23.11.2007
+
+class 'DevilfishTactic' (TauVehicleTactic)
+
+function DevilfishTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Devilfish Tactic")
+	
+	-- Vehicle is a light transport
+	self.m_iTransportVehicle = 1
+	self.m_iTransportSlots = 2
+end
+
+

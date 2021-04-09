@@ -1,0 +1,452 @@
+class 'GuardBuildBaseStrategy' (BuildBaseStrategy)
+
+VALUE_GUARD_PROMOTE = 50
+
+
+GuardBuildBaseStrategy.ResearchOrder =
+{
+	{ 1, 	"guard_upgrade_guardsmen_health" },
+	{ 1, 	"guard_guardsman_morale" },
+	{ 1, 	"guard_research_command_squad_size" },
+
+	{ 2, 	"guard_upgrade_guardsmen_range" },
+	{ 2, 	"guard_upgrade_weapon_specialization" },
+	{ 2, 	"guard_guardsman_morale_2" },
+
+	{ 3, 	"guard_upgrade_ogryn_melee" },
+	{ 3, 	"guard_research_kasrkin_armor" },
+	{ 3, 	"guard_research_kasrkin_speed" },
+}
+
+GuardBuildBaseStrategy.ResourceResearchOrder =
+{
+	{ 2, 	"guard_upgrade_requisition_1" },
+	{ 2, 	"guard_upgrade_power_1" },
+
+	{ 3, 	"guard_upgrade_requisition_2" },
+	{ 3, 	"guard_upgrade_power_2" },
+}
+
+function GuardBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+
+	-- Limit tactics
+	-- NOTE: These #'s are horrifically dependent on balance changes, we should
+	-- scan the costs of all structures / add-ons / researches that let us tier up 
+	-- and figure out a min from that
+	self.spend_now_req = 400
+	self.spend_later_req = 600
+	self.spend_now_pow = 75
+	self.spend_later_pow = 150
+
+	self.generator_name = "guard_plasma_generator"
+	self.bigger_generator_id = cpu_manager.stats:GetBuildingID( "guard_thermo_plasma" )
+
+	self.hq_building_name = "guard_hq"
+	self.hq_building_id = cpu_manager.stats:GetBuildingID( self.hq_building_name )
+	dbAssert( self.hq_building_id ~= nil )
+
+	self.turret_building_name = "guard_turret_heavy_bolter"
+	self.turret_building_id = cpu_manager.stats:GetBuildingID( self.turret_building_name )
+	dbAssert( self.turret_building_id ~= nil )
+
+	self.mine_field_name = "guard_mines"
+	self.mine_field_id = cpu_manager.stats:GetBuildingID( self.mine_field_name )
+	dbAssert( self.mine_field_id ~= nil )
+
+	self.infantry_building_name = "guard_infantry"
+	self.infantry_building_id = cpu_manager.stats:GetBuildingID( self.infantry_building_name )
+
+	self.vehicle_building_name = "guard_mechanized"
+	self.vehicle_building_id = cpu_manager.stats:GetBuildingID( self.vehicle_building_name )
+	
+	self.vehicle_building2_name = "guard_mars_pattern"
+	self.vehicle_building2_id = cpu_manager.stats:GetBuildingID( self.vehicle_building2_name )
+	
+	self.research_building_name = "guard_tactica"
+	self.research_building_id = cpu_manager.stats:GetBuildingID( self.research_building_name )
+	
+	self.post_addon_id = cpu_manager.stats:GetAddOnID( "addon_guard_list_post_1" )
+	dbAssert( self.post_addon_id ~= nil )
+
+	self.post_addon_2_id = cpu_manager.stats:GetAddOnID( "addon_guard_list_post_2" )
+	dbAssert( self.post_addon_2_id ~= nil )
+
+	self.turret_addon_id = cpu_manager.stats:GetAddOnID( "addon_guard_turret" )
+	dbAssert( self.turret_addon_id ~= nil )
+	
+	self.hq_addon_2_id = cpu_manager.stats:GetAddOnID( "addon_guard_hq_1" )
+	self.hq_addon_3_id = cpu_manager.stats:GetAddOnID( "addon_guard_hq_2" )
+
+	self.tier4_research_name = "guard_full_scale_war"
+	self.tier4_research_id = cpu_manager.stats:GetResearchID( self.tier4_research_name )
+
+end
+
+
+function GuardBuildBaseStrategy:EvaluateSquadCap()
+
+	local tierLevel = self:GetTierLevel()
+	if tierLevel >=2 then
+
+		-- evalulate support cap first at T2 and above
+		if	build_manager:GetSupportCapCurrentMax() < build_manager:GetSupportCapTotalMax() and
+			build_manager:GetSupportCapLeft() <= self.support_cap_threshold then
+
+			-- build more support cap
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Building
+			build_type.name = self.vehicle_building_name
+			self:TryBuild( build_type )
+		end
+	end
+	
+	if	build_manager:GetSquadCapCurrentMax() < build_manager:GetSquadCapTotalMax() and
+		build_manager:GetSquadCapLeft() <= self.squad_cap_threshold then
+
+		if tierLevel >=2 then
+			if	build_manager:GetSquadCapCurrentMax() < build_manager:GetSquadCapTotalMax() and
+				build_manager:GetSquadCapLeft() <= self.squad_cap_threshold then
+
+				-- build more squad cap
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.infantry_building_name
+				self:TryBuild( build_type )
+			end
+		else
+			-- go tier 2 first
+			if( self:PlanExists("Build AddOn Plan", self.hq_addon_2_id ) == false ) then 
+				self.AddPlan( self, BuildAddOnPlan( self.hq_addon_2_id ) )
+			end
+		end
+	end
+end
+
+
+function GuardBuildBaseStrategy:OffensiveStance()
+
+	local base = self:IsBaseBeingAttacked()
+	if base ~= nil then
+		self:SetStatus( BuildBaseStrategy.Status.Defensive )
+		self.military_stance = BuildBaseStrategy.DefensiveStance
+		return
+	end
+
+	local tierLevel = self:GetTierLevel()
+	if tierLevel == 1 then
+		-- do not attack until we are better equipped
+		aitrace( "guard: waiting for tier 2 to attack" )
+		return
+	end
+
+	--get the closest enemy
+	local enemy = cpu_manager:FindClosestEnemyPlayer()
+	if enemy == nil then
+		return
+	end
+
+	self.rating = cpu_manager:RateAgainstPlayer(enemy) 
+
+	local start_pos = cpu_manager.cpu_player:GetStartingPosition()
+	dbAssert( start_pos ~= nil )
+	
+	local enemy_base = cpu_manager:FindClosestBaseOrStrategicPoint( start_pos, 0, enemy )
+	if enemy_base ~= nil then
+
+		--check if there's a cap on my army size before I attack
+		if self.info.max_army_size ~=nil and self.player_stats:GetArmyCost() > self.info.max_army_size then
+			-- attaaaaack!
+			self:PostEvent( Strategy.Events.OnAttack )
+			aitrace( "army has built up to decent size -- attack!"..enemy:GetPlayerID() )
+			return
+		end
+	
+		-- actual rating accounts for active defensive buildings
+		local actual_rating = self.rating - cpu_manager:GetDefensiveBuildingsCostAt( enemy, enemy_base:GetPosition(), 25 )
+		aitrace( "actual rating = "..actual_rating )
+	
+		if actual_rating > self.info.attack_rating then
+			self:PostEvent( Strategy.Events.OnAttack )
+			aitrace( "attacking"..enemy:GetPlayerID() )
+		end
+	end
+end
+
+
+function GuardBuildBaseStrategy:DoSecondaryBuildings()
+
+	local numTurrets = 0
+	local numMineFields = 0
+
+	local tierLevel = self:GetTierLevel()
+
+	if tierLevel == 4 then
+	-- Ensure we have Mars Pattern  building
+		local player_stats = cpu_manager.player_stats
+		local building_count = player_stats:GetNumBasesByBPID(self.vehicle_building2_id,true)
+	
+		if (building_count == 0) and (not self:PlanExists("Build Building Plan",self.vehicle_building2_id)) then
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Building
+			build_type.name = self.vehicle_building2_name
+			self:TryBuild( build_type)
+		end
+	end
+
+	if tierLevel >= 3 then
+		-- count how many structures we have
+		self.num_hq = 0
+		for build_channel in build_manager:GetBuildChannelAIs() do
+	
+			if build_channel:GetBlueprintID() == self.hq_building_id then
+				self.num_hq = self.num_hq + 1
+			elseif build_channel:GetBlueprintID() == self.turret_building_id then
+				numTurrets = numTurrets + 1
+			elseif build_channel:GetBlueprintID() == self.mine_field_id then
+				numMineFields = numMineFields + 1
+			end
+		end
+	
+		-- build secondary HQ
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 1000 then
+			if tierLevel >= 3 and self.num_hq < 2 then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.hq_building_name
+				self:TryBuild( build_type )
+			end
+		end
+	end
+
+	if tierLevel >= 2 then
+		if( numTurrets < 5 ) and ( resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 250 ) then
+			if( self:PlanExists( "Build Building Plan", self.turret_building_id ) == false ) then 
+				self.AddPlan( self, BuildBuildingPlan( self.turret_building_id ) )
+			end
+		end
+
+		if( numMineFields < 6 ) and ( resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 150 ) then
+			if( self:PlanExists( "Build Building Plan", self.mine_field_id ) == false ) then 
+				self.AddPlan( self, BuildBuildingPlan( self.mine_field_id ) )
+			end
+		end
+	end
+end
+
+
+function GuardBuildBaseStrategy:DoResearch()
+
+	local tierLevel = self:GetTierLevel()
+
+	-- Ensure we have Tactica research building	
+	local player_stats = cpu_manager.player_stats
+	local building_count = player_stats:GetNumBasesByBPID(self.research_building_id,true)
+	local infantry_building_count = player_stats:GetNumBasesByBPID(self.infantry_building_id,true)
+	
+	if (infantry_building_count >= 1) and (building_count == 0) and 
+		(not self:PlanExists("Build Building Plan",self.research_building_id)) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		build_type.name = self.research_building_name
+		self:TryBuild( build_type)
+	end
+	
+	if tierLevel == 3 and not cpu_manager.cpu_player:IsResearchComplete( self.tier4_research_name ) then
+	-- Ensure we have the tier 4 research
+		if not self:PlanExists("Build Research Plan",self.tier4_research_id) then
+			aitrace( "wanting to do tier 4 research "..self.tier4_research_name )
+			self.AddPlan( self, BuildResearchPlan( self.tier4_research_id ) )
+		end
+	end
+
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,GuardBuildBaseStrategy.ResearchOrder,tierLevel)
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,GuardBuildBaseStrategy.ResourceResearchOrder,tierLevel)
+	
+end
+
+
+function GuardBuildBaseStrategy:UpdateTierLevel()
+
+	self.tierLevel = 1
+	
+	for base in military_manager:GetBases() do
+	
+		if base:HasAddOn( self.hq_addon_3_id ) then
+
+			-- we still have the proper add-on
+			if cpu_manager.cpu_player:IsResearchComplete( self.tier4_research_name ) then
+				self.tierLevel = 4
+				return
+			else
+				self.tierLevel = 3
+				return
+			end
+
+		elseif base:HasAddOn( self.hq_addon_2_id ) then
+			self.tierLevel = 2
+		end
+	end
+end
+
+
+function GuardBuildBaseStrategy:DevalueUnitByTier( unit_stats )
+
+	local tierLevel = self:GetTierLevel()
+
+	if unit_stats:GetSquadName() == "guard_squad_commissar" then
+
+		if Tactic.Attach.num_unattached_ranged_leaders >= Tactic.Attach.num_unattached_ranged_squads then
+			-- no ranged squads to attach to
+			aitrace( "devaluing commissars - no ranged squads to attach to" )
+			return VALUE_BUILD_TIME
+
+		elseif Tactic.Attach.num_unattached_ranged_squads > 0 then
+			if( Tactic.Attach.num_attached_commissars + Tactic.Attach.num_unattached_ranged_leaders ) < 3 then
+				aitrace( "promoting commissars - unattached ranged squads available" )
+				return VALUE_GUARD_PROMOTE
+			end
+		end
+
+	elseif unit_stats:GetSquadName() == "guard_squad_priest" then
+
+		if( Tactic.Attach.num_unattached_melee_leaders >= Tactic.Attach.num_unattached_melee_squads ) and 
+			( Tactic.Attach.num_unattached_melee_leaders >= Tactic.Attach.num_unattached_ranged_squads ) then
+			-- no melee or range squads to attach to
+			aitrace( "devaluing priests - no squads to attach to" )
+			return VALUE_BUILD_TIME
+		elseif( Tactic.Attach.num_unattached_ranged_squads > 0 ) or ( Tactic.Attach.num_unattached_melee_squads > 0 ) then
+			if( Tactic.Attach.num_attached_priests+ Tactic.Attach.num_unattached_melee_leaders ) < 3 then
+				aitrace( "promoting priests - unattached squads available" )
+				return VALUE_GUARD_PROMOTE
+			end
+		end
+	end
+	
+	local devalue = 0
+	
+	if tierLevel < 3 then
+	
+		if unit_stats:GetSquadName() == "guard_squad_guardsmen" then
+			if Tactic.Attach.num_unattached_ranged_squads == 0 then
+				if( ( Tactic.Attach.num_attached_commissars + Tactic.Attach.num_unattached_ranged_leaders ) < 3 ) then
+					-- we need more squads for commissars
+					aitrace( "promoting guardsmen - need squads for commissars" )
+					return VALUE_GUARD_PROMOTE
+				elseif ( ( Tactic.Attach.num_attached_priests + Tactic.Attach.num_unattached_melee_leaders ) < 3 ) then
+					-- we need more squads for priests
+					aitrace( "promoting guardsmen - need squads for priests" )
+					return VALUE_GUARD_PROMOTE
+				end
+			end
+		end
+	else
+		if unit_stats:GetSquadName() == "guard_squad_kasrkin" then
+			if Tactic.Attach.num_unattached_ranged_squads == 0 then
+				if( ( Tactic.Attach.num_attached_commissars + Tactic.Attach.num_unattached_ranged_leaders ) < 3 ) then
+					-- we need more squads for commissars
+					aitrace( "promoting kasrkin - need squads for commissars" )
+					return VALUE_GUARD_PROMOTE
+				end
+			end
+		elseif unit_stats:GetSquadName() == "guard_squad_ogryns" then
+			if Tactic.Attach.num_unattached_melee_squads == 0 then
+				if( ( Tactic.Attach.num_attached_priests + Tactic.Attach.num_unattached_melee_leaders ) < 3 ) then
+					-- we need more squads for priests
+					aitrace( "promoting ogryns - need squads for priests" )
+					return VALUE_GUARD_PROMOTE
+				end
+			end
+		end
+		
+		if tierLevel == 3 then
+			if unit_stats:GetSquadName() == "guard_squad_guardsmen" then
+				devalue = VALUE_PER_TIER
+			elseif unit_stats:GetSquadName() == "guard_squad_chimera" then
+				devalue = VALUE_PER_TIER
+			end
+
+		elseif tierLevel == 4 then
+			if unit_stats:GetSquadName() == "guard_squad_guardsmen" then
+				devalue = VALUE_PER_TIER * 2
+			elseif unit_stats:GetSquadName() == "guard_squad_chimera" then
+				devalue = VALUE_PER_TIER * 2
+			elseif unit_stats:GetSquadName() == "guard_squad_hellhound" then
+				devalue = VALUE_PER_TIER
+			elseif unit_stats:GetSquadName() == "guard_squad_sentinel" then
+				devalue = VALUE_PER_TIER
+			elseif unit_stats:GetSquadName() == "guard_squad_basilisk" then
+				devalue = VALUE_PER_TIER
+			end
+		end
+	end
+
+	return devalue
+end
+
+function GuardBuildBaseStrategy:CalculateDetectorDemand()
+
+	-- don't build detector units if enemy has no stealth units
+	if (cpu_manager.cpu_player:FindFirstInfiltratedEnemy(Vector3f(0,0,0),1000,1) == nil) then
+		return
+	end
+	
+	-- build stealth detectors: assassin and heavy bolter
+	local detector_name = "guard_squad_psyker"
+	local bpid = cpu_manager.stats:GetSquadID(detector_name)	
+	local s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(bpid)
+	
+	if (s_cnt < 4) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Squad
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+
+	detector_name = "guard_turret_heavy_bolter"
+	bpid = cpu_manager.stats:GetBuildingID(detector_name)	
+	s_cnt = cpu_manager.player_stats:GetNumBasesByBPID(bpid,true)
+	local b_cnt = cpu_manager.player_stats:GetNumBases()
+	
+	if (s_cnt < math.max(b_cnt-4,2)) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+	
+end
+
+function GuardBuildBaseStrategy:BuildStructureAddons()
+
+	local bBuilding = false
+	local tierLevel = self:GetTierLevel()
+
+	if( self:PlanExists( "Build AddOn Plan", self.post_addon_id ) == false ) then 
+		self.AddPlan( self, BuildAddOnPlan( self.post_addon_id ) )
+		bBuilding = true
+	end
+	
+	if bBuilding == false then
+		if tierLevel >= 2 then
+			if	resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 400 then
+					
+				if( self:PlanExists( "Build AddOn Plan", self.post_addon_2_id ) == false ) then 
+					self.AddPlan( self, BuildAddOnPlan( self.post_addon_2_id ) )
+					bBuilding = true
+				end
+			end
+		end
+	end
+
+	if bBuilding == false then
+		if tierLevel >= 2 then
+
+			if	resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 400 then
+
+				if( self:PlanExists("Build AddOn Plan", self.turret_addon_id ) == false ) then 
+					self.AddPlan( self, BuildAddOnPlan( self.turret_addon_id ) )
+				end
+			end
+		end
+	end
+end

@@ -1,0 +1,425 @@
+----------------------------------------
+-- File: 'sistersunitstats.ai'
+-- Edited by Thudmeizer @ 25.03.2008
+
+-- Skirmish
+UnitStrengths.sisters_squad_servitor = 0
+UnitStrengths.sisters_squad_missionary = 45
+UnitStrengths.sisters_squad_battle_sister = 50
+UnitStrengths.sisters_squad_seraphim = 55
+UnitStrengths.sisters_squad_celestian = 65
+UnitStrengths.sisters_squad_assassin = 70
+UnitStrengths.sisters_squad_repentia = 80
+UnitStrengths.sisters_squad_canoness = 325
+UnitStrengths.sisters_squad_confessor = 310
+UnitStrengths.sisters_squad_rhino = 145
+UnitStrengths.sisters_squad_immolator_tank = 200
+UnitStrengths.sisters_squad_lightning = 260
+UnitStrengths.sisters_squad_exorcist_tank = 470
+UnitStrengths.sisters_squad_penitent_engine = 490
+UnitStrengths.sisters_squad_living_saint = 1000
+
+LeaderStrengths.sisters_squad_battle_sister = 75
+LeaderStrengths.sisters_squad_seraphim = 75
+LeaderStrengths.sisters_squad_repentia = 75
+LeaderStrengths.sisters_squad_celestian = 0
+
+Attachments.sisters_squad_battle_sister = { "sisters_squad_missionary", "sisters_squad_canoness", "sisters_squad_confessor" }
+Attachments.sisters_squad_celestian = { "sisters_squad_missionary", "sisters_squad_canoness", "sisters_squad_confessor" }
+Attachments.sisters_squad_repentia = { "sisters_squad_missionary", "sisters_squad_canoness", "sisters_squad_confessor" }
+
+SistersUnitStats =
+{
+	race = "sisters_race",
+	{
+			name = "Servitor",
+			sbp_name = "sisters_squad_servitor",
+			ebp_name = "sisters_servitor",
+			class = UnitStatsAI.UC_LightInfantryLow,
+			rating = 0,
+			potential =
+			{
+				{
+					name = "none",
+					effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),
+					range = UnitStatsAI.RT_None,
+				},
+			}
+		},
+		{
+			name = "Missionary",
+			sbp_name = "sisters_squad_missionary",
+			ebp_name = "sisters_missionary",
+			class = UnitStatsAI.UC_LightInfantryHigh,
+			rating = 2.0,
+			potential =
+			{
+				{
+					name = "sisters_bolt_pistol_missionary",
+					effectiveness = GenerateUnitEffectiveness(3.8,3.8,3.8,3.8,2.8,2.7,2.4,2.3,2.8,2.3,1.6,0.7,0.4,0.3,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_ShortRanged,
+				},
+			}
+		},
+		{
+			name = "Battle Sister",
+			sbp_name = "sisters_squad_battle_sister",
+			ebp_name = "sisters_battle_sister",
+			class = UnitStatsAI.UC_HeavyInfantryMed,
+			rating = 3.0,
+			potential =
+			{
+				{
+					name = "sisters_bolter_battle_sister",
+					effectiveness = GenerateUnitEffectiveness(3.3,3.3,3.3,3.3,1.8,0.7,0.4,0.3,1.8,1.3,1.6,0.7,0.4,0.3,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_flamer_battle_sister",
+					effectiveness = GenerateUnitEffectiveness(3.9,3.9,3.9,2.2,1.1,0.7,0.4,0.3,3.8,3.3,1.6,0.7,0.4,0.3,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_ShortRanged,
+				},
+				{
+					name = "sisters_heavy_bolter_battle_sister",
+					effectiveness = GenerateUnitEffectiveness(2.9,2.9,2.9,3.9,3.9,3.9,3.4,3.3,1.8,1.3,3.6,3.7,3.4,2.3,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+			}
+		},
+		{
+			name = "Seraphim",
+			sbp_name = "sisters_squad_seraphim",
+			ebp_name = "sisters_seraphim",
+			class = UnitStatsAI.UC_HeavyInfantryMed,
+			rating = 4.0,
+			potential =
+			{
+				{
+					name = "sisters_bolt_pistol_seraphim",
+					effectiveness = GenerateUnitEffectiveness(3.8,3.8,3.8,3.8,2.8,2.7,2.4,2.3,2.8,2.3,1.6,0.7,0.4,0.3,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+			}
+		},
+		{
+			name = "Celestian",
+			sbp_name = "sisters_squad_celestian",
+			ebp_name = "sisters_celestian",
+			class = UnitStatsAI.UC_HeavyInfantryHigh,
+			rating = 6.0,
+			potential =
+			{
+				{
+					name = "sisters_bolter_celestian",
+					effectiveness = GenerateUnitEffectiveness(4.4,4.2,4.7,3.8,4.6,0.4,0.9,0.0,4.3,1.1,3.5,1.5,0.4,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_melta_celestian",
+					effectiveness = GenerateUnitEffectiveness(4.6,4.6,4.6,4.6,4.8,1.1,1.1,1.4,4.5,4.5,5.0,2.9,2.5,1.8,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_multi_melta_celestian",
+					effectiveness = GenerateUnitEffectiveness(4.1,4.1,4.1,4.1,4.1,5.0,5.0,5.8,3.2,3.2,4.1,5.4,5.6,4.8,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+			}
+		},
+		{
+			name = "Assassin",
+			sbp_name = "sisters_squad_assassin",
+			ebp_name = "sisters_assassin",
+			class = UnitStatsAI.UC_HeavyInfantryHigh,
+			rating = 6.0,
+			potential =
+			{
+				{
+					name = "sisters_assassin_weapon",
+					effectiveness = GenerateUnitEffectiveness(4.2,4.5,4.5,4.1,4.6,0.4,0.9,0.0,4.0,4.1,1.5,1.5,0.4,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+			}
+		},
+		{
+			name = "Repentia",
+			sbp_name = "sisters_squad_repentia",
+			ebp_name = "sisters_repentia",
+			class = UnitStatsAI.UC_HeavyInfantryHigh,
+			rating = 5.0,
+			potential =
+			{
+				{
+					name = "sisters_eviscerator",
+					effectiveness = GenerateUnitEffectiveness(4.1,4.6,4.4,4.2,4.4,5.9,5.2,6.2,1.0,1.1,1.5,6.5,5.4,5.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+
+				},
+			}
+		},
+		{
+			name = "Canoness",
+			sbp_name = "sisters_squad_canoness",
+			ebp_name = "sisters_canoness",
+			class = UnitStatsAI.UC_Commander,
+			rating = 7.0,
+			potential =
+			{
+				{
+					name = "sisters_bolt_pistol_canoness",
+					effectiveness = GenerateUnitEffectiveness(7.4,7.0,7.4,7.0,7.4,5.7,2.7,0.8,7.0,4.1,7.6,7.0,1.6,0.8,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_inferno_pistol_canoness",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,7.0,7.6,3.8,7.0,7.0,7.0,7.5,5.7,3.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_power_sword_canoness",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,7.3,5.5,1.8,7.0,7.0,7.0,7.3,3.7,3.7,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+				{
+					name = "sisters_brazier_of_holy_fire",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,6.2,4.1,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+			}
+		},
+		{
+			name = "Confessor",
+			sbp_name = "sisters_squad_confessor",
+			ebp_name = "sisters_confessor",
+			class = UnitStatsAI.UC_Commander,
+			rating = 8.0,
+			potential =
+			{
+				{
+					name = "sisters_bolt_pistol_confessor",
+					effectiveness = GenerateUnitEffectiveness(8.1,7.0,8.1,7.0,8.1,5.0,2.5,0.7,7.0,3.6,6.6,2.5,1.3,0.7,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_inferno_pistol_confessor",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,7.9,5.2,2.6,7.0,8.2,8.2,6.5,3.9,2.1,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_mace_of_valaan",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.9,4.8,3.2,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+			}
+		},
+		{
+			name = "Rhino",
+			sbp_name = "sisters_squad_rhino",
+			ebp_name = "sisters_rhino",
+			class = UnitStatsAI.UC_VehicleLow,
+			rating = 6.0,
+			potential =
+			{
+				{
+					name = "sisters_storm_bolter_rhino",
+					effectiveness = GenerateUnitEffectiveness(4.9,5.3,4.9,5.2,4.9,4.6,3.0,1.4,5.1,1.8,5.1,6.1,1.4,1.4,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+			}
+		},
+		{
+			name = "Immolator Tank",
+			sbp_name = "sisters_squad_immolator_tank",
+			ebp_name = "sisters_immolator_tank",
+			class = UnitStatsAI.UC_VehicleMed,
+			rating = 7.0,
+			potential =
+			{
+				{
+					name = "sisters_heavy_flamer_immolator_tank",
+					effectiveness = GenerateUnitEffectiveness(5.1,5.2,5.1,5.2,5.0,5.2,3.0,3.0,5.0,5.0,5.0,3.4,4.0,3.4,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_ShortRanged,
+				},
+				{
+					name = "sisters_multi_melta_immolator",
+					effectiveness = GenerateUnitEffectiveness(3.2,3.2,3.2,3.2,3.2,3.2,5.2,5.2,3.2,3.2,3.2,5.0,5.2,5.2,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_ShortRanged,
+				},
+			}
+		},
+		{
+			name = "Lightning",
+			sbp_name = "sisters_squad_lightning",
+			ebp_name = "sisters_lightning",
+			class = UnitStatsAI.UC_AirMed,
+			rating = 5.0,
+			potential =
+			{
+				{
+					name = "sisters_autocannon_lightning",
+					effectiveness = GenerateUnitEffectiveness(5.0,5.2,5.0,5.2,5.1,3.7,1.8,1.1,4.3,4.0,5.0,9.2,3.7,1.8,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+			}
+		},
+		{
+			name = "Exorcist Tank",
+			sbp_name = "sisters_squad_exorcist_tank",
+			ebp_name = "sisters_exorcist_tank",
+			class = UnitStatsAI.UC_VehicleMed,
+			rating = 8.0,
+			potential =
+			{
+				{
+					name = "sisters_exorcist_missile",
+					effectiveness = GenerateUnitEffectiveness(5.1,5.0,5.2,5.0,5.0,3.8,1.7,1.3,5.5,5.0,4.0,9.2,3.7,1.8,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+			}
+		},
+		{
+			name = "Penitent Engine",
+			sbp_name = "sisters_squad_penitent_engine",
+			ebp_name = "sisters_penitent_engine",
+			class = UnitStatsAI.UC_VehicleHigh,
+			rating = 9.0,
+			potential =
+			{
+				{
+					name = "sisters_penitent_engine_fist",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.3,9.8,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+				{
+					name = "sisters_heavy_flamer_penitent_engine",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,6.2,4.1,2.1,7.0,8.4,7.0,7.0,4.1,6.2,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+			}
+		},
+		{
+			name = "Living Saint",
+			sbp_name = "sisters_squad_living_saint",
+			ebp_name = "sisters_living_saint",
+			class = UnitStatsAI.UC_MonsterHigh,
+			rating = 10.0,
+			potential =
+			{
+				{
+					name = "sisters_ardent_blade",
+					effectiveness = GenerateUnitEffectiveness(8.2,8.9,9.0,9.0,9.3,9.4,9.2,9.9,9.1,9.0,9.0,9.0,9.0,9.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				--[[},
+			}
+		},
+		{
+			name = "Canoness Advance Sp",
+			sbp_name = "sisters_squad_canoness_advance_sp",
+			ebp_name = "sisters_canoness_advance_sp",
+			class = UnitStatsAI.UC_Commander,
+			rating = 7.0,
+			potential =
+			{
+				{
+					name = "sisters_bolt_pistol_canoness",
+					effectiveness = GenerateUnitEffectiveness(7.4,7.0,9.4,7.0,9.4,5.9,2.9,0.8,7.0,4.1,7.6,7.0,1.6,0.8,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_wargear_03",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,8.3,5.6,2.8,7.0,9.1,9.1,6.9,4.2,2.2,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_wargear_04",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,7.0,8.4,4.2,7.0,7.0,7.0,7.0,6.3,3.4,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_chain_sword_canoness",
+					effectiveness = GenerateUnitEffectiveness(4.9,7.0,8.9,8.1,6.5,4.4,1.7,0.0,6.5,3.4,7.3,4.4,1.7,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+				{
+					name = "sisters_wargear_01",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,7.3,5.5,1.8,7.0,7.0,7.0,7.3,3.7,3.7,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+				{
+					name = "sisters_wargear_02",
+					effectiveness = GenerateUnitEffectiveness(7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.0,7.3,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+				{
+					name = "sisters_dummy_weapon",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_dummy_weapon",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_dummy_weapon",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_wargear_05",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+				{
+					name = "sisters_dummy_weapon",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_wargear_06",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+				{
+					name = "sisters_dummy_weapon",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_wargear_07",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+				{
+					name = "sisters_dummy_weapon",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_wargear_08",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+				{
+					name = "sisters_dummy_weapon",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_wargear_09",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,
+				},
+				{
+					name = "sisters_dummy_weapon",
+					effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Ranged,
+				},
+				{
+					name = "sisters_wargear_7",
+					effectiveness = GenerateUnitEffectiveness(1.3,1.3,1.3,1.3,1.3,0.0,0.0,0.0,1.3,1.3,1.3,0.0,0.0,0.0,0.0,0.0,0.0),
+					range = UnitStatsAI.RT_Melee,]]
+			},
+		}
+	},
+}

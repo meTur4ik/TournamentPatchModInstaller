@@ -1,0 +1,30 @@
+----------------------------------------
+-- File: 'wartraktactic.ai'
+-- Edited by Thudmeizer		@ 26.10.2008
+
+class 'WartrakTactic' (OrkVehicleTactic)
+
+Wartrak = {}
+
+function WartrakTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Wartrak Tactic")
+end
+
+function WartrakTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Wartrak.boost_id == nil) then
+		Wartrak.boost_id = cpu_manager.stats:GetAbilityID( "ork_turbo_boost" )
+	end
+end
+
+function WartrakTactic:DoAbilities()
+
+	if ((not self.squad_ai:IsInCombat() and self.squad_ai:IsInStateMove()) or self.stateID ~= Tactic.StateID.NoState) then
+
+		if (self.squad_ai:CanDoAbility( Wartrak.boost_id )) then
+			self.squad_ai:DoSpecialAbility( Wartrak.boost_id )
+		end
+	end
+end

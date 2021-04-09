@@ -1,0 +1,442 @@
+----------------------------------------
+-- File: 'utility.ai' (for SoulStorm)
+-- Edited by Thudmeizer @ 31.10.2007
+-- Edited by LarkinVB   @ 25.04.2005
+-- Edited by Arkhan     @ 06.01.2006
+
+VALUE_NEVER_BUILD		= -400000
+VALUE_LOCK_BUILD		= -200000
+
+-- above this should never be built
+VALUE_TOO_MANY_REQS		= -150000
+VALUE_NO_BUILD			= -100000
+VALUE_CAP			= -50000
+VALUE_RESOURCE_RATE		= -25000
+VALUE_BUILD_TIME		= -10000
+
+VALUE_PER_TIER			= -200
+
+
+VALUE_PROMOTE_BUILD		= 200000
+INT_MAX				= 100000
+
+stack_trace_num = 0
+tracing = {}
+
+g_bAITrace = false
+
+g_bDebugMode = false
+
+function aitrace( msg, bAILog, bReset )
+
+	if (g_bAITrace or (bAILog and g_bDebugMode)) then
+	
+		for i = 0, stack_trace_num-1 do
+			msg = ("   "..msg)
+		end
+	
+		table.insert(tracing, msg)
+		
+	    local gmt = g_iGMT
+	    local mint = math.floor( gmt / 60 )
+	    local sec = math.mod( gmt, 60 )
+	    local timestr = string.format("%02.0f",mint)..":"..string.format("%02.0f",sec)
+		local txt = timestr.." "..msg
+		
+		if (g_bAITrace) then
+			local log = io.open("c:\\"..tostring(player_id).."aitrace.txt", "a+")
+			if (log) then
+				log:write("AI"..tostring(player_id), " ", txt, "\n")
+				log:close()
+			end
+		else
+			if (bReset) then
+				local log = io.open("AI_Log.txt", "w+")
+				if (log) then
+					log:write("AI"..tostring(player_id), " ", txt, "\n")
+					log:close()
+				end
+			else
+				local log = io.open("AI_Log.txt", "a+")
+				if (log) then
+					log:write("AI"..tostring(player_id), " ", txt, "\n")
+					log:close()
+				end		
+			end
+		end
+	end
+end
+
+function aipushtrace( name, bAILog, bReset )
+
+	aitrace( name, bAILog, bReset )
+	stack_trace_num = stack_trace_num + 1
+	
+end
+
+
+function dbAssert( b )
+
+	if ( b == false ) then
+
+		ai_assert = true
+		local debug_info = debug.getinfo( 2, "Sln" )
+		local source = debug_info.source
+		local line = debug_info.currentline
+		local name = debug_info.name
+
+		local msg = "Assertion failed at "..source..", line "..line
+
+		aitrace(msg)
+		--aitimelog( "d:\\assert.log", msg)
+		--dbBreak() is buggy in itself !
+		error(msg)
+	end
+
+end
+
+function aipoptrace( name, bAILog, bReset )
+
+	stack_trace_num = stack_trace_num - 1
+	aitrace( name, bAILog, bReset )
+	
+end
+
+function foreach_bind( tbl, func, ... )
+
+	local ret_val = nil
+	
+	local arg_count = arg.n
+	for i in tbl do
+		if( arg_count == 0) then
+			ret_val = func( tbl[i] )
+		elseif( arg_count == 1) then
+			ret_val = func( arg[1], tbl[i] )
+		elseif( arg_count == 2) then
+			ret_val = func( arg[1], arg[2], tbl[i] )
+		elseif( arg_count == 3) then
+			ret_val = func( arg[1], arg[2], arg[3], tbl[i] )
+		elseif( arg_count == 4) then
+			ret_val = func( arg[1], arg[2], arg[3], arg[4], tbl[i] )
+		end
+		
+		if( ret_val ~= nil ) then
+			break
+		end
+	end
+	
+	return ret_val
+
+end
+
+function distance( vec1, vec2 )
+	return (vec1 - vec2):Length()
+end
+
+function distance_sqr( vec1, vec2 )
+	return (vec1 - vec2):LengthSqr()
+end
+   
+function sqr( val )
+	return val * val
+end
+  
+function deviate_pos( range )
+
+   dbAssert( range ~= nil )
+
+   if math.random( 0, 1 ) == 0 then
+      return -range
+   end
+   
+   return range
+end
+
+g_profile = false
+a_profile = false
+
+function profile_start( name )
+	
+    if g_profile then
+	   aiprofile_start( cpu_manager.cpu_player, name )
+	elseif a_profile then
+	   aitimelog("d:\\trace.log", "START "..name )  
+	end
+
+end
+
+function profile_end(name)
+
+	if g_profile then
+		aiprofile_end( cpu_manager.cpu_player, name )
+	elseif a_profile then
+	   aitimelog("d:\\trace.log", "END "..name )  
+	end
+
+end
+
+class 'Timer'
+
+function Timer:__init( method, object, count )
+
+	self.current_count = 0
+	self.count = count
+	self.method = method
+	self.object = object
+
+end
+
+function Timer:Call()
+	
+   self.current_count = self.current_count + 1
+   
+   if self.current_count >= self.count then
+	  self.current_count = 0
+	  self.method( self.object )
+   end
+	
+end
+
+function vec2str( vec )
+   
+   if vec ~= nil then
+	  local txt = "<"..string.format("%.1f",vec.x)..":"..string.format("%.1f",vec.y)..":"..string.format("%.1f",vec.z)..">"
+   
+	  return txt
+   end
+
+   return "nil"
+end
+
+--AI log dump to text file (activate in cpu_manager.ai when self.debug = true)
+function ailog( logfile, msg ) 
+   
+   local log = io.open( logfile , "a+" ) 
+   if player_id == nil then 
+	  log:write("AI"," ", tostring(msg) , "\n") 
+   else 
+	  log:write("AI"..player_id," ", tostring(msg) , "\n") 
+   end 
+   
+   log:close() 
+   
+end
+
+function aitimelog( logfile, msg ) 
+
+   local log = io.open( logfile , "a+" ) 
+
+   local gmt = g_iGMT
+   local mint = math.floor( gmt / 60 )
+   local sec = math.mod( gmt, 60 )
+   local timestr = string.format("%02.0f",mint)..":"..string.format("%02.0f",sec)
+   
+   if player_id == nil then 
+	  log:write("AI"," ", timestr, tostring(msg) , "\n") 
+   else 
+	  log:write("AI"..player_id," ", timestr, " ", tostring(msg) , "\n") 
+   end 
+
+  log:close() 
+
+end
+
+function dlg( fl, msg )
+
+   if true then
+      return
+   end
+
+   local fname = "d:\\logs\\"..fl..player_id..".txt"  
+   aitimelog( fname, msg )
+
+end
+
+function clg( pos1, pos2 )
+
+   if true then
+      return
+   end
+
+   --only log single AI
+   if cpu_manager.player_id ~= 1001 then
+	  --return
+   end
+
+   dcircle( pos1, 20, "yellow", nil, false )
+   dcircle( pos2, 20, "green", nil, false )
+end
+
+
+
+function blg( squad, msg )
+
+   if true then
+      return
+   end
+      
+   if squad == nil then
+	  aitimelog( "d:\\logs\\prereq"..player_id..".log", msg )
+	  return
+   end
+
+   --only log single AI
+   if cpu_manager.player_id ~= 1001 then
+	  return
+   end
+      
+   local is_eng = squad:IsEngineer()   
+   local tactic = squad:GetTactic()
+
+   if is_eng and 
+	  ( tactic:IsAttacker() or tactic:IsDefender() ) then
+	  aitimelog( "d:\\logs\\build"..player_id..".log", "ATTACKER/DEFENDER" )
+   end
+
+   if is_eng and squad:IsInStateAttackMove() then
+      aitimelog( "d:\\logs\\build"..player_id..".log", "ATTACKE MOVE" )
+   end
+      
+   if is_eng then  
+	  aitimelog( "d:\\logs\\build"..player_id..".log", msg )
+   else
+	  aitimelog( "d:\\logs\\squad"..player_id..".log", msg )
+	end
+
+end
+
+
+function dcircle( pos, radius, color, text, clear )
+
+   dbAssert( pos ~= nil )
+   dbAssert( radius ~= nil )
+
+   --only display single AI
+   if cpu_manager.player_id ~= 1004 then
+	  return
+   end
+
+   local rgb_table = {
+	  {255, 255, 255, nil      }, 
+	  {255, 255, 255, "white"  },
+	  {  0,   0,   0, "black"  },
+	  {255,   0,   0, "red"    },
+	  {  0, 255,   0, "green"  },
+	  {0  ,   0, 255, "blue"   },
+	  {255, 255,   0, "yellow" },
+	  {255,   0, 255, "magenta"},
+	  {  0, 255, 255, "cyan"   }
+   }
+
+   local r,g,b = 255
+   
+   for i = 1, table.getn(rgb_table), 1 do
+
+	  if color == rgb_table[i][4] then
+		 r = rgb_table[i][1]
+		 g = rgb_table[i][2]
+		 b = rgb_table[i][3]
+		 break
+	  end
+
+   end
+   
+   if clear then
+      dr_clear("aidebug"..player_id)
+   end
+      
+   dr_drawCircle( "aidebug"..player_id, pos.x, pos.y + 11, pos.z, radius, r, g, b )
+
+   if text ~= nil then
+      dr_text3d( pos.x + radius/2, pos.y + 11, pos.z + radius/2, text, r, g, b )
+   end
+end
+
+function GenerateUnitEffectiveness( light_low, light_med, light_high, heavy_med, heavy_high, vehicle_low, vehicle_med, vehicle_high, monster_med, monster_high,	commander, build_low, build_med, build_high, air_low, air_med, air_high)
+
+
+	build_low = build_low or 0 -- returns larger number
+	build_med = build_low or 0 -- returns larger number
+	build_high = build_high or 0 -- returns larger number
+
+	effectiveness = {}
+	
+	effectiveness[ UnitStatsAI.UC_LightInfantryLow ] 	= light_low
+	effectiveness[ UnitStatsAI.UC_LightInfantryMed ] 	= light_med
+	effectiveness[ UnitStatsAI.UC_LightInfantryHigh ] 	= light_high
+	effectiveness[ UnitStatsAI.UC_HeavyInfantryMed ] 	= heavy_med
+	effectiveness[ UnitStatsAI.UC_HeavyInfantryHigh ] 	= heavy_high
+	effectiveness[ UnitStatsAI.UC_VehicleLow ] 		= vehicle_low
+	effectiveness[ UnitStatsAI.UC_VehicleMed ] 		= vehicle_med
+	effectiveness[ UnitStatsAI.UC_VehicleHigh ] 		= vehicle_high
+	effectiveness[ UnitStatsAI.UC_MonsterMed ] 		= monster_med
+	effectiveness[ UnitStatsAI.UC_MonsterHigh ] 		= monster_high
+	effectiveness[ UnitStatsAI.UC_Commander ] 		= commander
+	effectiveness[ UnitStatsAI.UC_BuildingLow ] 		= build_low
+	effectiveness[ UnitStatsAI.UC_BuildingMed ] 		= build_med
+	effectiveness[ UnitStatsAI.UC_BuildingHigh ] 		= build_high
+	effectiveness[ UnitStatsAI.UC_AirLow ]		 	= air_low
+	effectiveness[ UnitStatsAI.UC_AirMed ] 			= air_med
+	effectiveness[ UnitStatsAI.UC_AirHigh ] 		= air_high
+
+	return effectiveness
+end
+
+function Util_GetIniSetting(sFile, sVal, sDef)
+    local ini = nil
+    ini = io.open(sFile, "r")
+    if(ini ~= nil) then
+        for line in ini:lines() do
+            for k, v in string.gfind(line, "(%w+)=(.+)") do
+                if(k == sVal) then
+                    return v
+                end
+            end
+        end
+    end
+    return sDef
+end
+
+function GetActiveDowMod()
+    return Util_GetIniSetting("Local.ini", "currentmod", "w40k")
+end
+
+function GetActiveWxpMod()
+    return Util_GetIniSetting("Local.ini", "currentmodwa", "wxp")
+end
+
+function GetActiveDXP2Mod()
+    return Util_GetIniSetting("Local.ini", "currentmoddc", "dxp2")
+end
+
+function ModIsActive(module_file, iswa)
+    if(iswa == true) then
+        if(string.lower(GetActiveWxpMod()) == string.lower(module_file)) then
+            return true
+        else
+            return false
+        end
+    else
+        if(string.lower(GetActiveDowMod()) == string.lower(module_file)) then
+            return true
+        else
+            return false
+        end
+        if(string.lower(GetActiveDXP2Mod()) == string.lower(module_file)) then
+            return true
+        else
+            return false
+	  end
+       end
+   end
+
+function ModIsPresent(module_file, iswa)
+    local file_id = nil
+    file_id = pcall(io.open, module_file .. ".module", "r")
+    if (file_id ~= nil) then
+        file_id:close()
+        return true
+    else
+        return false
+    end
+end

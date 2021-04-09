@@ -1,0 +1,38 @@
+----------------------------------------
+-- File: 'apothecarytactic.ai'
+-- Edited by LarkinVB   @ 31.07.2005
+
+class 'ApothecaryTactic' (SpaceMarineInfantryTactic)
+
+Apothecary = {}
+
+function ApothecaryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Apothecary Tactic")
+end
+
+function ApothecaryTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function ApothecaryTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function ApothecaryTactic:Update()
+
+   if self:IsComplete() then
+      return
+   end
+   
+	--state machine
+	if not InfantryTactic.Update( self ) then
+		return
+	end
+
+   --attach to squad
+   self:TryAttachSquad( false, false, 1000, 200, nil )
+	
+end
+
+

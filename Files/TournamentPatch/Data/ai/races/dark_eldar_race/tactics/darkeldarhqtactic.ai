@@ -1,0 +1,203 @@
+----------------------------------------
+-- File: 'darkeldarhqtactic.ai'
+-- Edited by Thudmeizer		@ 22.03.2008
+
+class 'DarkEldarHQTactic' (BaseTactic)
+
+DarkEldarHQ = {}
+
+function DarkEldarHQTactic:__init( base_ai ) super( base_ai )
+
+	self:SetName("Dark Eldar HQ Tactic")
+	
+	self.m_iCommanderID1 = nil
+	self.m_iCommanderID2 = nil
+end
+
+function DarkEldarHQTactic:InitAbilities()
+	
+	-- Init abilities
+	if (DarkEldarHQ.m_iVisionID == nil) then
+		DarkEldarHQ.m_iVisionID = cpu_manager.stats:GetAbilityID( "dark_eldar_piercing_vision" )
+	end
+
+	if (DarkEldarHQ.m_iScreamsID == nil) then
+		DarkEldarHQ.m_iScreamsID = cpu_manager.stats:GetAbilityID( "dark_eldar_screams_of_the_damned" )
+	end
+
+	if (DarkEldarHQ.m_iLightningID == nil) then
+		DarkEldarHQ.m_iLightningID = cpu_manager.stats:GetAbilityID( "dark_eldar_rend_soul" )
+	end
+
+	if (DarkEldarHQ.m_iCorrosionID == nil) then
+		DarkEldarHQ.m_iCorrosionID = cpu_manager.stats:GetAbilityID( "dark_eldar_corrosive_cloud" )
+	end
+
+	if (DarkEldarHQ.m_iRageID == nil) then
+		DarkEldarHQ.m_iRageID = cpu_manager.stats:GetAbilityID( "dark_eldar_rekindle_rage" )
+	end
+
+	if (DarkEldarHQ.m_iSoulstormID == nil) then
+		DarkEldarHQ.m_iSoulstormID = cpu_manager.stats:GetAbilityID( "dark_eldar_soulstorm" )
+	end
+end
+
+function DarkEldarHQTactic:DoAbilities()
+	
+	local screamChance = math.random (1,100)
+	local rendChance = math.random (1,100)
+	local corrosionChance = math.random (1,100)
+	local soulstormChance = math.random (1,100)
+
+	aitrace("DarkEldarHQTactic: Do abilities...")
+	
+	-- Try to activate the "Piercing Vision" ability against stealthed enemy infantry (gives friendly target ability to see infiltrators - Soul cost: 40)
+	if (self.base_ai:CanDoAbility(DarkEldarHQ.m_iVisionID)) then
+	
+		-- Search attacking infiltrators in range
+		local iRange = self.base_ai:GetAbilityRange(DarkEldarHQ.m_iVisionID)
+		local oEnemyInfiltrator = Ability.Filters.CloseInfiltratedEnemy(self.base_ai:GetPosition(), iRange + 25, 1)
+		if (oEnemyInfiltrator ~= nil and oEnemyInfiltrator:IsAttacking()) then
+			
+			-- Search the closest friendly unit in range
+			local oUnit = Ability.Filters.CloseHurt(oEnemyInfiltrator:GetPosition(), 35, 1)
+			if (oUnit ~= nil and distance_sqr(self.base_ai:GetPosition(), oUnit:GetPosition()) < sqr(iRange)) then
+				
+				-- Use ability on squad
+				self.base_ai:DoSpecialAbilitySquad(DarkEldarHQ.m_iVisionID, oUnit:GetSquad())
+			end
+		end
+	end
+
+	-- Try to activate the "Screams of the Damned" ability against enemy infantry (reduces enemy morale - Soul cost: 75)
+	if(screamChance > 25) then
+		Ability.DoAbilityArea( self.base_ai, DarkEldarHQ.m_iScreamsID, Ability.Filters.CloseInfantryEnemy, 70, 6)
+	end
+		
+	-- Try to activate the "Rend Soul" ability against enemy commanders (disables enemy abilities and causes damage - Soul cost: 150)
+	if (self.base_ai:CanDoAbility(DarkEldarHQ.m_iLightningID)) then
+		
+		if ( (cpu_manager.terrain_analyzer:HasThreat( self.base_ai:GetPosition(), 35 ) and rendChance > 25)
+		or (cpu_manager.terrain_analyzer:HasThreat( self.base_ai:GetPosition(), 55 ) and rendChance > 75) ) then
+		
+			-- Only activate if enemy unit is attacking
+			local iRange = self.base_ai:GetAbilityRange(DarkEldarHQ.m_iLightningID)
+			local oSquad = Ability.Filters.CloseCommanderEnemy(self.base_ai:GetPosition(), iRange, 1)
+			if (oSquad ~= nil and oSquad:IsAttacking()) then
+				self.base_ai:DoSpecialAbilitySquad(DarkEldarHQ.m_iLightningID, oSquad:GetSquad())
+			end
+		end
+	end
+
+	-- Try to activate the "Corrosive Cloud" ability against the enemy (eats enemy armour - Soul cost: 200)
+	if (self.base_ai:CanDoAbility(DarkEldarHQ.m_iCorrosionID)) then
+		if ( (cpu_manager.terrain_analyzer:HasThreat( self.base_ai:GetPosition(), 30 ) and soulstormChance > 25)
+		or (cpu_manager.terrain_analyzer:HasThreat( self.base_ai:GetPosition(), 50 ) and soulstormChance > 50) ) then
+			-- Only activate if enemy unit is attacking
+			local iRange = self.base_ai:GetAbilityRange(DarkEldarHQ.m_iCorrosionID)
+			local oSquad = Ability.Filters.CloseEnemy(self.base_ai:GetPosition(), iRange, 12)
+			if (oSquad ~= nil and oSquad:IsAttacking()) then
+				self.base_ai:DoSpecialAbilitySquad(DarkEldarHQ.m_iCorrosionID, oSquad:GetSquad())
+			end
+		end
+	end
+
+	-- Try to activate the "Rekindle Rage" ability on commander1 (restores target's drained abilities to full - Soul cost: 225)
+	if (self.base_ai:CanDoAbility(DarkEldarHQ.m_iRageID)) then
+	
+		-- Get commander
+		local oCommander = self:GetValidCommander("dark_eldar_squad_archon", self.m_iCommanderID1)
+		if (oCommander ~= nil) then
+		
+			-- Store commander ID
+			self.m_iCommanderID1 = oCommander:GetID()
+			
+			-- Check if commander is in range
+			local iRange = self.base_ai:GetAbilityRange(DarkEldarHQ.m_iRageID)
+		 	if (distance_sqr(self.base_ai:GetPosition(), oCommander:GetPosition()) < sqr(iRange)) then
+		
+				-- Check if abilities need a refresh
+				local iAbilityID1 = cpu_manager.stats:GetAbilityID("dark_eldar_animus_vitae")
+				local iAbilityID2 = cpu_manager.stats:GetAbilityID("dark_eldar_crucible")
+				if (not oCommander:CanDoAbility(iAbilityID1) or not oCommander:CanDoAbility(iAbilityID2)) then
+				
+					-- Use ability on commander
+					self.base_ai:DoSpecialAbilitySquad(DarkEldarHQ.m_iRageID, oCommander:GetSquad())
+				end
+			end
+		end
+	end
+	
+	-- Try to activate the "Rekindle Rage" ability on commander2 (restores target's drained abilities to full - Soul cost: 225)
+	if (self.base_ai:CanDoAbility(DarkEldarHQ.m_iRageID)) then
+	
+		-- Get commander
+		local oCommander = self:GetValidCommander("dark_eldar_squad_haemonculus", self.m_iCommanderID2)
+		if (oCommander ~= nil) then
+		
+			-- Store commander ID
+			self.m_iCommanderID2 = oCommander:GetID()
+			
+			-- Check if commander is in range
+			local iRange = self.base_ai:GetAbilityRange(DarkEldarHQ.m_iRageID)
+		 	if (distance_sqr(self.base_ai:GetPosition(), oCommander:GetPosition()) < sqr(iRange)) then
+		
+				-- Check if abilities need a refresh
+				local iAbilityID1 = cpu_manager.stats:GetAbilityID("dark_eldar_torture_amp")
+				local iAbilityID2 = cpu_manager.stats:GetAbilityID("dark_eldar_stinger")
+				if (not oCommander:CanDoAbility(iAbilityID1) or not oCommander:CanDoAbility(iAbilityID2)) then
+				
+					-- Use ability on commander
+					self.base_ai:DoSpecialAbilitySquad(DarkEldarHQ.m_iRageID, oCommander:GetSquad())
+				end
+			end
+		end
+	end
+
+	-- Try to activate the "Soul Storm" ability against the enemy (moveable aura that causes all nearby to take damage - Soul cost: 275)
+	
+	if (self.base_ai:CanDoAbility(DarkEldarHQ.m_iSoulstormID)) then
+		if ( (cpu_manager.terrain_analyzer:HasThreat( self.base_ai:GetPosition(), 30 ) and soulstormChance > 25)
+		or (cpu_manager.terrain_analyzer:HasThreat( self.base_ai:GetPosition(), 50 ) and soulstormChance > 50) ) then
+			
+			-- Only activate if enemy unit is attacking
+			local iRange = self.base_ai:GetAbilityRange(DarkEldarHQ.m_iSoulstormID)
+			local oSquad = Ability.Filters.CloseEnemy(self.base_ai:GetPosition(), iRange, 24)
+			if (oSquad ~= nil and oSquad:IsAttacking()) then
+				self.base_ai:DoSpecialAbilitySquad(DarkEldarHQ.m_iSoulstormID, oSquad:GetSquad())
+			end
+		end
+	end
+end
+
+function DarkEldarHQTactic:GetValidCommander(sName, iUnitID)
+
+	-- Init commander object
+	local oCommander = nil
+
+	-- Try to get commander through the unit ID	
+	if (iUnitID ~= nil) then
+		oCommander = military_manager:GetSquadFromID(iUnitID)
+	end
+	
+	-- Check if we have to search a new commander
+	if (oCommander == nil or not oCommander:IsValid()) then
+	
+		-- Search new commander
+		oCommander = nil
+		local iCommanderBPID = cpu_manager.stats:GetSquadID(sName)
+		for oSquad in military_manager:GetSquads() do
+	
+			-- Check for valid squad
+			if (oSquad:IsValid() and not oSquad:IsEngineer()) then
+			
+				-- Check for commander
+				if (oSquad:GetBlueprintID() == iCommanderBPID or (oSquad:IsAttached() and oSquad:HasSquadAttached(sName))) then
+					oCommander = oSquad
+					break
+				end
+			end
+		end
+	end
+	return oCommander
+end

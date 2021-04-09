@@ -1,0 +1,641 @@
+----------------------------------------
+-- File: 'buildbuildingplan.ai'
+-- Edited by LarkinVB @	 17.08.2005
+-- Edited by Arkhan   @  04.12.2005
+
+import ("Plans/BuildPlan.ai")
+
+class 'BuildBuildingPlan' (BuildPlan)
+
+function BuildBuildingPlan:__init( building_id, build_pos, wait_on_builder) super( CpuPlayer.CT_BuildBuildings )
+
+	self.bestPosition = nil
+
+	-- Nil if you want to automatically quit out on failure
+	self.wait_on_builder = wait_on_builder
+	
+	-- Scarabs do need extra attention
+	self.shift_move = 0
+	self.shifted = false
+
+	-- The building i'm trying to build
+	BuildPlan.SetItemID( self, building_id )
+	BuildPlan.SetItemName( self, cpu_manager.stats:GetBuildingName( building_id ) )
+
+	dbAssert( self.item_name ~= nil )
+	
+	Plan.SetNeeds( self, "Asking for builder", BuildBuildingPlan.ObtainBuilder )
+	Plan.SetState( self, "Wanting to build: "..self.item_name, BuildBuildingPlan.BuildBuilding )
+	Plan.SetName( self, "Build Building Plan" )
+	
+	-- Init build position
+	if (build_pos ~= nil) then
+		self.build_pos = Vector2f()
+		self.build_pos.x = build_pos.x
+		self.build_pos.y = build_pos.z
+		self.copy_build_pos = Vector3f( build_pos )
+	end
+	
+	-- Check for unfinished building without builder
+	local oBuilding = build_manager:FindUnfinishedBuilding( self.item_id )	
+	if (oBuilding) then
+	
+		-- Check if building has a builder
+		local has_builder = false
+		for squad_ai in military_manager:GetSquads() do
+			
+			-- Check builder
+			if (squad_ai:IsValid() and squad_ai:IsEngineer() and squad_ai:IsBuilding() == self.item_id) then
+				has_builder = true
+				break
+			end
+		end
+		
+		-- If building has no builder then finish it
+		if (not has_builder) then		
+			aitrace("BuildBuildingPlan: Finish building...")
+			self.started_building = true
+			self.copy_build_pos = Vector3f(oBuilding:GetPosition())
+			self.bestPosition = Vector3f(oBuilding:GetPosition())
+			self.build_pos = Vector2f()
+			self.build_pos.x = self.bestPosition.x
+			self.build_pos.z = self.bestPosition.z
+			Plan.SetNeeds( self, "Fixing building...", BuildBuildingPlan.ObtainNewBuilder )
+			Plan.SetState( self, "Try to fix building: "..self.item_name, BuildBuildingPlan.FixState )
+		end
+	end
+	
+	-- Force HQ rebuilds
+	self.m_bEmergencyHQ = false
+	if (cpu_manager:IsHQ(building_id)) then
+		self.m_bEmergencyHQ = true
+	end
+end
+
+function BuildBuildingPlan:FindEngineerCloseToSP()
+
+	aitrace("BuildBuildingPlan: FindEngineerCloseToSP...")
+
+	-- Get available engineers close to start point
+	local aEngineers = {}
+	for oSquad in military_manager:GetUnlockedSquads() do
+	
+		-- Get a valid engineer
+		if (oSquad:IsValid() and oSquad:IsEngineer() and oSquad:CanBuild(self.item_id) == SquadAI.CANBUILD_Ok) then
+		
+			-- Get distance to start point
+			local vSquadPos = oSquad:GetPosition()
+			local iDistance = distance_sqr(cpu_manager.start_pos, vSquadPos)
+			
+			-- Add to builder list
+			table.insert(aEngineers, { oSquad, vSquadPos, iDistance })
+		end	
+	end
+	
+	-- Sort list
+	table.sort(aEngineers, function(oItem1, oItem2) return oItem1[3] < oItem2[3] end)
+	
+	-- Get a save build position
+	for iLoop1 in aEngineers do
+	
+		-- Get a build pos close to engineer and start point
+		local vSquadPos = aEngineers[iLoop1][2]
+		local vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(vSquadPos, cpu_manager.start_pos, true, true)
+		if (vBasePos ~= nil) then
+
+			-- Set build pos
+			self.build_pos = Vector2f()
+			self.build_pos.x = vBasePos.x
+			self.build_pos.y = vBasePos.z
+			return aEngineers[iLoop1][1]
+		end
+	end
+	
+	-- Force HQ building
+	if (self.m_bEmergencyHQ and table.getn(aEngineers) > 0) then
+		return aEngineers[1][1]
+	end
+	return nil
+end
+
+function BuildBuildingPlan:ObtainBuilder()
+	
+	-- Check if we have a build pos
+	local engineer = nil
+	if (self.build_pos == nil) then
+	
+		-- Find engineer that is closest to a listening post
+		engineer = self:FindEngineerCloseToSP()
+		if (engineer == nil) then
+			aitrace("BuildBuildingPlan: No builders for: "..self.item_name)
+			return
+		end
+	end
+	
+	-- Check for best building position
+	if (self.bestPosition == nil and not self:InitBestBuildingPosition()) then
+		return
+	end
+
+	-- The build pos was already set, but no engineer was found yet. find one close to the best position
+	if (engineer == nil) then
+	
+		-- Init functor
+		local functor = function( squad_ai )
+			return squad_ai:IsEngineer() and squad_ai:CanBuild( self.item_id ) == SquadAI.CANBUILD_Ok and
+				   not cpu_manager:HasThreatOnPath(squad_ai:GetPosition(), self.bestPosition, 20)
+		end
+		
+		-- Find the closest engineer
+		engineer = cpu_manager:GetClosestUnlockedSquad(self.bestPosition, 1000, functor)
+		if (engineer == nil) then
+			aitrace("BuildBuildingPlan: No builders for: "..self.item_name)
+			return
+		end
+	end
+
+	-- Lock and save it!
+	BuildPlan.SetBuilder(self, engineer)
+
+	-- No needs
+	Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )
+end
+
+function BuildBuildingPlan:InitBestBuildingPosition()
+	
+	-- Get closest enemy position
+	local oEnemy = cpu_manager:FindClosestEnemyPlayer()
+	local vEnemyPos = Vector3f(0,0,0)
+	if (oEnemy ~= nil) then
+		vEnemyPos = Vector3f(oEnemy:GetStartingPosition())
+	end
+	
+	-- Check if we have a build position
+	if (self.build_pos == nil) then
+		
+		-- Try to get a new build position
+		self.build_pos = Vector2f()
+		self.build_pos.x = cpu_manager.start_pos.x
+		self.build_pos.y = cpu_manager.start_pos.z
+		if (math.random(1, 2) == 1) then
+
+			-- Get strategic point positions
+			local aBuildPositions = {}
+			for oStrategicPoint in resource_manager:GetStrategicPointAIs() do
+			
+				-- Check owner
+				if (oStrategicPoint:Owner() == cpu_manager.player_id) then
+					table.insert(aBuildPositions, oStrategicPoint:GetPosition())
+				end
+			end
+			local iBuildPosCount = table.getn(aBuildPositions)
+			if (iBuildPosCount > 0) then
+				
+				-- Choose a random strat position
+				local vBuildPos = aBuildPositions[math.random(1, iBuildPosCount)]
+				self.build_pos.x = vBuildPos.x
+				self.build_pos.y = vBuildPos.z
+			end
+		end
+	end
+
+	-- Init variables
+	local bias = nil
+	local try_bias = false
+	local base_pos = Vector3f(cpu_manager.start_pos)
+
+	-- Check for turret
+	if (cpu_manager:IsTurret(self.item_id)) then
+		
+		-- Turret at base, bias to next LP	
+		if (self.build_pos.x == base_pos.x and self.build_pos.y == base_pos.z) then
+		
+			local oStrategicPoint = resource_manager:FindFirstStrategicPoint(base_pos, 50)
+			if (oStrategicPoint ~= nil) then
+				bias = oStrategicPoint:GetPosition()
+			end
+			try_bias = true
+		end
+			
+		-- Turret at LP or no LP found, bias to own base
+		if (bias == nil) then
+			bias = Vector3f(base_pos)
+		end
+	else
+		bias = Vector3f(vEnemyPos)
+	end
+	
+	-- Local copy to tweak with bias
+	local bias_pos = Vector2f(self.build_pos)
+	
+	-- Build turrets at base facing enemy or webways
+	if (try_bias == true) then
+		bias_pos.x = bias_pos.x + cpu_manager:GetBias(self.build_pos.x, bias.x)
+		bias_pos.y = bias_pos.y + cpu_manager:GetBias(self.build_pos.y, bias.z)
+		bias = base_pos
+	end
+		
+	-- Try to build toward or away from enemy, depending on what type of building it is
+	self.bestPosition = Vector3f()
+	if (cpu_manager:IsBiggerGenerator(self.item_id)) then
+		
+		-- Bigger generators use fixed position
+		self.bestPosition = Vector3f(self.copy_build_pos)
+						
+	elseif (not cpu_manager.terrain_analyzer:FindClosestFreePosition(self.item_id, bias_pos, bias, self.bestPosition)) then
+
+		-- Unable to build turrets/webways with bias, retry with default settings
+		if (try_bias) then
+
+			bias = vEnemyPos
+			if (not cpu_manager.terrain_analyzer:FindClosestFreePosition(self.item_id, self.build_pos, bias, self.bestPosition)) then
+				aitrace("BuildBuildingPlan: Cannot place building: "..self.item_name)
+				return false
+			end
+		else
+			
+			-- Arkhan 12.2005: Retry with deviation to fix build bug
+			bias_pos.x = self.build_pos.x + math.random(-10, 10)
+			bias_pos.y = self.build_pos.y + math.random(-10, 10)
+			local bSuccess = cpu_manager.terrain_analyzer:FindClosestFreePosition(self.item_id, bias_pos, bias, self.bestPosition)
+			if (not bSuccess) then
+				aitrace("BuildBuildingPlan: Cannot place building: "..self.item_name)
+				return false
+			end
+		end
+	end
+	if (self.bestPosition == nil) then
+		aitrace("BuildBuildingPlan: Can't find a free position to build "..self.item_name)
+		return false
+	end
+	return true
+end
+
+function BuildBuildingPlan:SetSaveBuildPosition(oEngineer)
+
+	-- Check build position
+	if (self.build_pos == nil) then
+		return
+	end
+
+	-- Check threat at build position
+	local vBuildPos = self.copy_build_pos
+	if (not cpu_manager.terrain_analyzer:HasThreat(vBuildPos, 35)) then
+		return
+	end
+	
+	-- Set close position to engineer
+	local vEngineerPosition = cpu_manager.start_pos
+	if (oEngineer ~= nil) then
+		vEngineerPosition = oEngineer:GetPosition()
+	end
+	
+	-- Get a save position as new build position
+	local vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(vEngineerPosition, vBuildPos, true, true)
+	if (vBasePos == nil) then
+		vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(vEngineerPosition, vBuildPos, true, false)
+	end
+	if (vBasePos ~= nil) then
+		vBuildPos = Vector3f(vBasePos)
+	end
+	
+	-- Set new build position
+	self.build_pos.x = vBuildPos.x
+	self.build_pos.y = vBuildPos.z
+	
+	-- Update best build position
+	self.bestPosition = nil
+	return self:InitBestBuildingPosition()
+end
+
+function BuildBuildingPlan:BuildBuilding()
+
+	-- Check for builder
+	if (self.builder == nil) then
+		
+		-- Shall we wait for a builder?
+		if (self.wait_on_builder == nil) then	
+			aitrace( "BuildBuildingPlan: No builder found. Abort "..self.item_name )
+			Plan.SetComplete( self, true )
+		else
+			aitrace( "BuildBuildingPlan: Search builder for "..self.item_name )	
+		end
+		return
+	end
+	
+	-- Don't build under threat
+	if (cpu_manager.terrain_analyzer:HasThreat(self.bestPosition, 35)) then
+	
+		-- Try to find a save build position
+		if (not self:SetSaveBuildPosition(self.builder)) then
+			aitrace("BuildBuildingPlan: Cannot build under threat : "..self.item_name)
+			return
+		end
+	end
+
+	-- No assertion for bigger generators !!!
+	if (cpu_manager:IsBiggerGenerator(self.item_id)) then
+		if (not self.builder:CanBuildAt(self.item_id, self.bestPosition) or self.builder:CanBuild(self.item_id) ~= SquadAI.CANBUILD_Ok) then
+			return
+		end
+	end
+	
+	-- Check if building can be built
+	if (not self.builder:CanBuildAt(self.item_id, self.bestPosition)) then
+		aitrace("BuildBuildingPlan: Can't build building for unknown reasons. Try to get another build position..", true)
+		self.build_pos = nil
+		self:InitBestBuildingPosition()
+		return
+	end
+	
+	-- Try to build
+	self.builder:DoBuildBuilding(self.item_id, self.bestPosition)
+
+	-- Change state
+	Plan.SetState( self, "Building a "..self.item_name, BuildBuildingPlan.BuildingState )
+	return
+end
+
+function BuildBuildingPlan:BuildingState()
+
+	aitrace("BuildBuildingPlan: Building State...")
+		
+	-- Compute basic building state method
+	BuildPlan.BuildingState(self)
+
+	-- Check if building was started
+	if (not self.started_building) then
+		return
+	end
+	
+	-- Search unfinished building
+	local oBuilding = build_manager:FindUnfinishedBuilding(self.item_id)
+	if (oBuilding ~= nil and distance_sqr(oBuilding:GetPosition(), self.bestPosition) < 100) then
+	
+		-- Try to jump if possible
+		if (distance_sqr(self.builder:GetPosition(), self.bestPosition) > sqr(40) and cpu_manager:JumpBuilder(self.builder, self.bestPosition)) then
+			return
+		end
+	end
+	
+	-- Check if builder is building
+	if (self.builder:IsBuilding() ~= self.item_id) then
+		
+		-- Check for building
+		if (oBuilding ~= nil) then
+		
+			-- Get building AI
+			local oBuildingAI = military_manager:GetBaseFromID(oBuilding:GetID())
+			if (oBuildingAI ~= nil) then
+
+				-- Check for auto-construct buildings
+				if (not cpu_manager:AutoConstructBuildings() or oBuildingAI:GetHealthPercentage() <= 0.2) then
+					self.builder:DoFinishBuilding(oBuilding)
+					return
+				else
+				
+					-- Job finished
+					aitrace("BuildBuildingPlan: Job finished...")
+					Plan.UnlockResource(self, self.builder)
+					self.builder = nil
+					Plan.SetComplete(self, true)
+					return
+				end
+			end
+		end
+		
+	elseif (oBuilding == nil) then
+
+		-- Builder got stuck and wasn't able to finish building => Choose another builder
+		local oNewBuilder = nil
+		local iBuilderID = self.builder:GetID()
+		for oSquad in military_manager:GetUnlockedSquads() do
+		
+			-- Get a valid engineer
+			if (oSquad:IsValid() and oSquad:IsEngineer() and oSquad:CanBuild(self.item_id) == SquadAI.CANBUILD_Ok and oSquad:GetID() ~= iBuilderID) then
+				oNewBuilder = oSquad
+				break
+			end
+		end
+		
+		-- Set new builder
+		if (oNewBuilder ~= nil) then
+			self.builder:DoMove(cpu_manager.start_pos)
+			Plan.UnlockResource(self, self.builder)
+			BuildPlan.SetBuilder(self, oNewBuilder)
+			self.started_building = false
+		end
+	end
+end
+
+function BuildBuildingPlan:Retry()
+
+	-- Work around for invalid build position with heavy network lag or time out
+	if (g_iGMT > self.m_iPlanStart + 120) then
+
+		-- Stop building, and let an available builder take over when available
+		aitrace("BuildBuildingPlan: Time out! Abort building "..self.item_name)
+		Plan.UnlockResource( self, self.builder )
+		self.builder = nil
+		Plan.SetComplete( self, true )
+		return
+	end
+
+	-- Check if we have a build position
+	if (self.build_pos == nil) then
+		self.build_pos = Vector2f()
+		self.build_pos.x = cpu_manager.start_pos.x
+		self.build_pos.y = cpu_manager.start_pos.z
+	end
+	
+	-- Find a place to build it
+	if (cpu_manager:IsBiggerGenerator(self.item_id)) then
+		
+		-- Try to build
+		self.bestPosition = Vector3f(self.copy_build_pos)
+		if (self.builder:CanBuild( self.item_id ) == SquadAI.CANBUILD_Ok) then
+			self.builder:DoBuildBuilding( self.item_id, self.bestPosition )
+		end			 		
+	else
+	
+		-- Get closest enemy
+		local oEnemy = cpu_manager:FindClosestEnemyPlayer()
+		if (oEnemy == nil) then
+			return
+		end
+		local vEnemyPos = oEnemy:GetStartingPosition()
+		
+		-- Arkhan 12.2005: Retry with deviation to fix build bug
+		if (math.random(1, 2) == 1) then
+			
+			-- Get strategic point positions
+			local aBuildPositions = {}
+			for oStrategicPoint in resource_manager:GetStrategicPointAIs() do
+			
+				-- Check owner
+				if (oStrategicPoint:Owner() == cpu_manager.player_id) then
+					table.insert(aBuildPositions, oStrategicPoint:GetPosition())
+				end
+			end
+			local iBuildPosCount = table.getn(aBuildPositions)
+			if (iBuildPosCount > 0) then
+				
+				-- Choose a random strat position
+				local vBuildPos = aBuildPositions[math.random(1, iBuildPosCount)]
+				self.build_pos.x = vBuildPos.x
+				self.build_pos.y = vBuildPos.z
+			end
+		end
+		local bias_pos = Vector2f()
+		bias_pos.x = self.build_pos.x + math.random( -10, 10)
+		bias_pos.y = self.build_pos.y + math.random( -10, 10)
+		self.bestPosition = Vector3f()
+		local bSuccess = cpu_manager.terrain_analyzer:FindClosestFreePosition( self.item_id, bias_pos, vEnemyPos, self.bestPosition )
+		if (bSuccess and self.builder:CanBuild(self.item_id) == SquadAI.CANBUILD_Ok) then
+			self.builder:DoBuildBuilding( self.item_id, self.bestPosition )
+		end
+	end
+end
+
+function BuildBuildingPlan:ObtainNewBuilder()
+
+    aitrace("BuildBuildingPlan: Obtain new builder for "..self.item_name)
+    self.building = nil
+    
+    -- Find the half-built building
+    self.building = build_manager:FindUnfinishedBuilding( self.item_id )
+    
+    -- Both the builder and the building died -- just quit
+    if (self.building == nil) then
+    	aitrace("BuildBuildingPlan: Can't find building for new builder. Abort "..self.item_name)
+        self:SetComplete( true )
+        return
+    end
+    
+    -- Don't build under threat
+    local build_pos = self.building:GetPosition()    
+	if (cpu_manager.terrain_analyzer:HasThreat( build_pos, 35 )) then
+		return
+	end
+    
+    -- Find an engineer
+    for squad_ai in military_manager:GetUnlockedSquads() do
+
+        -- Don't queue
+        if (squad_ai:IsValid() and squad_ai:IsEngineer()) then
+            
+            local squad_pos = squad_ai:GetPosition()
+            if not cpu_manager:HasThreatOnPath( squad_pos, build_pos, 20 ) then
+            
+                -- Lock and save it!
+                BuildPlan.SetBuilder( self, squad_ai )
+            
+                -- No needs
+                Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )
+                return
+            end
+        end
+    end
+end
+
+function BuildBuildingPlan:FixState()
+
+	if (self.building == nil or self.builder == nil) then
+		return
+	end
+	
+	self.started_building = false
+	self.builder:DoFinishBuilding( self.building )
+	Plan.SetState( self, "Fixing a "..self.item_name, BuildBuildingPlan.BuildingState )
+end
+
+function BuildBuildingPlan:ShiftState()
+
+	if (self.builder == nil) then
+		return
+	end
+		
+	if (not self.shifted) then
+		aitrace("BuildBuildingPlan: Shift state move/release")
+		local move_pos = Vector3f(self.bestPosition)
+		move_pos.x = move_pos.x + deviate_pos(math.random(5,10))
+		move_pos.z = move_pos.z + deviate_pos(math.random(5,10))
+		cpu_manager:DoMove(self.builder, move_pos, false, "Slag builder shift")
+		self.shift_move = g_iGMT
+		self.shifted = true
+	elseif (self.shifted and g_iGMT >= self.shift_move + 4) then
+		aitrace("BuildBuildingPlan: Shift state retry")
+		self.building = build_manager:FindUnfinishedBuilding( self.item_id )
+		if ( self.building == nil ) then
+			Plan.UnlockResource( self, self.builder )
+			self.builder = nil	
+			self:SetComplete( true )
+		else
+			Plan.SetState(self, "Try to fix building: "..self.item_name, BuildBuildingPlan.FixState)
+			self.shift_move = g_iGMT
+			self.shifted = false
+		end
+	end 
+end
+
+
+function BuildBuildingPlan:Update()
+
+	aitrace("BuildBuildingPlan: Update building plan for "..self.item_name, true)
+	
+	-- Take into account if my builder dies
+	if (self.builder ~= nil and not self.builder:IsValid()) then
+	
+		-- Reset builder
+		Plan.UnlockResource( self, self.builder )
+		self.builder = nil
+
+		-- Set my state to try to fix the building
+		if (self.started_building) then
+			Plan.SetNeeds(self, "Asking for new builder", BuildBuildingPlan.ObtainNewBuilder)
+			Plan.SetState(self, "Try to fix building: "..self.item_name, BuildBuildingPlan.FixState)
+		else
+			Plan.SetNeeds(self, "Asking for builder", BuildBuildingPlan.ObtainBuilder)
+			Plan.SetState(self, "Wanting to build: "..self.item_name, BuildBuildingPlan.BuildBuilding)
+		end
+	end
+		
+	-- retry or quit building if big generator is not progressing
+	if (self.builder ~= nil and cpu_manager:IsBiggerGenerator(self.item_id) and 
+		self.started_building and g_iGMT > self.m_iPlanStart + 10 and self.builder:IsBuilding() == self.item_id and 
+		not self.builder:IsBuildProgressing() and not self.builder:GetTactic():IsMoving()) then
+	
+		-- time to build a big gen (dcpro)
+		local build_time = 100
+		
+		if (g_iGMT <= self.m_iPlanStart + build_time + 10) then
+			aitrace("BuildBuildingPlan: Builder stuck, shift position")
+			if (g_iGMT >= self.shift_move + 8) then 
+				aitrace("BuildBuildingPlan: Builder stuck, set shift state")
+				Plan.SetState(self, "Shifting builder for: "..self.item_name, BuildBuildingPlan.ShiftState)
+			end
+		elseif (self.building ~= nil) then
+			self.builder:DoFinishBuilding(self.building)
+		else
+			aitrace("BuildBuildingPlan: Builder stuck. Abort "..self.item_name, true)
+			Plan.UnlockResource( self, self.builder )
+			self.builder = nil
+			self:SetComplete(true)		
+		end
+	-- Check if builder is lazy
+	elseif (self.builder ~= nil and self.builder:IsIdle() and self.started_building) then
+		
+		-- Reactivate builder
+		aitrace("BuildBuildingPlan: Builder lazy, send him to work again")
+		if (self.building ~= nil) then
+			self.builder:DoFinishBuilding(self.building)
+		else
+			aitrace("BuildBuildingPlan: No building available. Abort "..self.item_name, true)
+			Plan.UnlockResource( self, self.builder )
+			self.builder = nil
+			self:SetComplete(true)
+		end
+	end
+
+	Plan.Update( self )
+end

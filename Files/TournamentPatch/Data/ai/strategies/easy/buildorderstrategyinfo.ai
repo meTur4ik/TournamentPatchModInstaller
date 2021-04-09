@@ -1,0 +1,55 @@
+--EASY
+BuildOrderStrategyInfo = 
+{
+	space_marine_race =
+	{
+		{ "flag_capture" }
+	},
+	
+	ork_race = 
+	{
+		{ "flag_capture" }
+	},
+	
+	chaos_marine_race =
+	{
+		{ "flag_capture" }
+	},
+	
+	eldar_race =
+	{
+		{ "flag_capture" }
+	},
+
+	guard_race =
+	{
+		{ "flag_capture" },
+	},
+
+	tau_race =
+	{
+		{ "flag_capture" }
+	},
+
+	necron_race =
+	{
+		{ "building", "necron_plasma_generator" },
+		{ "building", "necron_plasma_generator" },
+		{ "flag_capture" }, { "post_builder" }
+	},
+
+	sisters_race =
+	{
+		{ "flag_capture" },
+		{ "squad", "sisters_squad_missionary" },
+		{ "squad", "sisters_squad_servitor" },
+		{ "building", "sisters_infantry" },
+		{ "post_builder" },
+		{ "squad", "sisters_squad_canoness" },
+	},
+
+	dark_eldar_race =
+	{
+		{ "flag_capture" },
+	},
+}

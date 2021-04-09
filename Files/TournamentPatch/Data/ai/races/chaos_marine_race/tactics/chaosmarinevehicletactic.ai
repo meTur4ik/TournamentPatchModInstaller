@@ -1,0 +1,39 @@
+----------------------------------------
+-- File: 'chaosmarinevehicletactic.ai'
+-- Edited by Thudmeizer         @ 08.08.2006
+
+class 'ChaosMarineVehicleTactic' (VehicleTactic)
+
+function ChaosMarineVehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Chaos Marine Vehicle Tactic")
+end
+
+-- Check if the vehicle should dance away in melee
+function ChaosMarineVehicleTactic:CheckVehicleDance(sName)
+
+	if (sName == "chaos_squad_predator" or
+		sName == "chaos_squad_rhino") then
+		return true
+	end
+	return false
+end
+
+function ChaosMarineVehicleTactic:DoAbilities()
+
+	-- Check for SearchLight (Combat = On, No Combat = On, Retreating = Off)
+    if (playing_night_map == 1) then
+
+		local light1_id = cpu_manager.stats:GetAbilityID( "chaos_searchlight_rhino" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light1_id, " vehicle" )
+	
+		local light2_id = cpu_manager.stats:GetAbilityID( "chaos_searchlight_predator" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light2_id, " vehicle" )
+	
+		local light3_id = cpu_manager.stats:GetAbilityID( "chaos_searchlight_defiler" )
+		Ability.DoAbilitySearchLight( self.squad_ai, light3_id, " vehicle" )
+	end
+	
+	-- Call standard method
+	VehicleTactic.DoAbilities(self)
+end

@@ -1,0 +1,632 @@
+----------------------------------------
+-- File: 'ability.ai' (For SoulStorm)
+-- Edited by Thudmeizer @ 15.11.2007
+
+-------------------------------------------------------------------------
+-- Helper functions to cast abilities ----------------------------
+-------------------------------------------------------------------------
+
+Ability = 
+{
+
+--pass these filters into the functions below to figure out the target to do special ability on
+Filters = 
+{
+	CloseHurt = function( position, tolerance, count )
+
+		return cpu_manager.cpu_player:FindFirstHurtSquad( position, tolerance )
+	end,
+
+	CloseLowHealth = function(vPosition, iTolerance, iCount)
+
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+
+		-- Squad check
+		local oSquad = cpu_manager.cpu_player:FindFirstHurtSquad(vPosition, iTolerance)
+		if (oSquad ~= nil and oSquad:GetHealthPercentage() <= 0.6 and oSquad:GetNumTroopers() >= iCount) then
+			return oSquad
+		end
+		return nil
+	end,
+
+	CloseInfiltrator = function(vPosition, iTolerance, iCount)
+	
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+	
+		-- Quick check
+		if (not cpu_manager:CloseEnemyInfiltrators(vPosition, iTolerance)) then
+			return nil
+		end
+	
+		-- Squad check
+		local oFunctor = function(oSquad, iCount)
+			return (oSquad:IsInfiltrating() and oSquad:GetNumTroopers() >= iCount)
+		end
+		return cpu_manager:GetClosestSquad(vPosition, iTolerance, oFunctor, iCount)
+	end,
+
+	CloseInCombat = function(vPosition, iTolerance, iCount)
+	
+		-- Squad check
+		return cpu_manager.cpu_player:FindFirstSquadInCombat(vPosition, iTolerance)
+	end,
+	
+	CloseEnemy = function(vPosition, iTolerance, iCount)
+	
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+	
+		-- Quick check
+		if (not cpu_manager:CloseEnemyUnits(vPosition, iTolerance)) then
+			return nil
+		end
+		return cpu_manager.cpu_player:FindFirstEnemy(vPosition, iTolerance, iCount)
+	end,
+	
+	CloseVehicleEnemy = function(vPosition, iTolerance, iCount)
+
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+
+		-- Quick check
+		if (not cpu_manager:CloseEnemyUnits(vPosition, iTolerance)) then
+			return nil
+		end
+		return cpu_manager.cpu_player:FindFirstVehicleEnemy(vPosition, iTolerance, iCount)
+	end,
+	
+	CloseInfantryEnemy = function(vPosition, iTolerance, iCount)
+	
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+	
+		-- Quick check
+		if (not cpu_manager:CloseEnemyUnits(vPosition, iTolerance)) then
+			return nil
+		end
+		return cpu_manager.cpu_player:FindFirstInfantryEnemy(vPosition, iTolerance, iCount)
+	end,
+	
+	CloseSquadEnemy = function(vPosition, iTolerance, iCount)
+	
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+	
+		-- Quick check
+		if (not cpu_manager:CloseEnemyUnits(vPosition, iTolerance)) then
+			return nil
+		end
+	
+		local oSquad = cpu_manager.cpu_player:FindFirstInfantryEnemy(vPosition, iTolerance, iCount)
+		if (oSquad ~= nil and oSquad:GetNumTroopers() >= 4 and not oSquad:IsEngineer()) then
+			return oSquad
+		else
+			return nil
+		end
+	end,
+	
+	CloseCommanderEnemy = function(vPosition, iTolerance, iCount)
+		
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+		
+		-- Quick check
+		if (not cpu_manager:CloseEnemyUnits(vPosition, iTolerance)) then
+			return nil
+		end
+		return cpu_manager.cpu_player:FindFirstCommanderEnemy(vPosition, iTolerance, iCount)
+	end,
+
+
+	CloseBroken = function(vPosition, iTolerance, iCount)
+
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+
+		local oFunctor = function(oSquad, iCount)
+			return (oSquad:IsBroken() and oSquad:GetNumTroopers() >= iCount)
+		end
+		return cpu_manager:GetClosestSquad(vPosition, iTolerance, oFunctor, iCount)
+	end,
+
+	CloseInfantryEnemyCC = function(vPosition, iTolerance, iCount)
+	
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+		
+		-- Quick check
+		if (not cpu_manager:CloseEnemyUnits(vPosition, iTolerance)) then
+			return nil
+		end
+		
+		local oFunctor = function(oSquad, iCount)
+			return (not oSquad:IsRanged() and oSquad:GetNumTroopers() >= iCount)
+		end
+		return cpu_manager:GetClosestSquad(vPosition, iTolerance, oFunctor, iCount)
+	end,
+
+	CloseVehicleHighEnemy = function(vPosition, iTolerance, iCount)
+
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+
+		-- Quick check
+		if (not cpu_manager:CloseEnemyUnits(vPosition, iTolerance)) then
+			return nil
+		end
+
+		local oFunctor = function(oSquad, iCount)
+			local oStats = oSquad:GetStats()
+			if (oStats == nil) then
+				return false
+			end
+			return ((oStats:GetClass() == UnitStatsAI.UC_VehicleHigh) and oSquad:GetNumTroopers() >= iCount)
+		end
+		return cpu_manager:GetClosestSquad(vPosition, iTolerance, oFunctor, iCount)
+	end,
+	
+	CloseMonsterHighEnemy = function(vPosition, iTolerance, iCount)
+
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+
+		-- Quick check
+		if (not cpu_manager:CloseEnemyUnits(vPosition, iTolerance)) then
+			return nil
+		end
+
+		local oFunctor = function(oSquad, iCount)
+			local oStats = oSquad:GetStats()
+			if (oStats == nil) then
+				return false
+			end
+			return ((oStats:GetClass() == UnitStatsAI.UC_MonsterHigh) and oSquad:GetNumTroopers() >= iCount)
+		end
+		return cpu_manager:GetClosestSquad(vPosition, iTolerance, oFunctor, iCount)
+	end,
+
+	CloseMonsterEnemy = function(vPosition, iTolerance, iCount)
+
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+
+		-- Quick check
+		if (not cpu_manager:CloseEnemyUnits(vPosition, iTolerance)) then
+			return nil
+		end
+
+		local oFunctor = function(oSquad, iCount)
+			local oStats = oSquad:GetStats()
+			if (oStats == nil) then
+				return false
+			end
+			return ((oStats:GetClass() == UnitStatsAI.UC_MonsterHigh or oStats:GetClass() == UnitStatsAI.UC_MonsterMed) and oSquad:GetNumTroopers() >= iCount)
+		end
+		return cpu_manager:GetClosestSquad(vPosition, iTolerance, oFunctor, iCount)
+	end,
+	
+	CloseInfiltratedEnemy = function(vPosition, iTolerance, iCount)
+	
+		-- Make sure that count is valid
+		if (iCount == nil) then
+			iCount = 1
+		end
+	
+		-- Quick check
+		if (not cpu_manager:CloseEnemyInfiltrators(vPosition, iTolerance)) then
+			return nil
+		end
+		return cpu_manager.cpu_player:FindFirstInfiltratedEnemy(vPosition, iTolerance, iCount)
+	end,
+
+	CloseStrategicPoint = function( position, range, args )
+		return resource_manager:FindFirstStrategicPoint( position, range )
+	end,
+
+	IsInCombat = function( squad_ai )
+		return squad_ai:IsInCombat()
+	end,
+
+	CloseFaithfulUnits = function( position, range, args )
+		return cpu_manager.cpu_player:FindFirstFaithful( position, range, count )
+	end,
+},
+
+--pass these filters into the functions (DoAbility) below to determine if we should apply the special ability
+--NOTE: these filters return a boolean
+PredicateFilters =
+{
+	ConstantTrue = function(ai, args)
+		return true
+	end,
+	IsInfiltrating = function(ai, args)
+		return ai:IsInfiltrating()
+	end,
+	IsNotInfiltrating = function(ai, args)
+		return not ai:IsInfiltrating()
+	end,
+	IsInCombat = function( ai, args )
+		return ai:IsInCombat()
+	end,
+	IsUnderAttack = function( ai, args )
+		return ai:IsUnderAttack()
+	end,
+	IsAttacking = function( ai, args )
+		return ai:IsAttacking()
+	end,
+	IsLowHealth = function( ai, args )
+		return ai:GetHealthPercentage() < args.min_health
+	end,
+	IsUnderAttackAndNotAttacking = function( ai, args )
+		return ai:IsUnderAttack() and not ai:IsAttacking()
+	end,	
+	IsLowHealthAndUnderAttack = function( ai, args )
+		return Ability.PredicateFilters.IsLowHealth(ai,args) and Ability.PredicateFilters.IsUnderAttack(ai,args) 
+	end,	
+	IsUnderAttackAndNotAttackingOrLowHealth = function( ai, args )
+		return Ability.PredicateFilters.IsLowHealth(ai,args) or Ability.PredicateFilters.IsUnderAttackAndNotAttacking(ai,args)
+	end,
+	IsAttackingWithEnoughTroops = function( ai, args )
+		return ai:IsAttacking() and ai:GetNumTroopers() >= args.min_troops
+	end,
+	
+	-- requires args.ability_id or args.range to be set
+	HasUsableBodies = function(ai, args)
+		local range = 0
+		if (args.range ~= nil) then
+			range = args.range
+		elseif (args.ability_id ~= nil) then
+			range = ai:GetAbilityRadius( args.ability_id )
+		end
+		return cpu_manager.cpu_player:HasUsableBodies(ai:GetPosition(), range, args.min_bodies)	
+	end,
+
+	-- requires args.ability_id or args.range to be set
+	HasCloseInfiltratedEnemy = function(ai, args)
+	
+		local range = 0
+		if (args.range ~= nil) then
+			range = args.ability_range
+		elseif (args.ability_id ~= nil) then
+			range = ai:GetAbilityRadius( args.ability_id )
+		end
+		
+		-- Quick check
+		local vPos = ai:GetPosition()
+		if (not cpu_manager:CloseEnemyInfiltrators(vPos, range)) then
+			return nil
+		end
+		return cpu_manager.cpu_player:FindFirstInfiltratedEnemy(vPos, range, 1) ~= nil
+	end,
+},
+
+--pass these filters into the functions (DoAbilityTargetEntity) below to figure out the target to do special ability on
+--NOTE: these filters return an entity
+EntityFilters = 
+{	
+	CloseBaseEntityEnemy = function( position, range, count )
+	
+		if count == nil then
+			count = 1
+		end
+		
+		-- Quick check
+		if (not cpu_manager:CloseEnemyBuildings(position, range)) then
+			return nil
+		end
+		
+		local base = cpu_manager.cpu_player:FindFirstBaseEnemy( position, range, count )
+		if (base ~= nil and base:IsValid()) then
+		
+			local range_sqr = sqr(range)
+			local entity = base:GetEntity()
+			local entity_pos = base:GetPosition()
+			if (distance_sqr(entity_pos, position) <= range_sqr) then
+				return entity
+			end
+		end
+		return nil
+	end,
+},
+
+--pass these filters into the functions (DoAbilityLocation) below to figure out the location to do special ability on
+--NOTE: these filters return a vector position
+LocationFilters =
+{
+	-- returns a position registered to a choke-point plan, or nil
+	AnyChokePointLocation = function(position, range, count )
+	
+		if count == nil then
+			count = 1 
+		end
+	
+		local defend_strategy = cpu_manager:StrategyExists("DefendStrategy")
+		if (defend_strategy ~= nil) then
+			local plans = defend_strategy:GetPlansByName("Defend Choke Point Plan")
+			local count = table.getn(plans)
+			
+			if (count >= 1) then
+				local rnd_idx = math.random(1,count)
+				return plans[rnd_idx].waypoint_pos
+			end
+		end
+		return nil
+	end,
+
+},
+
+--toggle ability to be used during combat and off when not
+DoAbilityToggleCombat = function( squad_ai, id, msg )
+
+	-- Check ability ID
+	if (id == nil) then
+		print("Warning: Ability ID in function DoAbilityToggleCombat of player "..tostring(cpu_manager.player_id).." not defined!")
+		return
+	end
+
+	if (squad_ai:CanDoAbility(id) and not squad_ai:IsAttached()) then
+	
+		local using = squad_ai:IsUsingAbility( id )
+		local combat = squad_ai:IsInCombat()
+		local oTactic = squad_ai:GetTactic()
+		local move = oTactic:IsMoving() or oTactic:IsInSubState()
+		local healthpercent = squad_ai:GetHealthPercentage() > 0.4
+		
+		if (using == true and combat == false and move == true and healthpercent == false) or
+			(using == false and ( combat == true or move == false and healthpercent == true)) then
+		
+			squad_ai:DoSpecialAbility( id )
+		end
+	end
+end,
+
+--toggle ability to be used during combat and off when not
+DoAbilityToggleCombatSolo = function( squad_ai, id, msg )
+
+	-- Check ability ID
+	if (id == nil) then
+		print("Warning: Ability ID in function DoAbilityToggleCombatSolo of player "..tostring(cpu_manager.player_id).." not defined!")
+		return
+	end
+
+	if (squad_ai:CanDoAbility(id)) then
+	
+		local using = squad_ai:IsUsingAbility( id )
+		local combat = squad_ai:IsInCombat()
+		local oTactic = squad_ai:GetTactic()
+		local move = oTactic:IsMoving() or oTactic:IsInSubState()
+		local healthpercent = squad_ai:GetHealthPercentage()
+		
+		if (using == true and combat == false and move == true and healthpercent > 0.4) or
+			(using == false and ( combat == true or move == false or healthpercent < 0.4)) then
+			
+			squad_ai:DoSpecialAbility( id )
+		end
+	end
+end,
+
+--toggle ability to be used at high (>40%) health
+--relevant for Night_Shift Mod! Affects all applicable vehicles but especially CC-based vehicles like Dreads and Defilers
+DoAbilitySearchLight = function( squad_ai, id ) 
+
+	-- Check ability ID
+	if (id == nil) then
+		print("Warning: Ability ID in function DoAbilitySearchLight of player "..tostring(cpu_manager.player_id).." not defined!")
+		return
+	end
+
+    if (squad_ai:CanDoAbility(id)) then
+
+        local using = squad_ai:IsUsingAbility( id )
+        local healthpercent = squad_ai:GetHealthPercentage()
+        local melee = cpu_manager:IsInMelee( squad_ai )
+
+        if (using == false and melee == false and healthpercent > 0.4) or
+           (using == true and (melee == true or healthpercent < 0.4)) then
+
+            squad_ai:DoSpecialAbility( id )
+        end    
+    end
+end,
+
+--toggle ability to be used during combat and off when not - WitchHunters
+DoAbilityToggleMoraleBoost = function( squad_ai, id, msg )
+
+	dbAssert( id ~= nil )
+
+	if (squad_ai:CanDoAbility(id)) then
+	
+		local using = squad_ai:IsUsingAbility( id )
+		local combat = squad_ai:IsInCombat()
+		local oTactic = squad_ai:GetTactic()
+		local move = oTactic:IsMoving() or oTactic:IsInSubState()
+		local morale = squad_ai:IsBroken()
+		
+		if (using == true and combat == false and move == true and morale == false) or
+			(using == false and ( combat == true or move == false or morale == true)) then
+			
+			squad_ai:DoSpecialAbility( id )
+		end
+	end
+end,
+
+--use ability on self
+DoAbility = function( ai, id, functor, args)
+
+	-- Check ability ID
+	if (id == nil) then
+		print("Warning: Ability ID in function DoAbility of player "..tostring(cpu_manager.player_id).." not defined!")
+		return
+	end
+	
+	if (functor == nil) then
+		functor = function() return true end
+	end
+
+	if (ai:CanDoAbility(id) and functor(ai, args)) then
+		ai:DoSpecialAbility( id ) 
+	end
+end,
+
+--use ability on position
+DoAbilityPos = function( squad_ai, id, functor, args )
+
+	dbAssert( functor ~= nil )
+	
+	-- Check ability ID
+	if (id == nil) then
+		print("Warning: Ability ID in function DoAbilityPos of player "..tostring(cpu_manager.player_id).." not defined!")
+		return
+	end
+	
+	if (squad_ai:CanDoAbility(id)) then
+
+		local range = squad_ai:GetAbilityRange( id )
+		
+		--look for a target
+		local target = nil
+		
+		target = functor( squad_ai:GetPosition(), range, args )
+		
+		if (target ~= nil) then
+			squad_ai:DoSpecialAbilityPos( id, target:GetPosition() )
+		end
+	end
+end,
+
+--use ability on target squad 
+DoAbilityTarget = function( squad_ai, id, functor, threshold )
+
+	dbAssert( functor ~= nil )
+	
+	-- Check ability ID
+	if (id == nil) then
+		print("Warning: Ability ID in function DoAbilityTarget of player "..tostring(cpu_manager.player_id).." not defined!")
+		return
+	end
+		
+	if (squad_ai:CanDoAbility(id)) then
+
+	   if (threshold == nil) then
+		  threshold = 1 
+	   end
+
+		local range = squad_ai:GetAbilityRange( id )
+
+		--look for a target
+		local target = nil
+		
+		target = functor( squad_ai:GetPosition(), range, threshold )
+		
+		  if (target ~= nil and not target:IsInfiltrating()) then
+			squad_ai:DoSpecialAbilitySquad( id, target:GetSquad() )
+			return true
+		end
+	 end
+	 return false
+end,
+
+DoAbilityTargetEntity = function( ai, id, functor, args )
+
+	dbAssert( functor ~= nil )
+	
+	-- Check ability ID
+	if (id == nil) then
+		print("Warning: Ability ID in function DoAbilityTargetEntity of player "..tostring(cpu_manager.player_id).." not defined!")
+		return
+	end
+	
+	if (ai:CanDoAbility(id)) then
+	
+		local range = ai:GetAbilityRange( id )
+
+		local target = nil
+		target = functor( ai:GetPosition(), range, args )
+		
+		if (target ~= nil) then
+			ai:DoSpecialAbilityEntity( id, target )
+		end
+	end
+end,
+
+DoAbilityAreaEntity = function( squad_ai, id, functor, range, threshold )
+
+	dbAssert( functor ~= nil )
+	
+	-- Check ability ID
+	if (id == nil) then
+		print("Warning: Ability ID in function DoAbilityAreaEntity of player "..tostring(cpu_manager.player_id).." not defined!")
+		return
+	end
+	
+	if (squad_ai:CanDoAbility(id)) then
+			
+	   if (threshold == nil) then
+		  threshold = 1 
+	   end
+
+		--look for a target
+		local target = nil
+		
+		target = functor( squad_ai:GetPosition(), range, threshold )
+		
+		if (target ~= nil) then
+			squad_ai:DoSpecialAbilityEntity( id )
+		end
+	end
+end,
+
+DoAbilityArea = function( squad_ai, id, functor, range, threshold )
+
+	dbAssert( functor ~= nil )
+	
+	-- Check ability ID
+	if (id == nil) then
+		print("Warning: Ability ID in function DoAbilityArea of player "..tostring(cpu_manager.player_id).." not defined!")
+		return
+	end
+		
+	if (squad_ai:CanDoAbility(id)) then
+			
+	   if (threshold == nil) then
+		  threshold = 1 
+	   end
+
+		--look for a target
+		local target = nil
+		
+		target = functor( squad_ai:GetPosition(), range, threshold )
+		
+		if (target ~= nil) then
+			squad_ai:DoSpecialAbility( id )
+		end
+	end
+end,
+
+}

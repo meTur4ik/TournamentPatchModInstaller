@@ -1,0 +1,78 @@
+class 'LeaderTactic' (InfantryTactic)
+
+LeaderTactic.SpecialAbilities = 
+{
+}
+
+LeaderTactic.PosAbilities = 
+{
+	{ nil, "marines_orbital_bombardment",	Ability.Filters.CloseEnemy, 6 },
+	{ nil, "eldar_psychic_storm", 					Ability.Filters.CloseInfantryEnemy, 4 },
+	{ nil, "eldar_eldritchstorm", 					Ability.Filters.CloseEnemy, 4 },
+}
+
+LeaderTactic.TargetAbilities = 
+{
+	{ nil, "ork_tank_zappa", 						Ability.Filters.CloseVehicleEnemy, 1 },
+	{ nil, "ork_superstick_bomb", 				Ability.Filters.CloseVehicleEnemy, 1 },
+	{ nil, "eldar_mind_war", 						Ability.Filters.CloseCommanderEnemy, 1 },
+	{ nil, "eldar_guide", 								Ability.Filters.CloseInCombat, 1 },
+	{ nil, "tau_target_acquired", 					Ability.Filters.CloseCommanderVehicleInfantryEnemy, 1 },
+}
+
+LeaderTactic.LocationAbilities = 
+{
+}
+
+function LeaderTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.UtilityFunctions.InitAbilitiesTable(LeaderTactic.SpecialAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(LeaderTactic.PosAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(LeaderTactic.TargetAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(LeaderTactic.LocationAbilities)
+
+	self:SetName("Leader Tactic")
+	
+end
+
+
+function LeaderTactic:DoAbilities()
+
+	self:DoPossessAbility()
+
+	Tactic.UtilityFunctions.DoAbilities(LeaderTactic.SpecialAbilities,self.squad_ai,Ability.DoAbility)
+	Tactic.UtilityFunctions.DoAbilities(LeaderTactic.PosAbilities,self.squad_ai,Ability.DoAbilityPos)
+	Tactic.UtilityFunctions.DoAbilities(LeaderTactic.TargetAbilities,self.squad_ai,Ability.DoAbilityTarget)
+	Tactic.UtilityFunctions.DoAbilities(LeaderTactic.LocationAbilities,self.squad_ai,Ability.DoAbilityLocation)
+		
+end
+
+function LeaderTactic:DoPossessAbility()
+	if self.squad_ai:IsInCombat() then
+		if self.squad_ai:CanPossess() then
+			self.squad_ai:DoPossess()
+		end
+	end
+end
+
+
+function LeaderTactic:IsAttacker()
+	-- assassinate win condition -- never attack
+	return not cpu_manager.assassinate
+end
+
+
+function LeaderTactic:Update()
+
+	if not InfantryTactic.Update( self ) then
+		return false
+	end
+
+	if cpu_manager.assassinate then
+		self:TryAttachAssassinateSquad( false )
+	else
+		self:TryAttachSquadMelee()
+	end
+	
+	return true
+end

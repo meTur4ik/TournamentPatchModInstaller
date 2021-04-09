@@ -1,0 +1,118 @@
+----------------------------------------
+-- File: 'droneharbingertactic.ai'
+-- Edited by Thudmeizer @ 26.10.2006
+
+class 'DroneHarbingerTactic' (TauVehicleTactic)
+
+function DroneHarbingerTactic:__init( squad_ai ) super( squad_ai )
+	
+	self:SetName("Drone Harbinger Tactic")
+	
+	self.m_iMinSpawnPower = 400
+	self.m_oTimedDirectSpawnAbility = Timer(DroneHarbingerTactic.DoDirectSpawnAbility, self, 1)
+	self.m_bKeepSpawnDistance = false
+end
+
+function DroneHarbingerTactic:BeginHoldState()
+
+	-- Check if we've a valid target
+	if (self.target == nil or self.variant_type ~= Tactic.Variant.Vector or self:IsInSubState()) then
+	    return
+	end
+
+	-- Check if we're close enough to spawn drones
+	if (self.m_bKeepSpawnDistance and distance_sqr(self.target, self.squad_ai:GetPosition()) < sqr(70)) then
+		
+		-- Check if we're moving
+		if (self.squad_ai:IsInStateAttackMove() or self.squad_ai:IsInStateMove()) then
+			cpu_manager:DoMove(self.squad_ai, self.squad_ai:GetPosition(), true, "Keep distance!")
+		end
+		Tactic.SetSubState(self, self.HoldState, "Holding")
+		return
+	end
+	
+	-- Call base method
+	VehicleTactic.BeginHoldState(self)
+end
+
+function DroneHarbingerTactic:BeginAttackState()
+
+	-- Check if we've a valid target
+	if (self.target == nil or self.variant_type ~= Tactic.Variant.Vector or self:IsInSubState()) then
+	    return
+	end
+
+	-- Check if we're close enough to spawn drones
+	if (self.m_bKeepSpawnDistance) then
+		
+		-- Check if we're moving
+		if (self.squad_ai:IsInStateAttackMove() or self.squad_ai:IsInStateMove()) then
+			cpu_manager:DoMove(self.squad_ai, self.squad_ai:GetPosition(), true, "Keep distance!")
+		end
+		Tactic.SetSubState(self, self.AttackingState, "Attacking")
+		return
+	end
+	
+	-- Call base method
+	VehicleTactic.BeginAttackState(self)
+end
+
+function DroneHarbingerTactic:DoAbilities()
+
+	-- Try to spawn drones
+	if (self.m_oTimedDirectSpawnAbility ~= nil) then
+		self.m_oTimedDirectSpawnAbility:Call()
+	else
+		DroneHarbingerTactic.DoDirectSpawnAbility(self)
+	end
+end
+
+function DroneHarbingerTactic:DoDirectSpawnAbility()
+
+	-- If there are no resources available, don't spawn drones
+	self.m_bKeepSpawnDistance = false
+	local iPower = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Power)
+	if (iPower < self.m_iMinSpawnPower) then
+		return
+	end
+
+	-- Check threat
+	local vPos = self.squad_ai:GetPosition()
+	if (cpu_manager.cpu_player:FindFirstEnemy(vPos, 50, 1) == nil and 
+		cpu_manager.cpu_player:FindFirstBaseEnemy(vPos, 50, 1) == nil and
+		not self.squad_ai:IsInCombat()) then
+		return
+	end
+	self.m_bKeepSpawnDistance = true
+
+	-- Spawn drones
+	if (self.squad_ai:CanDirectSpawn()) then
+		self.squad_ai:DoDirectSpawn()
+	end
+end
+
+function DroneHarbingerTactic:Update()
+
+    if (self:IsComplete()) then
+        return
+    end
+
+    -- State machine
+    if (not VehicleTactic.Update(self)) then
+        return
+    end
+    
+	-- Check stance
+	if (self.squad_ai:GetStance() ~= SquadAI.STANCE_StandGround) then
+		self.squad_ai:DoSetStance(SquadAI.STANCE_StandGround)
+	end
+    
+    -- Check damage
+    local iPower = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Power)
+    if (self.squad_ai:WasRecentlyHurt() or iPower < self.m_iMinSpawnPower) then
+    	self.m_bNeedRepair = true
+    elseif (self.squad_ai:GetHealthPercentage() > 0.4 and iPower > self.m_iMinSpawnPower + 200 and
+    		distance_sqr(self.squad_ai:GetPosition(), cpu_manager.start_pos) > sqr(50)) then
+    	self.m_bNeedRepair = false
+    end
+end

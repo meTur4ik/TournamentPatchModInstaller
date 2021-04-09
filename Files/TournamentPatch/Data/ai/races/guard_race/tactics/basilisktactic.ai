@@ -1,0 +1,34 @@
+----------------------------------------
+-- File: 'basilisktactic.ai'
+-- Edited by Arkhan		@ 09.11.2006
+
+class 'BasiliskTactic' (GuardVehicleTactic)
+
+Basilisk = {}
+
+function BasiliskTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Basilisk Tactic")
+end
+
+function BasiliskTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Basilisk.shaker_id == nil) then
+		Basilisk.shaker_id = cpu_manager.stats:GetAbilityID("earthshaker_round")
+	end
+end
+
+function BasiliskTactic:DoAbilities()
+
+	-- Check if I can launch EarthShaker Round
+	local iRequisition = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition )
+	local iPower = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power )
+	if (Tactic.Options.can_reinforce and iRequisition > 500 and iPower > 500) then
+		Ability.DoAbilityPos(self.squad_ai, Basilisk.shaker_id, Ability.Filters.CloseEnemy, 16)
+		Ability.DoAbilityPos(self.squad_ai, Basilisk.shaker_id, Ability.EntityFilters.CloseBaseEntityEnemy, 3)
+	end
+	
+	-- Call standard method
+	GuardVehicleTactic.DoAbilities(self)
+end

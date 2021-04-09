@@ -1,0 +1,424 @@
+----------------------------------------
+-- File: 'darkeldarbuildbasestrategy.ai'
+-- Edited by Thudmeizer @ 20.03.2008
+
+class 'DarkEldarBuildBaseStrategy' (BuildBaseStrategy)
+
+function DarkEldarBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+
+	-- Add detector units (Best first, worst last)
+	self:AddDetectorUnit("dark_eldar_squad_wych")
+	self:AddDetectorUnit("dark_eldar_squad_haemonculus")
+end
+
+function DarkEldarBuildBaseStrategy:ChooseBuildProgram()
+
+	-- Check build program count
+	if (table.getn(self.info.BuildPrograms) ~= 3) then
+		return BuildBaseStrategy.ChooseBuildProgram(self)
+	end
+
+	-- Get map size and closest enemy distance
+	local sMapSize, iClosestEnemyDistance = self:GetMapSize()
+		
+	-- Set probabilities of the strategies according to the map size
+	local iBuildProgram1	-- Basic strategy
+	local iBuildProgram2	-- Warrior rush
+	local iBuildProgram3	-- Reaver / Haemonculus rush
+	if (sMapSize == "small" or iClosestEnemyDistance <= 70 or cpu_manager.iPlayerCount == 2) then
+	
+		iBuildProgram1 = 60
+		iBuildProgram2 = 40
+		iBuildProgram3 = 0
+		
+	elseif (sMapSize == "large" and cpu_manager.iPlayerCount >= 6) then
+	
+		iBuildProgram1 = 50
+		iBuildProgram2 = 25
+		iBuildProgram3 = 25
+	else
+	
+		iBuildProgram1 = 60
+		iBuildProgram2 = 40
+		iBuildProgram3 = 0
+	end
+		
+	-- Now choose a program
+	iBuildProgram2 = iBuildProgram1 + iBuildProgram2
+	iBuildProgram3 = iBuildProgram2 + iBuildProgram3
+	local iRandom = math.random(1, 100)
+	if (iRandom <= iBuildProgram1) then
+		return 1
+	elseif (iRandom <= iBuildProgram2) then
+		return 2
+	else
+		return 3
+	end
+	return 1
+end
+
+function DarkEldarBuildBaseStrategy:EvaluateSquadCap()
+	
+	-- Check if any caravels are in production
+	local iBuildingID = cpu_manager.stats:GetBuildingID("dark_eldar_slave_caravel")
+	if (self:PlanExists("Build Building Plan", iBuildingID)) then
+		return
+	end
+
+	-- Check squad and support cap
+	if (self:CheckSquadCap(300, 0) or self:CheckSupportCap(150, 300)) then
+		
+		-- Build a caravel
+		local tBuildType = CpuBuildType()
+		tBuildType.btype = CpuPrerequisites.BT_Building
+		tBuildType.name = "dark_eldar_slave_caravel"
+		if (self:TryBuild( tBuildType )) then
+			aitrace("BuildController: Dynamic build of "..tBuildType.name)
+		end
+		return
+	end
+end
+
+function DarkEldarBuildBaseStrategy:GetBuildingName( sType )
+
+	-- Return race specific object string
+	if (sType == "HQ") then
+		return "dark_eldar_hq"
+		
+	elseif (sType == "Generator") then
+		return "dark_eldar_plasma_generator"
+		
+	elseif (sType == "BiggerGenerator") then
+		return "dark_eldar_thermo_plasma"
+		
+	elseif (sType == "VehicleBuilding") then
+		return "dark_eldar_skimmer_shop" 
+		
+	elseif (sType == "ListeningPost") then
+		return "dark_eldar_listening_post"
+		
+	elseif (sType == "Turret") then
+		return nil
+		
+	elseif (sType == "Mine") then
+		return nil
+	end
+	
+	return nil
+end
+
+function DarkEldarBuildBaseStrategy:GetAddonBuilding( sType )
+
+	if (sType == "addon_dark_eldar_gruesome_display") then
+		return "dark_eldar_slave_caravel"
+
+	elseif (sType == "addon_dark_eldar_slave_graveyard") then
+		return "dark_eldar_slave_caravel"
+		
+	elseif (sType == "addon_dark_eldar_list_post_1") then
+		return "dark_eldar_listening_post"
+		
+	elseif (sType == "addon_dark_eldar_list_post_2") then
+		return "dark_eldar_listening_post"
+
+	elseif (sType == "addon_dark_eldar_list_post_dark_lance") then
+		return "dark_eldar_listening_post"
+		
+	elseif (sType == "addon_dark_eldar_hq_1") then
+		return "dark_eldar_hq"
+		
+	elseif (sType == "addon_dark_eldar_hq_2") then
+		return "dark_eldar_hq"
+	end
+	return nil
+end
+
+-- Inherited method to check if an addon is a tier addon
+function DarkEldarBuildBaseStrategy:IsTierAddon( sName, iTargetTier )
+
+	-- Check addon name and target tier
+	if (sName == "addon_dark_eldar_hq_1" and iTargetTier == 2) then
+		return true
+	elseif (sName == "addon_dark_eldar_hq_2" and iTargetTier == 3) then
+		return true
+	end
+	return false
+end
+
+-- Returns the squad cap and support cap of the given squad
+function DarkEldarBuildBaseStrategy:GetUnitStats(sSquadName)
+
+	if (sSquadName == "dark_eldar_squad_mandrake") then
+		return 2, 0
+	elseif (sSquadName == "dark_eldar_squad_warrior") then
+		return 2, 0
+	elseif (sSquadName == "dark_eldar_squad_hellion") then
+		return 2, 0
+	elseif (sSquadName == "dark_eldar_squad_scourge") then
+		return 3, 0
+	elseif (sSquadName == "dark_eldar_squad_wych") then
+		return 3, 0
+	elseif (sSquadName == "dark_eldar_squad_warp_beast") then
+		return 3, 0
+	elseif (sSquadName == "dark_eldar_squad_archon") then
+		return 2, 0
+	elseif (sSquadName == "dark_eldar_squad_reaver") then
+		return 0, 1
+	elseif (sSquadName == "dark_eldar_squad_raven") then
+		return 0, 2
+	elseif (sSquadName == "dark_eldar_squad_raider") then
+		return 0, 3
+	elseif (sSquadName == "dark_eldar_squad_talos") then
+		return 0, 4
+	elseif (sSquadName == "dark_eldar_squad_ravager") then
+		return 0, 4
+	elseif (sSquadName == "dark_eldar_squad_dais_of_destruction") then
+		return 0, 6
+	end
+	return 0, 0
+end
+
+function DarkEldarBuildBaseStrategy:UpdateTierLevel()
+
+	-- Reset tier level
+	self.tierLevel = 1
+
+	-- Prepare
+	local iHQAddon1ID = cpu_manager.stats:GetAddOnID("addon_dark_eldar_hq_1")
+	local iHQAddon2ID = cpu_manager.stats:GetAddOnID("addon_dark_eldar_hq_2")
+	local oStats = cpu_manager.stats:GetPlayerStatsFromID( cpu_manager.player_id )
+	
+	-- Check HQ's for addons
+	for oBase in oStats:GetBases() do
+
+		-- Check for valid building
+		if (oBase:IsValid() and not oBase:IsListeningPost()) then
+
+			-- Check for HQ addon 2
+			if (oBase:HasAddOn(iHQAddon2ID)) then
+			
+				-- We still have the proper building
+				if (self:GetBuildingCountByName("dark_eldar_soul_cage") > 0) then
+					self.tierLevel = 4
+					return
+				else
+					self.tierLevel = 3
+					return
+				end
+			
+			-- Check for HQ addon 1 
+			elseif (oBase:HasAddOn(iHQAddon1ID)) then
+				self.tierLevel = 2
+			end
+		end
+     end
+end
+
+function DarkEldarBuildBaseStrategy:BuildFlexible()
+  
+	-- Dynamic research item syntax: ResearchName, MinTier, RequisitionCost, PowerCost, MinSquadCap, MinSupportCap, SquadName, SquadMinCount
+	local iArmyStrength = cpu_manager:GetArmyStrength()
+	local iCommanderSquads	= self:CountSquads("dark_eldar_squad_archon") + self:CountSquads("dark_eldar_squad_haemonculus")
+	local iInfantrySquads	= self:CountSquads("dark_eldar_squad_mandrake") + self:CountSquads("dark_eldar_squad_warrior") + self:CountSquads("dark_eldar_squad_scourge") +
+							  self:CountSquads("dark_eldar_squad_wych") + self:CountSquads("dark_eldar_squad_hellion")
+	local iVehicleSquads	= self:CountSquads("dark_eldar_squad_reaver") + self:CountSquads("dark_eldar_squad_raider") +
+							  self:CountSquads("dark_eldar_squad_talos") + self:CountSquads("dark_eldar_squad_ravager")
+	
+	-- Compute tier 1 researches
+	if (self.tierLevel >= 1) then
+	
+		-- Compute infantry researches
+		if (iInfantrySquads >= 2) then
+			self:DynamicResearch("dark_eldar_infiltration_mandrake_research", 1, 50, 25, 0, 0, "dark_eldar_squad_mandrake", 2)
+		end
+		
+		-- Compute commander researches
+		if (iCommanderSquads >= 1) then
+			self:DynamicResearch("dark_eldar_poisoned_blades_research", 1, 50, 50, 0, 0, nil, 0)
+		end
+		
+		-- Compute secondary researches
+		if (iArmyStrength >= 750) then
+
+			-- Compute commander researches
+			if (iCommanderSquads >= 1) then		
+				self:DynamicResearch("dark_eldar_upgrade_retinue_size_1", 1, 40, 15, 0, 0, "dark_eldar_squad_archon", 1)
+			end
+			
+			-- Compute infantry researches
+			if (iInfantrySquads >= 3) then
+				self:DynamicResearch("dark_eldar_upgrade_soulseeker_ammunition", 1, 100, 40, 0, 0, "dark_eldar_squad_warrior", 2)
+			end
+		end
+		
+		-- Compute bonus researches
+		if (iArmyStrength >= 1250) then
+			
+			-- Compute infantry researches
+			if (iInfantrySquads >= 3) then
+				self:DynamicResearch("dark_eldar_upgrade_destructor", 1, 75, 75, 0, 0, nil, 0)
+				self:DynamicResearch("dark_eldar_upgrade_power_scythe", 1, 75, 75, 0, 0, nil, 0)
+			end
+		end
+	end
+	
+	-- Compute tier 2 researches
+	if (self.tierLevel >= 2) then
+	
+		-- Compute vehicle researches
+		if (iVehicleSquads >= 3) then
+			self:DynamicResearch("dark_eldar_upgrade_vehicle_armor", 2, 125, 75, 0, 0, nil, 0)
+			self:DynamicResearch("dark_eldar_reaver_targeting_research", 2, 75, 25, 0, 0, "dark_eldar_squad_reaver", 3)
+		end
+		
+		-- Compute commander researches
+		if (iCommanderSquads >= 1) then
+			self:DynamicResearch("dark_eldar_upgrade_retinue_size_2", 2, 50, 25, 0, 0, "dark_eldar_squad_archon", 1)
+		end
+	
+		-- Compute secondary researches
+		if (iArmyStrength >= 1250) then
+	
+			-- Compute infantry researches
+			if (iInfantrySquads >= 3) then
+				self:DynamicResearch("dark_eldar_upgrade_infantry_health", 2, 100, 50, 0, 0, "dark_eldar_squad_warrior", 2)
+				self:DynamicResearch("dark_eldar_upgrade_mandrake_melee", 2, 75, 25, 0, 0, "dark_eldar_squad_mandrake", 2)
+			end			
+		end
+		
+		-- Compute bonus researches
+		if (iArmyStrength >= 1750) then
+		
+			-- Compute commander researches
+			if (iCommanderSquads >= 1) then
+				self:DynamicResearch("dark_eldar_upgrade_commander_health", 2, 100, 40, 0, 0, nil, 0)
+				self:DynamicResearch("dark_eldar_crucible_of_malediction_research", 2, 50, 100, 0, 0, "dark_eldar_squad_archon", 1)
+				self:DynamicResearch("dark_eldar_stinger_research", 2, 25, 50, 0, 0, "dark_eldar_squad_haemonculus", 1)
+				self:DynamicResearch("dark_eldar_soul_destruction_research", 2, 25, 50, 0, 0, "dark_eldar_squad_haemonculus", 1)
+			end
+	
+			-- Compute infantry researches
+			if (iInfantrySquads >= 3) then
+				self:DynamicResearch("dark_eldar_upgrade_agonizer", 2, 100, 100, 0, 0, nil, 0)
+			end
+		end
+	end
+	
+	-- Compute tier 3 researches
+	if (self.tierLevel >= 3) then
+	
+		-- Compute vehicle researches
+		if (iVehicleSquads >= 3) then
+			self:DynamicResearch("dark_eldar_upgrade_vehicle_armor_2", 3, 150, 100, 0, 0, nil, 0)
+		end
+		
+		-- Compute secondary researches
+		if (iArmyStrength >= 1750) then
+		
+			-- Compute commander researches
+			if (iCommanderSquads >= 1) then
+				self:DynamicResearch("dark_eldar_upgrade_retinue_size_3", 3, 75, 35, 0, 0, "dark_eldar_squad_archon", 1)
+			end
+		end
+		
+		-- Compute bonus researches
+		if (iArmyStrength >= 2250) then
+
+			-- Compute commander researches
+			if (iCommanderSquads >= 1) then
+				self:DynamicResearch("dark_eldar_upgrade_commander_health_2", 3, 150, 60, 0, 0, nil, 0)
+			end
+	
+			-- Compute vehicle researches
+			if (iVehicleSquads >= 3) then
+				self:DynamicResearch("dark_eldar_wildfire_research", 3, 50, 75, 0, 0, "dark_eldar_squad_talos", 1)
+			end
+		end
+	end
+	
+	-- Restrict dynamic builds to hard difficulty or higher
+	if (CpuManager.AISettings.bMultiBuildings) then
+	
+		-- Dynamic buildings
+		-- Item-Syntax: BuildingName, BuildingCount, MinTier, MinRequisition, MinPower, MinSquadCap, MinSupportCap
+		self:DynamicBuild("dark_eldar_hall_of_blood", 2, 1, 800, 0, 0, 0)
+		self:DynamicBuild("dark_eldar_skimmer_shop", 2, 2, 200, 600, 0, 0)
+		self:DynamicBuild("dark_eldar_skimmer_shop", 3, 3, 500, 1500, 0, 0)
+		self:DynamicBuild("dark_eldar_hq", 2, 2, 1500, 0, 0, 0)
+	end
+end
+
+-- Method to check if force tech should be computed
+function DarkEldarBuildBaseStrategy:ForceTech()
+
+	-- Check time
+	if (g_iGMT < 60 * CpuManager.ForceTech.StartTier1) then
+		return false
+	end
+
+	-- Check resources
+	local iRequisition = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition )
+	local iPower = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power )
+
+	-- Check tier
+	local iTierLevel = self:GetTierLevel()
+	if (iTierLevel == 1) then
+	
+		-- Check resources
+		if (iRequisition > 600 and iPower > 200) then
+			return false
+		end
+		return not self.m_bHQAddon1
+		
+	elseif (iTierLevel == 2) then
+	
+		-- Check for wych cult arena
+		if (self:GetBuildingCountByName("dark_eldar_wych_cult_arena", false) < 1) then
+			return true
+		end
+
+		-- Check time
+		if (g_iGMT > 60 * CpuManager.ForceTech.StartTier2 and (iRequisition < 600 or iPower < 600)) then
+			return true
+		end
+		
+	elseif (iTierLevel == 3) then	
+
+		-- Check time
+		if (g_iGMT > 60 * CpuManager.ForceTech.StartTier3 and (iRequisition < 600 or iPower < 600)) then
+			return true
+		end
+	end
+	return false
+end
+
+-- Return placement type for buildings
+function DarkEldarBuildBaseStrategy:GetPlacementType(iBuildingID)
+	
+	-- Check building
+	if (cpu_manager:IsHQ(iBuildingID)) then
+		return "HQ"
+		
+	elseif (iBuildingID == cpu_manager.stats:GetBuildingID("dark_eldar_hall_of_blood") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("dark_eldar_skimmer_shop") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("dark_eldar_slave_caravel")) then
+		return "Military"
+
+	elseif (cpu_manager:IsGenerator(iBuildingID) or
+			iBuildingID == cpu_manager.stats:GetBuildingID("dark_eldar_haemonculus_laboratory") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("dark_eldar_wych_cult_arena") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("dark_eldar_soul_cage")) then
+		return "BaseBack"
+	end
+	return "Basic"
+end
+
+-- Arkhan 11.2006: Virtual method for checking out relic units
+function DarkEldarBuildBaseStrategy:RelicRequired(sName)
+
+	-- Check name
+	if (sName == "dark_eldar_squad_dais_of_destruction") then
+		return true
+	end
+	return false
+end

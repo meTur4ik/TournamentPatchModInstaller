@@ -1,0 +1,53 @@
+class 'PriestTactic' (InfantryTactic)
+
+
+PriestTactic.SpecialAbilities = 
+{
+	{ nil, "guard_priest_fanatical", Ability.PredicateFilters.IsInCombat, nil },
+}
+
+
+function PriestTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.UtilityFunctions.InitAbilitiesTable(PriestTactic.SpecialAbilities)
+
+	self:SetName("Priest Tactic")
+
+end
+
+
+-- should only attack/defend when attached
+function PriestTactic:IsAttacker()
+	return false
+end
+
+
+function PriestTactic:IsDefender()
+	return false
+end
+
+
+-- this should only be called when the squad is attached to a unit
+function PriestTactic:DoAbilities()
+
+	Tactic.UtilityFunctions.DoAbilities(PriestTactic.SpecialAbilities,self.squad_ai,Ability.DoAbility)
+
+end
+
+
+function PriestTactic:Update()
+
+	if self:IsComplete() then
+		return false
+	end
+
+	Tactic.Attach.num_unattached_melee_leaders = Tactic.Attach.num_unattached_melee_leaders + 1
+
+	if not InfantryTactic.Update( self ) then
+		return false
+	end
+	
+	self:TryAttachSquad( false, false )
+
+	return true
+end

@@ -1,0 +1,478 @@
+----------------------------------------
+-- File: 'guardbuildbasestrategy.ai'
+-- Edited by Thudmeizer @ 06.03.2008
+
+class 'GuardBuildBaseStrategy' (BuildBaseStrategy)
+
+function GuardBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+	
+	-- Add detector units (Best first, worst last)
+	self:AddDetectorUnit("guard_squad_psyker")
+end
+
+function GuardBuildBaseStrategy:ChooseBuildProgram()
+
+	-- Check build program count
+	if (table.getn(self.info.BuildPrograms) ~= 4) then
+		return BuildBaseStrategy.ChooseBuildProgram(self)
+	end
+
+	-- Get map size and closest enemy distance
+	local sMapSize, iClosestEnemyDistance = self:GetMapSize()
+		
+	-- Set probabilities of the strategies according to the map size
+	local iBuildProgram1	-- Basic strategy
+	local iBuildProgram2	-- Guard rush
+	local iBuildProgram3	-- Command squad / Commissar rush
+	local iBuildProgram4	-- Hellhound rush
+	if (sMapSize == "small" or iClosestEnemyDistance <= 70 or cpu_manager.iPlayerCount == 2) then
+	
+		iBuildProgram1 = 40
+		iBuildProgram2 = 30
+		iBuildProgram3 = 30
+		iBuildProgram4 = 0
+		
+	elseif (sMapSize == "large" and cpu_manager.iPlayerCount >= 6) then
+	
+		iBuildProgram1 = 40
+		iBuildProgram2 = 20
+		iBuildProgram3 = 20
+		iBuildProgram4 = 20
+	else
+	
+		iBuildProgram1 = 40
+		iBuildProgram2 = 30
+		iBuildProgram3 = 30
+		iBuildProgram4 = 0
+	end
+	
+	-- Modify probabilities according to the closest enemy player
+	local oEnemy = cpu_manager:FindClosestEnemyPlayer(false)
+	local sEnemy = oEnemy:GetPlayerRaceName()		
+	if (sEnemy == "ork_race") then
+		
+		iBuildProgram2 = iBuildProgram2 + 10
+		iBuildProgram3 = iBuildProgram3 - 10
+		
+	elseif (sEnemy == "tau_race") then
+	
+		iBuildProgram1 = iBuildProgram1 - 10
+		iBuildProgram2 = iBuildProgram2 - 10
+		iBuildProgram3 = iBuildProgram3 + 20	
+	end
+		
+	-- Now choose a program
+	iBuildProgram2 = iBuildProgram1 + iBuildProgram2
+	iBuildProgram3 = iBuildProgram2 + iBuildProgram3
+	iBuildProgram4 = iBuildProgram3 + iBuildProgram4
+	local iRandom = math.random(1, 100)
+	if (iRandom <= iBuildProgram1) then
+		return 1
+	elseif (iRandom <= iBuildProgram2) then
+		return 2
+	elseif (iRandom <= iBuildProgram3) then
+		return 3
+	elseif (iRandom <= iBuildProgram4) then
+		return 4
+	end
+	return 1
+end
+
+function GuardBuildBaseStrategy:EvaluateSquadCap()
+
+	-- Check squad cap
+	if (self:CheckSquadCap(300, 0)) then
+	
+		-- Check if a plan exists
+		local iBuildingID = cpu_manager.stats:GetBuildingID("guard_infantry")
+		if (self:PlanExists("Build Building Plan", iBuildingID)) then
+			return
+		end
+
+		-- Check if any barracks are in production
+		for oBuildChannel in build_manager:GetBuildChannelAIs() do
+	
+			-- Check building ID
+			if (oBuildChannel:GetBlueprintID() == iBuildingID and not oBuildChannel:ConstructionDone()) then
+				return
+			end
+		end
+		
+		-- Build a barracks
+		local tBuildType = CpuBuildType()
+		tBuildType.btype = CpuPrerequisites.BT_Building
+		tBuildType.name = "guard_infantry"
+		if (self:TryBuild( tBuildType )) then
+			aitrace("BuildController: Dynamic build of "..tBuildType.name)
+		end
+		return
+	end
+	
+	-- Check support cap
+	if (self:CheckSupportCap(150, 300)) then
+	
+		-- Check if a plan exists
+		local iBuildingID = cpu_manager.stats:GetBuildingID("guard_mechanized")
+		if (self:PlanExists("Build Building Plan", iBuildingID)) then
+			return
+		end
+		
+		-- Check if any vehicle buildings are in production
+		for oBuildChannel in build_manager:GetBuildChannelAIs() do
+	
+			-- Check building ID
+			if (oBuildChannel:GetBlueprintID() == iBuildingID and not oBuildChannel:ConstructionDone()) then
+				return
+			end
+		end
+		
+		-- Build a vehicle building
+		local tBuildType = CpuBuildType()
+		tBuildType.btype = CpuPrerequisites.BT_Building
+		tBuildType.name = "guard_mechanized"
+		if (self:TryBuild( tBuildType )) then
+			aitrace("BuildController: Dynamic build of "..tBuildType.name)
+		end
+		return
+	end     
+end
+
+function GuardBuildBaseStrategy:GetBuildingName( sType )
+
+	-- Return race specific object string
+	if (sType == "HQ") then
+		return "guard_hq"
+		
+	elseif (sType == "Generator") then
+		return "guard_plasma_generator"
+		
+	elseif (sType == "BiggerGenerator") then
+		return "guard_thermo_plasma"
+		
+	elseif (sType == "VehicleBuilding") then
+		return "guard_mechanized"
+		
+	elseif (sType == "ListeningPost") then
+		return "guard_listening_post"
+		
+	elseif (sType == "Turret") then
+		return "guard_turret_heavy_bolter"
+		
+	elseif (sType == "Mine") then
+		return "guard_mines"
+	end
+	
+	return nil
+end
+
+function GuardBuildBaseStrategy:GetAddonBuilding( sType )
+
+	if (sType == "addon_guard_turret") then
+		return "guard_turret_heavy_bolter"
+		
+	elseif (sType == "addon_guard_list_post_1") then
+		return "guard_listening_post"
+		
+	elseif (sType == "addon_guard_list_post_2") then
+		return "guard_listening_post"
+	
+	elseif (sType == "addon_guard_kasrkin_quarters") then
+		return "guard_infantry"
+		
+	elseif (sType == "addon_guard_ogryn_quarters") then
+		return "guard_infantry"
+	
+	elseif (sType == "addon_guard_sentinel_depot") then
+		return "guard_mechanized"
+		
+	elseif (sType == "addon_guard_hellhound_depot") then
+		return "guard_mechanized"
+	
+	elseif (sType == "addon_guard_marauder_depot") then
+		return "guard_mechanized"
+
+	elseif (sType == "addon_guard_basilisk_depot") then
+		return "guard_mechanized"
+		
+	elseif (sType == "addon_guard_lemanruss_depot") then
+		return "guard_mechanized"
+		
+	elseif (sType == "addon_guard_hq_1") then
+		return "guard_hq"
+		
+	elseif (sType == "addon_guard_hq_2") then
+		return "guard_hq"
+		
+	elseif (sType == "addon_guard_ministorum_temple") then
+		return "guard_hq"
+		
+	elseif (sType == "addon_guard_telepathica_temple") then
+		return "guard_hq"
+		
+	elseif (sType == "addon_guard_vindicare_temple") then
+		return "guard_hq"
+	end	
+
+	return nil
+end
+
+-- Arkhan 01.2006: Inherited method to check if an addon is a tier addon
+function GuardBuildBaseStrategy:IsTierAddon( sName, iTargetTier )
+
+	-- Check addon name and target tier
+	if (sName == "addon_guard_hq_1" and iTargetTier == 2) then
+		return true
+	elseif (sName == "addon_guard_hq_2" and iTargetTier == 3) then
+		return true
+	end
+	return false
+end
+
+-- Arkhan 11.2005: Returns the squad cap and support cap of the given squad
+function GuardBuildBaseStrategy:GetUnitStats(sSquadName)
+
+	if (sSquadName == "guard_squad_guardsmen") then
+		return 2, 0
+	elseif (sSquadName == "guard_squad_command_squad") then
+		return 2, 0
+	elseif (sSquadName == "guard_heavy_weapons_team_squad") then
+		return 2, 0
+	elseif (sSquadName == "guard_squad_kasrkin") then
+		return 3, 0
+	elseif (sSquadName == "guard_squad_ogryns") then
+		return 3, 0
+	elseif (sSquadName == "guard_squad_chimera") then
+		return 0, 1
+	elseif (sSquadName == "guard_squad_sentinel") then
+		return 0, 2
+	elseif (sSquadName == "guard_squad_hellhound") then
+		return 0, 2
+	elseif (sSquadName == "guard_squad_basilisk") then
+		return 0, 3
+	elseif (sSquadName == "guard_squad_marauder") then
+		return 0, 4
+	elseif (sSquadName == "guard_squad_lemanruss") then
+		return 0, 5
+	elseif (sSquadName == "guard_squad_baneblade") then
+		return 0, 3
+	end
+	return 0, 0
+end
+
+function GuardBuildBaseStrategy:UpdateTierLevel()
+
+	-- Reset tier level
+	self.tierLevel = 1
+	
+	-- Prepare
+	local iHQAddon1ID = cpu_manager.stats:GetAddOnID("addon_guard_hq_1")
+	local iHQAddon2ID = cpu_manager.stats:GetAddOnID("addon_guard_hq_2")
+	local oStats = cpu_manager.stats:GetPlayerStatsFromID( cpu_manager.player_id )
+
+	-- Check HQ's for addons
+	for oBase in oStats:GetBases() do
+	
+		-- Check for valid building
+		if (oBase:IsValid() and not oBase:IsListeningPost()) then
+	
+		  	-- Check for HQ addon 2
+			if (oBase:HasAddOn(iHQAddon2ID)) then
+			
+				-- We still have the proper add-on
+				if (cpu_manager.cpu_player:IsResearchComplete("guard_full_scale_war")) then
+					self.tierLevel = 4
+					return
+				else
+					self.tierLevel = 3
+					return
+				end
+			
+			-- Check for HQ addon 1 
+			elseif (oBase:HasAddOn(iHQAddon1ID)) then
+				self.tierLevel = 2
+			end
+		end
+	end
+end
+
+function GuardBuildBaseStrategy:BuildFlexible()
+  
+	-- Dynamic research item syntax: ResearchName, MinTier, RequisitionCost, PowerCost, MinSquadCap, MinSupportCap, SquadName, SquadMinCount
+	local iArmyStrength = cpu_manager:GetArmyStrength()
+	local iBasicInfantrySquads = self:CountSquads("guard_squad_guardsmen")
+	
+	-- Compute tier 1 researches
+	if (self.tierLevel >= 1) then
+	
+		-- Compute secondary researches
+		if (iArmyStrength >= 750) then
+	
+			-- Compute basic infantry researches
+			if (iBasicInfantrySquads >= 3) then
+				self:DynamicResearch("guard_upgrade_guardsmen_health", 1, 100, 15, 0, 0, nil, 0)	-- Battle armor
+				self:DynamicResearch("guard_guardsman_morale", 1, 75, 15, 0, 0, nil, 0)				-- Death before dishonor
+			end
+			
+			-- Compute commander researches
+			self:DynamicResearch("guard_research_command_squad_size", 1, 100, 100, 0, 0, "guard_squad_command_squad", 1)	-- Uncommon valor
+		end
+	end
+	
+	-- Compute tier 2 researches
+	if (self.tierLevel >= 2) then
+
+		-- Compute basic infantry researches
+		if (iBasicInfantrySquads >= 3) then
+			self:DynamicResearch("guard_guardsman_morale_2", 2, 75, 15, 0, 0, nil, 0)
+		end
+
+		-- Compute secondary researches
+		if (iArmyStrength >= 1250) then
+		
+			-- Compute basic infantry researches
+			if (iBasicInfantrySquads >= 3) then
+				self:DynamicResearch("guard_upgrade_guardsmen_range", 2, 150, 150, 0, 0, nil, 0)	-- Satellite Targeting
+				self:DynamicResearch("guard_upgrade_weapon_specialization", 2, 100, 100, 0, 0, nil, 0)
+			end
+		end
+	end
+	
+	-- Compute tier 3 researches
+	if (self.tierLevel >= 3) then
+	
+		-- Compute secondary researches
+		if (iArmyStrength >= 1750) then
+		
+			-- Compute kasrkin researches
+			if (self:CountSquads("guard_squad_kasrkin") >= 1) then
+				self:DynamicResearch("guard_research_kasrkin_armor", 3, 100, 50, 0, 0, nil, 0)
+				self:DynamicResearch("guard_research_kasrkin_speed", 3, 100, 50, 0, 0, nil, 0)
+			end
+		end
+		
+		-- Compute bonus researches
+		if (iArmyStrength >= 2250) then
+		
+			-- Compute commander researches
+			self:DynamicResearch("guard_research_assassin_infiltrate", 3, 150, 100, 0, 0, "guard_squad_assassin", 1)
+			
+			-- Compute ogryn researches
+			self:DynamicResearch("guard_upgrade_ogryn_melee", 3, 100, 75, 0, 0, "guard_squad_ogryns", 1)
+		end
+	end
+
+	-- Restrict dynamic builds to hard difficulty or higher
+	if (CpuManager.AISettings.bMultiBuildings) then
+	
+		-- Dynamic buildings
+		-- Item-Syntax: BuildingName, BuildingCount, MinTier, MinRequisition, MinPower, MinSquadCap, MinSupportCap
+		self:DynamicBuild("guard_infantry", 2, 1, 800, 0, 0, 0)
+		self:DynamicBuild("guard_mechanized", 2, 2, 200, 600, 0, 0)
+		self:DynamicBuild("guard_infantry", 3, 3, 2000, 0, 0, 0)
+		self:DynamicBuild("guard_mechanized", 4, 3, 500, 1500, 0, 0)
+		self:DynamicBuild("guard_hq", 2, 2, 1500, 0, 0, 0)
+	end
+end
+
+-- Arkhan 01.2006: Method to check if force tech should be computed
+function GuardBuildBaseStrategy:ForceTech()
+
+	-- Check time
+	if (g_iGMT < 60 * CpuManager.ForceTech.StartTier1) then
+		return false
+	end
+	
+	-- Check ressources
+	local iRequisition = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition )
+	local iPower = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power )
+
+	-- Check tier
+	local iTierLevel = self:GetTierLevel()
+	if (iTierLevel == 1) then
+	
+		-- Check resources
+		if (iRequisition > 600 and iPower > 200) then
+			return false
+		end
+		return not self.m_bHQAddon1
+		
+	elseif (iTierLevel == 2) then
+
+		-- Check for vehicle building
+		if (self:GetBuildingCountByName("guard_mechanized", false) < 1) then
+			return true
+		end
+		
+		-- Check time
+		if (g_iGMT > 60 * CpuManager.ForceTech.StartTier2 and (iRequisition < 600 or iPower < 600)) then
+			return true
+		end
+		
+	elseif (iTierLevel == 3) then	
+
+		-- Check time
+		if (g_iGMT > 60 * CpuManager.ForceTech.StartTier3 and (iRequisition < 600 or iPower < 600)) then
+			return true
+		end
+	end
+	return false
+end
+
+-- Arkhan 03.2006: Return placement type for buildings
+function GuardBuildBaseStrategy:GetPlacementType(iBuildingID)
+	
+	-- Check building
+	if (cpu_manager:IsHQ(iBuildingID)) then
+		return "HQ"
+	elseif (iBuildingID == cpu_manager.stats:GetBuildingID("guard_infantry") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("guard_mechanized")) then
+		return "Military"
+	elseif (iBuildingID == cpu_manager.stats:GetBuildingID("guard_mars_pattern")) then
+		return "Front1"
+	elseif (cpu_manager:IsTurret(iBuildingID)) then
+		return "Front2"
+	elseif (cpu_manager:IsMine(iBuildingID)) then
+		return "Mine"
+	elseif (cpu_manager:IsGenerator(iBuildingID) or
+			iBuildingID == cpu_manager.stats:GetBuildingID("guard_tactica")) then
+		return "BaseBack"
+	end
+	return "Basic"
+end
+
+-- Arkhan 03.2006: Inherited method to modify squad demand
+function GuardBuildBaseStrategy:ModifySquadDemand(iUnitID)
+
+	-- No more guard leaders than guard/kasrkin/ogryn squads
+	if (iUnitID == cpu_manager.stats:GetSquadID("guard_squad_commissar") or
+		iUnitID == cpu_manager.stats:GetSquadID("guard_squad_priest") or
+		iUnitID == cpu_manager.stats:GetSquadID("guard_squad_psyker")) then
+			
+		-- Check number of attachable squads
+		local guard_attach = function( squad_ai )
+			return (squad_ai:GetTactic():GetUnitStrength() >= 160 and squad_ai:CanReceiveAttachment())
+		end
+		local num_attach = self:CountSquads("guard_squad_guardsmen", guard_attach) +
+						   self:CountSquads("guard_squad_kasrkin", guard_attach) + 
+						   self:CountSquads("guard_squad_ogryns", guard_attach)
+
+		-- Check number of leaders
+		local num_leader = self:CountSquads("guard_squad_commissar") +
+						   self:CountSquads("guard_squad_priest") +
+						   self:CountSquads("guard_squad_psyker")
+		if (num_leader >= num_attach) then
+			return 0
+		end
+	end
+	return BuildBaseStrategy.ModifySquadDemand(self, iUnitID)
+end
+
+-- Arkhan 11.2006: Virtual method for checking out relic units
+function GuardBuildBaseStrategy:RelicRequired(sName)
+
+	-- Check name
+	if (sName == "guard_squad_baneblade") then
+		return true
+	end
+	return false
+end

@@ -1,0 +1,325 @@
+----------------------------------------
+-- File: 'marinestrategyinfo.ai'
+-- Edited by Thudmeizer  @ 07.03.2008
+
+BuildBaseStrategyInfo = 
+{
+	space_marine_race =
+	{
+		post_builder = 1,
+		flag_capture = 1,
+
+		-- Reserve this amount for building units, reinforcing and upgrading
+		req_reserve = 150,
+		
+		--need at least this at all times
+		squad_cap_threshold = 2,
+
+		--need at least this at all times
+		support_cap_threshold = 3,
+		
+		--used to calculate wants for engineers
+		Engineers =
+		{
+			--number of engineers we're aiming for
+			want = 2,
+		},
+		
+		-- Is used to modify the army strength in the build programs (Allows faster balancing adjustments)
+		ArmyStrengthModifier = 1.0,
+		
+		-- Item-Syntax: Min. Tier, Min. Requisition, Min. Power, Min. ArmyStrength, Object-Count, Object-Type, Object-Name
+		BuildPrograms =
+		{
+			-- Research Total: 33
+			-- Allround strategy
+			{
+				{ 1, 220, 50, 0, 1,	 "Unit",	"space_marine_squad_force_commander" },
+				{ 1, 100, 0, 0, 1,	 "Unit",	"space_marine_squad_scout" }, -- Force a capturing squad
+				{ 1, 190, 0, 0, 2,	 "Unit",	"space_marine_squad_tactical" },
+				{ 1, 260, 0, 1000, 1,	 "Unit",	"space_marine_squad_assault" },
+				{ 1, 700, 150, 0, 1,	 "Building",	"space_marine_hq" },
+				{ 1, 250, 0, 0, 1,	 "Building",    "space_marine_barracks" },
+				{ 1, 135, 0, 0, 1,	 "Building",	"space_marine_generator" },
+				{ 1, 150, 50, 500, 1,	 "Building",    "space_marine_armoury" },
+				{ 1, 100, 75, 750, 60,	 "TurretAddon", "space_marine_list_post_addon_1" },
+				{ 1, 135, 0, 0, 2,	 "Building",	"space_marine_generator" },
+				{ 1, 90, 45, 0, 1,	 "Building",	"space_marine_turret_bolter" },
+				{ 1, 300, 125, 1000, 1,  "Addon",	"space_marine_hq_addon_1" },
+				{ 1, 100, 75, 250, 100,	 "TurretAddon", "space_marine_list_post_addon_1" },
+				{ 1, 135, 0, 500, 4,	 "Building",    "space_marine_generator" },
+
+				{ 2, 200, 125, 250, 1,	 "Building",    "space_marine_vehicle_building" },
+				{ 2, 150, 0, 500, 1,	 "Research",    "support_cap_research" },
+				{ 2, 170, 305, 0, 1,	 "Unit",	"space_marine_squad_dreadnought" },
+				{ 2, 135, 0, 1000, 6,	 "Building",    "space_marine_generator" },
+				{ 2, 50, 0, 1000, 50,	 "TurretAddon", "space_marine_turret_addon" },
+				{ 2, 200, 40, 1000, 1,	 "Research",    "marine_power_research_1" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "marine_requisition_research_1" },
+				{ 2, 150, 0, 1500, 1,	 "Research",    "support_cap_research_1" },
+				{ 2, 340, 340, 1500, 1,  "Addon",	"space_marine_hq_addon_2" },
+				{ 2, 125, 50, 1500, 1,	 "Building",    "space_marine_ability_building" },
+				{ 2, 250, 150, 2000, 40, "TurretAddon", "space_marine_list_post_addon_2" },
+				{ 2, 90, 45, 2000, 2,	 "Building",    "space_marine_turret_bolter" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"space_marine_mine_field" },
+
+				{ 3, 240, 100, 0, 1,	 "Unit",	"space_marine_squad_terminator" },
+				{ 3, 240, 100, 0, 1,	 "Unit",	"space_marine_squad_terminator_assault" },
+				{ 3, 135, 0, 2000, 1, 	 "Building",    "space_marine_orbital_relay" },
+				{ 3, 125, 50, 2000, 2,	 "Building",    "space_marine_ability_building" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "marine_power_research_2" },
+				{ 3, 100, 350, 2000, 1,	 "Research",    "marine_requisition_research_2" },
+				{ 3, 90, 45, 2000, 4,	 "Building",    "space_marine_turret_bolter" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"space_marine_mine_field" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "marine_heavy_armor_deployment" },
+
+				{ 4, 400, 400, 0, 1,	 "Unit",	"space_marine_squad_land_raider" },
+				{ 4, 90, 45, 2000, 6,	 "Building",    "space_marine_turret_bolter" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"space_marine_mine_field" },
+				{ 4, 250, 150, 3000, 100,"TurretAddon", "space_marine_list_post_addon_2" },
+				{ 4, 700, 150, 4000, 2,	 "Building",	"space_marine_hq" }
+			},
+			
+			-- Tactical marine strategy
+			{
+				{ 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" },
+				{ 1, 220, 50, 0, 1,	 "Unit",	"space_marine_squad_force_commander" },
+				{ 1, 100, 0, 0, 1,	 "Unit",	"space_marine_squad_scout" }, -- Force a capturing squad
+				{ 1, 190, 0, 0, 2,	 "Unit",	"space_marine_squad_tactical" },
+				{ 1, 190, 0, 1000, 3,	 "Unit",	"space_marine_squad_tactical" },
+				{ 1, 700, 150, 0, 1,	 "Building",	"space_marine_hq" },
+				{ 1, 250, 0, 0, 1,	 "Building",    "space_marine_barracks" },
+				{ 1, 135, 0, 0, 1,	 "Building",	"space_marine_generator" },
+				{ 1, 150, 50, 500, 1,	 "Building",    "space_marine_armoury" },
+				{ 1, 100, 75, 750, 60,	 "TurretAddon", "space_marine_list_post_addon_1" },
+				{ 1, 135, 0, 0, 2,	 "Building",	"space_marine_generator" },
+				{ 1, 90, 45, 0, 1,	 "Building",	"space_marine_turret_bolter" },
+				{ 1, 25, 75, 500, 1,	 "Research",    "marine_frag_grenade_research" },
+				{ 1, 300, 125, 1000, 1,  "Addon",	"space_marine_hq_addon_1" },
+				{ 1, 100, 75, 250, 100,	 "TurretAddon", "space_marine_list_post_addon_1" },
+
+				{ 2, 180, 90, 0, 1,	 "Unit",	"space_marine_squad_grey_knights" },
+				{ 2, 220, 50, 0, 1,	 "Unit",	"space_marine_squad_force_commander" },
+				{ 2, 245, 80, 0, 1,	 "Unit",	"space_marine_squad_librarian" },
+				{ 2, 260, 50, 0, 1,	 "Unit",	"space_marine_squad_chaplain"},
+				{ 2, 190, 0, 0, 2,	 "Unit",	"space_marine_squad_tactical" },
+				{ 2, 125, 50, 250, 1,	 "Building",    "space_marine_ability_building" },
+				{ 2, 50, 0, 500, 50,	 "TurretAddon", "space_marine_turret_addon" },
+				{ 2, 75, 75, 500, 1,	 "Research",    "marine_max_weapons_research" },
+				{ 2, 135, 0, 1000, 3,	 "Building",    "space_marine_generator" },
+				{ 2, 75, 250, 1000, 1,	 "Research",    "marine_requisition_research_1" },
+				{ 2, 340, 340, 1500, 1,  "Addon",	"space_marine_hq_addon_2" },
+				{ 2, 200, 40, 1000, 1,	 "Research",    "marine_power_research_1" },
+				{ 2, 200, 125, 1000, 1,	 "Building",    "space_marine_vehicle_building" },
+				{ 2, 135, 0, 1000, 4,	 "Building",    "space_marine_generator" },
+				{ 2, 150, 0, 1000, 1,	 "Research",    "support_cap_research" },
+				{ 2, 250, 150, 2000, 40, "TurretAddon", "space_marine_list_post_addon_2" },
+				{ 2, 135, 0, 2000, 6,	 "Building",    "space_marine_generator" },
+				{ 2, 90, 45, 2000, 2,	 "Building",    "space_marine_turret_bolter" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"space_marine_mine_field" },
+
+				{ 3, 240, 100, 0, 1,	 "Unit",	"space_marine_squad_terminator" },
+				{ 3, 240, 100, 0, 1,	 "Unit",	"space_marine_squad_terminator_assault" },
+				{ 3, 150, 0, 2000, 1,	 "Research",    "support_cap_research_1" },
+				{ 3, 135, 0, 2000, 1, 	 "Building",    "space_marine_orbital_relay" },
+				{ 3, 125, 50, 2000, 2,	 "Building",    "space_marine_ability_building" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "marine_power_research_2" },
+				{ 3, 100, 350, 2000, 1,	 "Research",    "marine_requisition_research_2" },
+				{ 3, 90, 45, 2000, 4,	 "Building",    "space_marine_turret_bolter" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"space_marine_mine_field" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "marine_heavy_armor_deployment" },
+
+				{ 4, 400, 400, 0, 1,	 "Unit",	"space_marine_squad_land_raider" },
+				{ 4, 90, 45, 2000, 6,	 "Building",    "space_marine_turret_bolter" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"space_marine_mine_field" },
+				{ 4, 250, 150, 3000, 100,"TurretAddon", "space_marine_list_post_addon_2" },
+				{ 4, 700, 150, 4000, 2,	 "Building",	"space_marine_hq" }
+				
+			},
+			
+			-- Assault marine strategy
+			{
+				{ 1, 0, 0, 0, 0,	 "Rush",	"Prepare" },
+				{ 1, 220, 50, 0, 1,	 "Unit",	"space_marine_squad_force_commander" },
+				{ 1, 100, 0, 0, 1,	 "Unit",	"space_marine_squad_scout" }, -- Force a capturing squad
+				{ 1, 260, 0, 0, 3,	 "Unit",	"space_marine_squad_assault" },
+				{ 1, 700, 150, 0, 1,	 "Building",	"space_marine_hq" },
+				{ 1, 250, 0, 0, 1,	 "Building",    "space_marine_barracks" },
+				{ 1, 135, 0, 0, 1,	 "Building",	"space_marine_generator" },
+				{ 1, 150, 50, 0, 1,	 "Building",    "space_marine_armoury" },
+				{ 1, 100, 75, 750, 60,	 "TurretAddon", "space_marine_list_post_addon_1" },
+				{ 1, 135, 0, 0, 2,	 "Building",	"space_marine_generator" },
+				{ 1, 90, 45, 0, 1,	 "Building",	"space_marine_turret_bolter" },
+				{ 1, 300, 125, 1000, 1,  "Addon",	"space_marine_hq_addon_1" },
+				{ 1, 100, 75, 250, 100,	 "TurretAddon", "space_marine_list_post_addon_1" },
+				{ 1, 135, 0, 500, 4,	 "Building",    "space_marine_generator" },
+
+				{ 2, 50, 100, 250, 1,	 "Research",    "marine_melta_bomb_research" },
+				{ 2, 200, 125, 250, 1,	 "Building",    "space_marine_vehicle_building" },
+				{ 2, 150, 0, 500, 1,	 "Research",    "support_cap_research" },
+				{ 2, 170, 305, 0, 1,	 "Unit",	"space_marine_squad_dreadnought" },
+				{ 2, 135, 0, 1000, 6,	 "Building",    "space_marine_generator" },
+				{ 2, 50, 0, 1000, 50,	 "TurretAddon", "space_marine_turret_addon" },
+				{ 2, 200, 40, 1000, 1,	 "Research",    "marine_power_research_1" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "marine_requisition_research_1" },
+				{ 2, 150, 0, 1500, 1,	 "Research",    "support_cap_research_1" },
+				{ 2, 340, 340, 1500, 1,  "Addon",	"space_marine_hq_addon_2" },
+				{ 2, 125, 50, 1500, 1,	 "Building",    "space_marine_ability_building" },
+				{ 2, 250, 150, 2000, 40, "TurretAddon", "space_marine_list_post_addon_2" },
+				{ 2, 90, 45, 2000, 2,	 "Building",    "space_marine_turret_bolter" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"space_marine_mine_field" },
+
+				{ 3, 240, 100, 0, 1,	 "Unit",	"space_marine_squad_terminator" },
+				{ 3, 240, 100, 0, 1,	 "Unit",	"space_marine_squad_terminator_assault" },
+				{ 3, 135, 0, 2000, 1, 	 "Building",    "space_marine_orbital_relay" },
+				{ 3, 125, 50, 2000, 2,	 "Building",    "space_marine_ability_building" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "marine_power_research_2" },
+				{ 3, 100, 350, 2000, 1,	 "Research",    "marine_requisition_research_2" },
+				{ 3, 90, 45, 2000, 4,	 "Building",    "space_marine_turret_bolter" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"space_marine_mine_field" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "marine_heavy_armor_deployment" },
+
+				{ 4, 400, 400, 0, 1,	 "Unit",	"space_marine_squad_land_raider" },
+				{ 4, 90, 45, 2000, 6,	 "Building",    "space_marine_turret_bolter" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"space_marine_mine_field" },
+				{ 4, 250, 150, 3000, 100,"TurretAddon", "space_marine_list_post_addon_2" },
+				{ 4, 700, 150, 4000, 2,	 "Building",	"space_marine_hq" }
+			},
+		
+			-- Fast dreadnought strategy
+			{
+				{ 1, 0, 0, 0, 1,	 "Rush", 	"Prepare" },
+				{ 1, 60, 0, 0, 3,	 "Unit",	"space_marine_squad_servitor" },
+				{ 1, 100, 0, 0, 1,	 "Unit",	"space_marine_squad_scout" }, -- Force a capturing squad
+				{ 1, 700, 150, 0, 1,	 "Building",	"space_marine_hq" },
+				{ 1, 250, 0, 0, 1,	 "Building",    "space_marine_barracks" },
+				{ 1, 135, 0, 0, 1,	 "Building",	"space_marine_generator" },
+				{ 1, 100, 75, 0, 100,	 "TurretAddon", "space_marine_list_post_addon_1" },
+				{ 1, 135, 0, 0, 2,	 "Building",	"space_marine_generator" },
+				{ 1, 300, 125, 0, 1, 	 "Addon",	"space_marine_hq_addon_1" },
+				{ 1, 135, 0, 0, 6,	 "Building",    "space_marine_generator" },
+
+				{ 2, 0, 0, 0, 1,	 "Rush", 	"Prepare" },
+				{ 2, 200, 125, 0, 1, 	 "Building",    "space_marine_vehicle_building" },
+				{ 2, 150, 0, 0, 1,	 "Research",    "support_cap_research" },
+				{ 2, 260, 80, 0, 1,	 "Unit",	"space_marine_squad_force_commander" },
+				{ 2, 100, 250, 0, 1,	 "Unit",	"space_marine_squad_dreadnought_hellfire" },
+				{ 2, 190, 0, 0, 2,	 "Unit",	"space_marine_squad_tactical" },
+				{ 2, 170, 305, 0, 1,	 "Unit",	"space_marine_squad_dreadnought" },
+				{ 2, 180, 90, 0, 1,	 "Unit",	"space_marine_squad_grey_knights" },
+				{ 2, 120, 95, 0, 1,	 "Unit",	"space_marine_squad_land_speeder" },				
+				{ 2, 0, 0, 1500, 0,	 "Rush", 	"Unleash" },
+				{ 2, 150, 50, 1500, 1,	 "Building",    "space_marine_armoury" },
+				{ 2, 90, 45, 1500, 1,	 "Building",	"space_marine_turret_bolter" },
+				{ 2, 200, 40, 1500, 1,	 "Research",    "marine_power_research_1" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "marine_requisition_research_1" },
+				{ 2, 50, 0, 1500, 50,	 "TurretAddon", "space_marine_turret_addon" },
+				{ 2, 150, 0, 1500, 1,	 "Research",    "support_cap_research_1" },
+				{ 2, 340, 340, 1500, 1,  "Addon",	"space_marine_hq_addon_2" },
+				{ 2, 125, 50, 1500, 1,	 "Building",    "space_marine_ability_building" },
+				{ 2, 250, 150, 2000, 40, "TurretAddon", "space_marine_list_post_addon_2" },
+				{ 2, 90, 45, 2000, 2,	 "Building",    "space_marine_turret_bolter" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"space_marine_mine_field" },
+
+				{ 3, 240, 100, 0, 1,	 "Unit",	"space_marine_squad_terminator" },
+				{ 3, 240, 100, 0, 1,	 "Unit",	"space_marine_squad_terminator_assault" },
+				{ 3, 135, 0, 2000, 1, 	 "Building",    "space_marine_orbital_relay" },
+				{ 3, 125, 50, 2000, 2,	 "Building",    "space_marine_ability_building" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "marine_power_research_2" },
+				{ 3, 100, 350, 2000, 1,	 "Research",    "marine_requisition_research_2" },
+				{ 3, 90, 45, 2000, 4,	 "Building",    "space_marine_turret_bolter" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"space_marine_mine_field" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "marine_heavy_armor_deployment" },
+
+				{ 4, 400, 400, 0, 1,	 "Unit",	"space_marine_squad_land_raider" },
+				{ 4, 90, 45, 2000, 6,	 "Building",    "space_marine_turret_bolter" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"space_marine_mine_field" },
+				{ 4, 250, 150, 3000, 100,"TurretAddon", "space_marine_list_post_addon_2" },
+				{ 4, 700, 150, 4000, 2,	 "Building",	"space_marine_hq" }
+			}
+		},
+				
+		SquadLimits = 
+		{
+			standard = 
+			{
+				space_marine_squad_servitor = 0,
+				space_marine_squad_scout = math.random( 2,3 ),
+				space_marine_squad_tactical = math.random( 4,6 ),
+				space_marine_squad_assault = math.random( 2,3 ),
+				space_marine_squad_apothecary = 4,
+				space_marine_squad_skull_probe = 4,
+				space_marine_squad_librarian = 1,
+				space_marine_squad_chaplain = 1,
+				space_marine_squad_force_commander = 1,
+				space_marine_squad_terminator = 1,
+				space_marine_squad_terminator_assault = 1,
+				space_marine_squad_grey_knights = 1,
+				space_marine_squad_rhino = 3,
+				space_marine_squad_land_speeder = math.random( 4,8 ),
+				space_marine_squad_tempest = math.random( 3,5 ),
+				space_marine_squad_dreadnought = math.random( 4,6 ),
+				space_marine_squad_dreadnought_hellfire = math.random( 3,5 ),
+				space_marine_squad_whirlwind = 1,
+				space_marine_squad_predator = 2,
+				space_marine_squad_land_raider = 1,
+			}
+		}
+	},
+}
+
+BuildOrderStrategyInfo = 
+{
+	space_marine_race =
+	{
+		Basic =
+		{
+			{ "flag_capture" }, { "flag_capture" },
+			{ "flag_capture" },
+			{ "squad", "space_marine_squad_scout" },
+			{ "squad", "space_marine_squad_servitor" },
+			{ "squad", "space_marine_squad_scout" },
+			{ "squad", "space_marine_squad_scout" },
+			{ "post_builder" }, { "post_builder" },
+			{ "building", "space_marine_barracks", true },
+			{ "building", "space_marine_generator" }
+		},
+		 
+		QuickStart =
+		{
+			{ "flag_capture" }, { "flag_capture" }, 
+			{ "flag_capture" },
+			{ "squad", "space_marine_squad_scout" },
+			{ "squad", "space_marine_squad_servitor" },
+			{ "squad", "space_marine_squad_scout" },
+			{ "squad", "space_marine_squad_scout" },
+			{ "squad", "space_marine_squad_servitor" },
+			{ "post_builder" }, { "post_builder" },
+			{ "building", "space_marine_barracks", true },
+			{ "building", "space_marine_barracks", true },
+			{ "building", "space_marine_generator" }
+		},
+		 
+		LargeMap =
+		{
+			{ "flag_capture" }, { "flag_capture" }, 
+			{ "flag_capture" }, { "flag_capture" },
+			{ "squad", "space_marine_squad_scout" },
+			{ "squad", "space_marine_squad_servitor" },
+			{ "squad", "space_marine_squad_scout" },
+			{ "squad", "space_marine_squad_scout" },
+			{ "squad", "space_marine_squad_scout" },
+			{ "post_builder" }, { "post_builder" },
+			{ "building", "space_marine_barracks", true },
+			{ "building", "space_marine_generator" }
+		}
+	}
+}
+
+AttackStrategyInfo = 
+{
+	space_marine_race =
+	{
+		MinArmyStrength = 750,
+	},
+}

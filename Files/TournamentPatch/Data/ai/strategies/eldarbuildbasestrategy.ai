@@ -1,0 +1,463 @@
+class 'EldarBuildBaseStrategy' (BuildBaseStrategy)
+
+
+EldarBuildBaseStrategy.ResearchOrder =
+{
+	{ 2, 	"eldar_plasma_grenade_research" },
+	{ 2, 	"eldar_warlock_ability_research" },
+	{ 2, 	"eldar_tier2_research" },
+--	{ 2, 	"eldar_fleet_of_foot_research" },
+	
+	{ 3, 	"eldar_vehicle_ability_research" },
+	{ 3, 	"eldar_haywire_bomb_research" },
+	{ 3, 	"eldar_ranger_infiltration_research" },
+	{ 3, 	"eldar_bonesinger_ability_research_3" },
+}
+
+EldarBuildBaseStrategy.ResourceResearchOrder =
+{
+	{ 2, 	"eldar_requisition_research_1" },
+	{ 2, 	"eldar_power_research_1" },
+
+	{ 3, 	"eldar_requisition_research_2" },
+	{ 3, 	"eldar_power_research_2" },
+}
+
+EldarBuildBaseStrategy.WebwayResearchOrder =
+{
+	{ 1, 	"eldar_webway_gate_healing_research" },
+	{ 2, 	"eldar_shroud_ability_research" },
+--	{ 3, 	"eldar_webway_gate_relocation_research" },
+}
+
+EldarBuildBaseStrategy.SoulShrineResearchOrder =
+{
+	{ 2, 	"eldar_exarch_ability_research" },
+	{ 2, 	"eldar_research_infantryaccuracy_1" },
+	{ 2, 	"eldar_research_infantryhealth_1" },
+
+	{ 3, 	"eldar_research_infantryaccuracy_2" },
+	{ 3, 	"eldar_research_infantryhealth_2" },
+	{ 3, 	"eldar_research_farseerhealth_1" },
+	{ 3, 	"eldar_annihilate_the_enemy" },
+
+	{ 4, 	"eldar_research_farseerhealth_2" },
+	{ 4, 	"eldar_farseer_ability_research" },
+	{ 4, 	"eldar_farseer_ability_research_3" },
+}
+
+function EldarBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+
+	-- Limit tactics
+	-- NOTE: These #'s are horrifically dependent on balance changes, we should
+	-- scan the costs of all structures / add-ons / researches that let us tier up 
+	-- and figure out a min from that
+	self.spend_now_req = 400
+	self.spend_later_req = 600
+	self.spend_now_pow = 75
+	self.spend_later_pow = 150
+
+	self.generator_name = "eldar_warp_generator"
+	self.bigger_generator_id = cpu_manager.stats:GetBuildingID( "eldar_advanced_warp_generator" )
+
+	self.hq_building_name = "eldar_hq"
+	self.hq_building_id = cpu_manager.stats:GetBuildingID( self.hq_building_name )
+	
+	self.vehicle_building_name = "eldar_support_portal"
+	self.vehicle_building_id = cpu_manager.stats:GetBuildingID( self.vehicle_building_name )
+	
+	self.infantry_building_name = "eldar_aspect_portal"
+	self.infantry_building_id = cpu_manager.stats:GetBuildingID( self.infantry_building_name )
+
+	self.post_addon_id = cpu_manager.stats:GetAddOnID( "eldar_list_post_addon_1" )
+	self.post_addon2_id = cpu_manager.stats:GetAddOnID( "eldar_list_post_addon_2" )
+	
+	self.tier2_building_name = "eldar_soul_shrine"
+	self.tier2_building_id = cpu_manager.stats:GetBuildingID( self.tier2_building_name )
+
+	self.tier3_research_name = "eldar_tier2_research"
+	self.tier3_research_id = cpu_manager.stats:GetResearchID( self.tier3_research_name )
+
+	self.tier4_research_name = "eldar_annihilate_the_enemy"
+	self.tier4_research_id = cpu_manager.stats:GetResearchID( self.tier4_research_name )
+
+	self.shroud_research_name = "eldar_shroud_ability_research"
+	self.webway_building_name = "eldar_webway_gate"
+	self.webway_building_id = cpu_manager.stats:GetBuildingID( self.webway_building_name )
+
+	self.avatar_name = "eldar_squad_avatar"
+	self.avatar_id = cpu_manager.stats:GetSquadID( self.avatar_name )
+end
+
+
+function EldarBuildBaseStrategy:EvaluateSquadCap()
+
+	local tierLevel = self:GetTierLevel()
+
+	-- Ensure we have Aspect Portal building
+	local player_stats = cpu_manager.player_stats
+	local infantry_building_count = player_stats:GetNumBasesByBPID(self.infantry_building_id,true)
+
+	-- don't try to increase squad cap if we don't have infantry building -- build one
+	if (infantry_building_count < 1) then
+		if (not self:PlanExists("Build Building Plan",self.infantry_building_id)) then
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Building
+			build_type.name = self.infantry_building_name
+			self:TryBuild( build_type )
+		end
+		return
+	end
+	
+	local webway_building_count = player_stats:GetNumBasesByBPID(self.webway_building_id,true)
+	if ( tierLevel >= 2 and build_manager:GetSupportCapCurrentMax() < build_manager:GetSupportCapTotalMax() and build_manager:GetSupportCapLeft() <= self.support_cap_threshold ) or
+		( build_manager:GetSquadCapCurrentMax() < build_manager:GetSquadCapTotalMax() and build_manager:GetSquadCapLeft() <= self.squad_cap_threshold ) or 
+		( webway_building_count < 1 and resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 600) then
+
+		self:DoBuildWebwayGate()
+
+	end
+	
+	if ( tierLevel == 1 ) and ( build_manager:GetSquadCapCurrentMax() > 10 ) then
+		-- go tier 2 first
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		build_type.name = self.tier2_building_name
+		self:TryBuild( build_type )
+	end
+end
+
+
+function EldarBuildBaseStrategy:DoSecondaryBuildings()
+
+	local tierLevel = self:GetTierLevel()
+	if tierLevel >=2 then
+
+		-- don't build too many
+		local player_stats = cpu_manager.player_stats
+		local webway_building_count = player_stats:GetNumBasesByBPID(self.webway_building_id,true)
+
+		-- build webway gates, distributed among bases
+		if cpu_manager.cpu_player:IsResearchComplete( self.shroud_research_name ) and
+			resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 500 and
+			webway_building_count < resource_manager:GetNumOwnedStrategicPoints() * 1.5 then
+			
+			self:DoBuildWebwayGate()
+		
+		end
+		
+		-- count how many structures we have	
+		local num_vehicle_buildings = 0
+		local num_infantry_buildings = 0
+		self.num_hq = 0
+	
+		for build_channel in build_manager:GetBuildChannelAIs() do
+	
+			if build_channel:GetBlueprintID() == self.vehicle_building_id then
+				num_vehicle_buildings = num_vehicle_buildings + 1
+			end
+		
+			if build_channel:GetBlueprintID() == self.infantry_building_id then
+				num_infantry_buildings = num_infantry_buildings + 1
+			end
+
+			if build_channel:GetBlueprintID() == self.hq_building_id then
+				self.num_hq = self.num_hq + 1
+			end
+		end
+
+		-- build secondary vehicle buildings
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 800 then
+
+			local bBuild = false
+
+			if tierLevel == 2 and num_vehicle_buildings < 2 then
+				bBuild = true
+			elseif num_vehicle_buildings < 3 then
+				bBuild = true
+			end
+
+			if bBuild == true then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.vehicle_building_name
+				self:TryBuild( build_type )
+			end
+		end
+
+		-- build secondary infantry
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 1000 then
+
+			local bBuild = false
+
+			if tierLevel == 2 and num_infantry_buildings < 2 then
+				bBuild = true
+			elseif num_infantry_buildings < 3 then
+				bBuild = true
+			end
+
+			if bBuild == true then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.infantry_building_name
+				self:TryBuild( build_type )
+			end
+		end
+
+		-- build secondary HQ
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 1000 then
+
+			if tierLevel >= 3 and self.num_hq < 2 then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.hq_building_name
+				self:TryBuild( build_type )
+			end
+		end
+	end
+end
+
+
+function EldarBuildBaseStrategy:DoResearch()
+
+	local tierLevel = self:GetTierLevel()
+	
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,EldarBuildBaseStrategy.ResearchOrder,tierLevel)
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,EldarBuildBaseStrategy.WebwayResearchOrder,tierLevel)
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,EldarBuildBaseStrategy.SoulShrineResearchOrder,tierLevel)
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,EldarBuildBaseStrategy.ResourceResearchOrder,tierLevel)
+
+end
+
+
+function EldarBuildBaseStrategy:DoBuildUnits()
+
+	local tierLevel = self:GetTierLevel()
+	if tierLevel >= 4 then
+		if	build_manager:CanBuildSquad( self.avatar_id ) then
+			
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Squad
+			build_type.name = self.avatar_name
+			self:TryBuild( build_type )
+		end
+	end
+
+	BuildBaseStrategy.DoBuildUnits( self )
+end
+
+function EldarBuildBaseStrategy:DoBuildWebwayGate()
+
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		build_type.name = self.webway_building_name
+		
+		-- only build one at a time
+		if self:PlanExists( "Build Building Plan", self.webway_building_id ) then
+			return false
+		end
+
+		if not cpu_manager.cpu_player:IsResearchComplete( self.shroud_research_name ) then
+			self:TryBuild( build_type)
+			return true
+		end
+				
+		--look for the closest base
+		local starting_pos = cpu_manager.cpu_player:GetStartingPosition() 
+				
+		local best_base = nil
+		local best_distance = -1
+				
+		for base_ai in military_manager:GetBases() do
+			if (base_ai:IsValid() and not base_ai:IsInfiltrating() and base_ai:IsConstructionDone()) then
+				local base_position = base_ai:GetPosition()
+				if not cpu_manager.terrain_analyzer:HasThreat( base_position, 15 ) then
+					local curr_distance = distance_sqr( base_position, starting_pos )
+					if best_base == nil then
+						best_base = base_ai
+						best_distance = curr_distance
+					else
+						if curr_distance < best_distance then
+							best_base = base_ai
+							best_distance = curr_distance
+						end
+					end
+				end
+			end
+		end
+		
+		--add the plan to build it if it isn't any where near danger
+		if best_base ~= nil then
+			self:AddPlan( BuildBuildingPlan( self.webway_building_id, best_base:GetPosition() ) )	
+			return true
+		else
+			aitrace( "no available or un-threatened location for webway gate" )
+			return false
+		end
+end
+
+function EldarBuildBaseStrategy:UpdateTierLevel() 
+
+	self.tierLevel = 1
+
+	if cpu_manager.cpu_player:IsResearchComplete( self.tier4_research_name ) then
+		self.tierLevel = 4
+		return
+	elseif cpu_manager.cpu_player:IsResearchComplete( self.tier3_research_name ) then
+		self.tierLevel = 3
+		return
+	end
+
+	for build_channel in build_manager:GetBuildChannelAIs() do
+		if build_channel:GetBlueprintID() == self.tier2_building_id and build_channel:ConstructionDone() then
+			self.tierLevel = 2
+			break
+		end
+	end
+end
+
+
+function EldarBuildBaseStrategy:DevalueUnitByTier( unit_stats )
+
+	local devalue = 0
+	local squad_name = unit_stats:GetSquadName()
+	local tierLevel = self:GetTierLevel()
+
+	if tierLevel == 1 then
+		if squad_name == "eldar_guardian_squad" then
+			devalue = VALUE_PER_TIER * 2
+		elseif squad_name == "eldar_squad_dark_reapers" then
+			devalue = VALUE_PER_TIER
+		elseif squad_name == "eldar_squad_rangers" then
+			devalue = 0
+		elseif squad_name == "eldar_squad_banshees" then
+			devalue = 0
+		elseif squad_name == "eldar_squad_farseer" then
+			devalue = 0
+		else
+			devalue = VALUE_PER_TIER * 5
+		end
+		
+	elseif tierLevel == 2 then
+
+		if squad_name == "eldar_guardian_squad" then
+			devalue = VALUE_PER_TIER * 2
+		elseif squad_name == "eldar_squad_dark_reapers" then
+			devalue = VALUE_PER_TIER
+		elseif squad_name == "eldar_squad_rangers" then
+			devalue = VALUE_PER_TIER
+		end
+
+	elseif tierLevel == 3 then
+		if squad_name == "eldar_guardian_squad" then
+			devalue = VALUE_PER_TIER * 3
+		elseif squad_name == "eldar_squad_dark_reapers" then
+			devalue = VALUE_PER_TIER * 2
+		elseif squad_name == "eldar_squad_rangers" then
+			devalue = VALUE_PER_TIER * 2
+		elseif squad_name == "eldar_squad_grav_platform" then
+			devalue = VALUE_PER_TIER
+		elseif squad_name == "eldar_squad_grav_platform_brightlance" then
+			devalue = VALUE_PER_TIER
+		end
+
+	elseif tierLevel == 4 then
+
+		if squad_name == "eldar_guardian_squad" then
+			devalue = VALUE_PER_TIER * 4
+		elseif squad_name == "eldar_squad_dark_reapers" then
+			devalue = VALUE_PER_TIER * 3
+		elseif squad_name == "eldar_squad_rangers" then
+			devalue = VALUE_PER_TIER * 3
+		elseif squad_name == "eldar_squad_grav_platform" then
+			devalue = VALUE_PER_TIER * 2
+		elseif squad_name == "eldar_squad_grav_platform_brightlance" then
+			devalue = VALUE_PER_TIER * 2
+		elseif squad_name == "eldar_squad_falcon_grav_tank" then
+			devalue = VALUE_PER_TIER
+		elseif squad_name == "eldar_squad_fire_dragon" then
+			devalue = VALUE_PER_TIER
+		end
+	end
+
+	return devalue
+end
+
+function EldarBuildBaseStrategy:CalculateDetectorDemand()
+
+	-- don't build detector units if enemy has no stealth units
+	if (cpu_manager.cpu_player:FindFirstInfiltratedEnemy(Vector3f(0,0,0),1000,1) == nil) then
+		return
+	end
+	
+	local tierLevel = self:GetTierLevel()
+
+	-- build stealth detectors: guardians
+	local detector_name = "eldar_guardian_squad"
+	local guardian_bpid = cpu_manager.stats:GetSquadID(detector_name)
+	local s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(guardian_bpid)
+	
+	if (s_cnt < 4) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Squad
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+
+	-- build stealth detectors: seer council
+	if (tierLevel >= 2) then
+		detector_name = "eldar_squad_seer_council"
+		local seer_bpid = cpu_manager.stats:GetSquadID(detector_name)
+		s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(seer_bpid)
+	
+		if (s_cnt < 2) then
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Squad
+			build_type.name = detector_name
+			self:TryBuild( build_type )
+		end
+	end
+
+	-- build stealth detectors: harlequin  council
+	if (tierLevel >= 2) then
+		detector_name = "eldar_harlequin_squad"
+		local seer_bpid = cpu_manager.stats:GetSquadID(detector_name)
+		s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(seer_bpid)
+	
+		if (s_cnt < 2) then
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Squad
+			build_type.name = detector_name
+			self:TryBuild( build_type )
+		end
+	end
+	
+	for ai in military_manager:GetSquads() do
+		if ai:IsValid() then
+			local ai_id = ai:GetBlueprintID()
+			if ai_id == guardian_bpid or ai_id == seer_bpid then
+				if ai:CanReinforce( true, 0 ) then
+					ai:DoReinforce( true, 0 )
+				elseif ai:CanReinforce( false, 0 ) then
+					ai:DoReinforce( false, 0 )	
+				end
+			end
+		end
+	end
+end
+
+function EldarBuildBaseStrategy:BuildStructureAddons()
+
+	local tierLevel = self:GetTierLevel()
+
+	if (tierLevel >=2 and self:PlanExists( "Build AddOn Plan", self.post_addon_id ) == false ) then 
+		self.AddPlan( self, BuildAddOnPlan( self.post_addon_id ) )
+	end
+	
+	if (tierLevel >= 3 and resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 500 and
+		self:PlanExists( "Build AddOn Plan", self.post_addon2_id ) == false ) then 
+		self.AddPlan( self, BuildAddOnPlan( self.post_addon2_id ) )
+	end
+	
+end
+

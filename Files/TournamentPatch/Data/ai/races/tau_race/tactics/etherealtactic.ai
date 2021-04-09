@@ -1,0 +1,81 @@
+----------------------------------------
+-- File: 'etherealtactic.ai'
+-- Edited by Thudmeizer @ 26.10.2006
+
+class 'EtherealTactic' (TauInfantryTactic)
+
+Ethereal = {}
+
+function EtherealTactic:__init( squad_ai ) super( squad_ai )
+	
+	self.timedDirectSpawnAbility = Timer( EtherealTactic.DoDirectSpawnAbility, self, 5 )
+
+	self:SetName("Ethereal Tactic")
+	
+	self.m_bRecover = true
+end
+
+function EtherealTactic:IsAttacker()
+	return not self.m_bRecover
+end
+
+function EtherealTactic:IsDefender()
+	return not self.m_bRecover
+end
+
+function EtherealTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Ethereal.deathpulse_id == nil) then
+		Ethereal.deathpulse_id = cpu_manager.stats:GetAbilityID( "tau_death_pulse_child1_inner_damage" )
+	end
+end
+
+function EtherealTactic:DoAbilities()
+
+	-- Target a wide area for an Air Caste Strike
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.6) then
+		Ability.DoAbilityPos(self.squad_ai, Ethereal.deathpulse_id, Ability.Filters.CloseEnemy, 8)
+		Ability.DoAbilityPos(self.squad_ai, Ethereal.deathpulse_id, Ability.Filters.CloseVehicleEnemy, 2)
+	else
+		Ability.DoAbilityPos(self.squad_ai, Ethereal.deathpulse_id, Ability.Filters.CloseEnemy, 12)
+		Ability.DoAbilityPos(self.squad_ai, Ethereal.deathpulse_id, Ability.Filters.CloseVehicleEnemy, 4)
+	end
+
+	-- Try to spawn honor guards
+	if (self.timedDirectSpawnAbility ~= nil) then
+		self.timedDirectSpawnAbility:Call()
+	else
+		EtherealTactic.DoDirectSpawnAbility(self)
+	end
+end
+
+function EtherealTactic:DoDirectSpawnAbility()
+
+	-- Spawn honor guards in combat
+	if (self.squad_ai:CanDirectSpawn()) then 
+		self.squad_ai:DoDirectSpawn()
+	end
+end
+
+function EtherealTactic:Update()
+
+    if (self:IsComplete()) then
+        return
+    end
+
+    -- State machine
+    if (not InfantryTactic.Update(self)) then
+        return
+    end
+
+	dbAssert( Ethereal.deathpulse_id ~= nil )
+    
+    -- Check ethereal health
+    if (self.squad_ai:GetHealthPercentage() < 0.5 or not self.squad_ai:CanDoAbility(Ethereal.deathpulse_id)) then
+    	self.m_bRecover = true
+    elseif (self.squad_ai:GetHealthPercentage() > 0.9 and self.squad_ai:CanDoAbility(Ethereal.deathpulse_id)) then
+		self.m_bRecover = false
+    end
+end
+

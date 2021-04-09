@@ -1,0 +1,933 @@
+----------------------------------------
+-- File: 'guardunitstats.ai'
+-- Edited by Thudmeizer @ 01.11.2007
+-- Edited by Arkhan	@ 24.10.2006
+
+-- Campaign
+UnitStrengths.guard_squad_assassin_advance_sp = 300
+UnitStrengths.guard_squad_basilisk_sp_mso2 = 450
+UnitStrengths.guard_squad_basilisk_stronghold_sp = 450
+UnitStrengths.guard_squad_chimera_sp_test = 170
+UnitStrengths.guard_squad_command_squad_advance_sp = 180
+UnitStrengths.guard_squad_commissar_advance_sp = 120
+UnitStrengths.guard_squad_enginseer_advance_sp = 0
+UnitStrengths.guard_squad_enginseer_sp_transportable = 0
+UnitStrengths.guard_squad_guardsmen_advance_sp = 30
+UnitStrengths.guard_squad_hellhound_advance_sp = 300
+UnitStrengths.guard_squad_kasrkin_advance_single_sp = 60
+UnitStrengths.guard_squad_kasrkin_advance_sp = 60
+UnitStrengths.guard_squad_lemanruss_advance_sp = 450
+UnitStrengths.guard_squad_ogryns_advance_sp = 80
+UnitStrengths.guard_squad_priest_advance_sp = 130
+UnitStrengths.guard_squad_psyker_advance_sp = 150
+UnitStrengths.guard_squad_psyker_sp_msdc5 = 150
+UnitStrengths.guard_squad_sentinel_advance_sp = 300
+
+-- Skirmish
+UnitStrengths.guard_squad_enginseer = 0
+UnitStrengths.guard_squad_guardsmen = 20
+UnitStrengths.guard_squad_command_squad = 180
+UnitStrengths.guard_heavy_weapons_team_squad = 300
+UnitStrengths.guard_heavy_weapon_team_entrenched_squad_sp = 300
+UnitStrengths.guard_squad_kasrkin = 60
+UnitStrengths.guard_squad_assassin = 300
+UnitStrengths.guard_squad_ogryns = 80
+UnitStrengths.guard_squad_psyker = 150
+UnitStrengths.guard_squad_priest = 130
+UnitStrengths.guard_squad_commissar = 120
+UnitStrengths.guard_squad_sentinel = 300
+UnitStrengths.guard_squad_hellhound = 300
+UnitStrengths.guard_squad_basilisk = 450
+UnitStrengths.guard_squad_marauder = 550
+UnitStrengths.guard_squad_chimera = 170
+UnitStrengths.guard_squad_lemanruss = 450
+UnitStrengths.guard_squad_baneblade = 1000
+
+LeaderStrengths.guard_squad_guardsmen = 60
+LeaderStrengths.guard_squad_kasrkin = 90
+LeaderStrengths.guard_squad_ogryns = 120
+LeaderStrengths.guard_squad_command_squad = 0
+
+Attachments.guard_squad_guardsmen = { "guard_squad_commissar", "guard_squad_psyker", "guard_squad_priest" }
+Attachments.guard_squad_kasrkin = { "guard_squad_commissar", "guard_squad_psyker", "guard_squad_priest" }
+Attachments.guard_squad_ogryns = { "guard_squad_commissar", "guard_squad_psyker", "guard_squad_priest" }
+
+GuardUnitStats =
+{
+	race = "guard_race",
+	{
+		name = "Techpriest Enginseer",
+		sbp_name = "guard_squad_enginseer",
+		ebp_name = "guard_support_enginseer",
+		class = UnitStatsAI.UC_Commander,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "guard_laspistol_enginseer",
+				effectiveness = GenerateUnitEffectiveness(4.1,3.7,3.6,3.4,3.1,1.7,1.6,0.0,3.1,0.0,1.8,2.7,2.6,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_power_axe_enginseer",
+				effectiveness = GenerateUnitEffectiveness(3.4,3.9,3.1,3.1,0.0,0.0,0.0,0.0,2.2,0.0,1.1,3.1,2.2,1.7,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Imperial Guardsmen",
+		sbp_name = "guard_squad_guardsmen",
+		ebp_name = "guard_infantry_guardsmen",
+		class = UnitStatsAI.UC_LightInfantryMed,
+		rating = 3.0,
+		potential =
+		{
+			{
+				name = "guard_grenade_launcher_guardsmen",
+				effectiveness = GenerateUnitEffectiveness(4.6,5.1,5.0,4.8,3.7,3.0,3.0,1.6,3.6,0.0,1.0,3.4,2.4,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_plasma_gun_guardsmen",
+				effectiveness = GenerateUnitEffectiveness(3.0,3.9,3.7,5.5,5.3,3.9,3.4,0.0,2.3,3.3,3.0,4.7,3.9,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_lasgun_guardsmen",
+				effectiveness = GenerateUnitEffectiveness(3.3,3.3,3.3,3.3,2.7,1.7,1.1,0.0,1.9,0.0,2.5,2.0,1.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_knife_guardsmen",
+				effectiveness = GenerateUnitEffectiveness(3.6,3.8,3.5,2.9,3.2,0.9,1.4,0.0,2.2,0.0,1.6,1.6,1.2,0.1,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Heavy Weapons Team",
+		sbp_name = "guard_heavy_weapons_team_squad",
+		ebp_name = "guard_heavy_weapons_team",
+		class = UnitStatsAI.UC_LightInfantryHigh,
+		rating = 6,
+		potential =
+		{
+			{
+				name = "guard_lasgun",
+				effectiveness = GenerateUnitEffectiveness(4.1,4.1,4.1,4.1,4.6,4.6,4.0,0.0,1.8,0.0,3.6,4.2,4.2,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Heavy Weapons Team - Entrenched",
+		sbp_name = "guard_heavy_weapon_team_entrenched_squad_sp",
+		ebp_name = "guard_heavy_weapons_team_entrenched_sp",
+		class = UnitStatsAI.UC_LightInfantryHigh,
+		rating = 5,
+		potential =
+		{
+			{
+				name = "guard_heavy_bolter_heavy_weapons_team",
+				effectiveness = GenerateUnitEffectiveness(4.1,4.1,4.1,4.1,3.6,2.6,2.0,0.0,2.8,0.0,2.6,2.2,2.2,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_lasgun_heavy_weapons_team",
+				effectiveness = GenerateUnitEffectiveness(3.1,3.1,3.1,3.1,3.6,3.6,7.0,7.0,7.8,0.0,2.6,7.2,7.2,5.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_autocannon_heavy_weapons_team",
+				effectiveness = GenerateUnitEffectiveness(3.6,3.6,7.3,7.2,7.2,7.6,2.0,0.0,2.8,7.0,7.6,2.2,2.2,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Kasrkin",
+		sbp_name = "guard_squad_kasrkin",
+		ebp_name = "guard_infantry_kasrkin",
+		class = UnitStatsAI.UC_HeavyInfantryMed,
+		rating = 5,
+		potential =
+		{
+			{
+				name = "guard_grenade_launcher_kasrkin",
+				effectiveness = GenerateUnitEffectiveness(4.7,5.2,5.1,4.9,3.8,3.1,3.1,1.7,3.7,0.0,1.0,3.5,2.5,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_plasma_gun_kasrkin",
+				effectiveness = GenerateUnitEffectiveness(3.8,3.7,3.5,5.3,4.9,4.3,4.4,2.7,6.2,0.8,3.6,2.6,1.6,1.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_hellgun_kasrkin",
+				effectiveness = GenerateUnitEffectiveness(4.4,4.2,4.1,4.4,3.5,2.7,1.7,0.9,5.7,1.0,4.1,4.5,3.4,2.8,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_knife_kasrkin",
+				effectiveness = GenerateUnitEffectiveness(4.4,4.8,4.3,4.2,3.1,0.9,1.4,0.0,2.1,0.0,1.6,4.0,3.3,2.4,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Ogryn",
+		sbp_name = "guard_squad_ogryns",
+		ebp_name = "guard_infantry_ogryn",
+		class = UnitStatsAI.UC_HeavyInfantryHigh,
+		rating = 6,
+		potential =
+		{
+			{
+				name = "guard_ripper_gun_ranged_ogryn",
+				effectiveness = GenerateUnitEffectiveness(5.0,6.0,5.6,4.6,4.5,2.9,2.4,0.0,4.7,0.0,3.5,4.3,2.7,1.8,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_ripper_gun_melee_ogryn",
+				effectiveness = GenerateUnitEffectiveness(7.1,7.5,7.1,7.4,7.0,6.3,7.0,5.4,7.2,5.7,5.8,5.2,6.1,5.2,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Commissar",
+		sbp_name = "guard_squad_commissar",
+		ebp_name = "guard_leaders_commissar",
+		class = UnitStatsAI.UC_Commander,
+		rating = 4,
+		potential =
+		{
+			{
+				name = "guard_laspistol_commissar",
+				effectiveness = GenerateUnitEffectiveness(4.6,4.5,4.3,4.2,4.0,3.6,2.8,0.0,4.1,3.0,3.8,3.7,2.6,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_power_sword_commissar",
+				effectiveness = GenerateUnitEffectiveness(6.9,6.7,6.6,6.4,6.2,5.9,4.5,5.0,6.4,5.0,5.4,5.8,5.0,0.8,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Psyker",
+		sbp_name = "guard_squad_psyker",
+		ebp_name = "guard_leaders_psyker",
+		class = UnitStatsAI.UC_Commander,
+		rating = 5,
+		potential =
+		{
+			{
+				name = "guard_laspistol_psyker",
+				effectiveness = GenerateUnitEffectiveness(4.0,3.9,3.8,3.6,3.4,3.2,2.1,0.0,3.6,2.6,3.2,3.4,2.4,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_psychic_spike_psyker",
+				effectiveness = GenerateUnitEffectiveness(6.3,6.2,6.0,5.8,5.7,5.5,4.5,4.9,5.9,4.9,5.5,5.4,4.6,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Priest",
+		sbp_name = "guard_squad_priest",
+		ebp_name = "guard_leaders_priest",
+		class = UnitStatsAI.UC_Commander,
+		rating = 6,
+		potential =
+		{
+			{
+				name = "guard_eviscerator_priest",
+				effectiveness = GenerateUnitEffectiveness(8.2,8.1,7.9,7.7,7.5,7.1,7.0,0.0,7.7,6.3,6.4,7.1,5.9,1.4,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Assassin",
+		sbp_name = "guard_squad_assassin",
+		ebp_name = "guard_leaders_assassin",
+		class = UnitStatsAI.UC_Commander,
+		rating = 7,
+		potential =
+		{
+			{
+				name = "guard_exitus_rifle",
+				effectiveness = GenerateUnitEffectiveness(8.6,8.6,8.6,8.6,8.6,5.4,5.4,5.3,8.6,7.4,8.1,0.4,0.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_exitus_pistol_assassin",
+				effectiveness = GenerateUnitEffectiveness(7.6,8.1,7.9,7.9,7.1,4.5,4.8,0.0,7.7,0.0,6.7,7.9,6.6,5.8,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Command Squad",
+		sbp_name = "guard_squad_command_squad",
+		ebp_name = "guard_leaders_captain",
+		class = UnitStatsAI.UC_Commander,
+		rating = 7,
+		potential =
+		{
+			{
+				name = "guard_laspistol_captain",
+				effectiveness = GenerateUnitEffectiveness(8.6,8.6,8.6,8.6,8.6,5.4,5.4,5.3,8.6,7.4,8.1,0.4,0.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_power_gauntlet_captain",
+				effectiveness = GenerateUnitEffectiveness(7.6,8.1,7.9,7.9,7.1,4.5,4.8,0.0,7.7,0.0,6.7,7.9,6.6,5.8,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Sentinel",
+		sbp_name = "guard_squad_sentinel",
+		ebp_name = "guard_vehicles_sentinel",
+		class = UnitStatsAI.UC_VehicleLow,
+		rating = 5,
+		potential =
+		{
+			{
+				name = "guard_multi_laser_sentinel",
+				effectiveness = GenerateUnitEffectiveness(5.0,5.1,5.0,4.9,5.1,8.3,8.6,5.6,5.0,5.7,5.2,6.5,5.7,5.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Hellhound",
+		sbp_name = "guard_squad_hellhound",
+		ebp_name = "guard_vehicles_hellhound",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 6,
+		potential =
+		{
+			{
+				name = "guard_inferno_cannon_hellhound",
+				effectiveness = GenerateUnitEffectiveness(5.4,5.4,5.2,5.9,5.9,6.1,4.2,4.0,5.3,3.0,3.1,7.4,6.2,6.2,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Chimera",
+		sbp_name = "guard_squad_chimera",
+		ebp_name = "guard_vehicles_chimera",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 4,
+		potential =
+		{
+			{
+				name = "guard_lasgun_chimera",
+				effectiveness = GenerateUnitEffectiveness(5.2,5.4,5.0,5.4,5.9,5.4,5.0,4.4,5.2,3.6,3.6,4.4,4.1,3.6,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Vehicles Marauder",
+		sbp_name = "guard_squad_marauder",
+		ebp_name = "guard_vehicles_marauder",
+		class = UnitStatsAI.UC_AirHigh,
+		rating = 6,
+		potential =
+		{
+			{
+				name = "guard_lascannon_marauder",
+				effectiveness = GenerateUnitEffectiveness(5.5,5.8,6.0,6.4,6.7,5.2,3.8,0.1,6.0,4.4,3.8,4.9,4.5,3.9,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_heavy_bolter_marauder",
+				effectiveness = GenerateUnitEffectiveness(6.3,6.1,6.0,5.8,5.6,5.5,4.3,0.0,5.7,0.0,4.0,6.8,5.0,3.9,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Basilisk",
+		sbp_name = "guard_squad_basilisk",
+		ebp_name = "guard_vehicles_basilisk",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 6,
+		potential =
+		{
+			{
+				name = "guard_earthshaker_cannon_basilisk",
+				effectiveness = GenerateUnitEffectiveness(5.5,5.8,6.0,6.4,6.7,5.2,3.8,0.1,6.0,4.4,3.8,4.9,4.5,3.9,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_heavy_bolter_basilisk",
+				effectiveness = GenerateUnitEffectiveness(6.3,6.1,6.0,5.8,5.6,5.5,4.3,0.0,5.7,0.0,4.0,6.8,5.0,3.9,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_ShortRanged,
+			},
+		}
+	},
+	{
+		name = "Leman Russ Battle Tank",
+		sbp_name = "guard_squad_lemanruss",
+		ebp_name = "guard_vehicles_lemanruss",
+		class = UnitStatsAI.UC_VehicleHigh,
+		rating = 9,
+		potential =
+		{
+			{
+				name = "guard_heavy_bolter_leman_russ_hull",
+				effectiveness = GenerateUnitEffectiveness(6.1,6.5,6.3,5.4,5.3,5.0,4.2,0.0,5.2,3.6,3.5,7.0,5.6,4.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_battle_cannon_leman_russ",
+				effectiveness = GenerateUnitEffectiveness(7.2,7.1,7.0,6.8,6.1,8.8,8.7,7.7,6.3,5.4,4.1,6.1,5.4,4.4,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_heavy_bolter_leman_russ_right",
+				effectiveness = GenerateUnitEffectiveness(6.4,6.2,6.1,5.9,5.7,4.9,2.7,0.0,5.1,2.5,3.4,5.5,4.2,0.7,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_heavy_bolter_leman_russ_left",
+				effectiveness = GenerateUnitEffectiveness(6.4,6.2,6.1,5.9,5.7,4.9,2.7,0.0,5.1,2.5,3.4,5.5,4.6,3.6,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Baneblade",
+		sbp_name = "guard_squad_baneblade",
+		ebp_name = "guard_vehicles_baneblade",
+		class = UnitStatsAI.UC_VehicleHigh,
+		rating = 10,
+		potential =
+		{
+			{
+				name = "guard_heavy_bolter_baneblade_2",
+				effectiveness = GenerateUnitEffectiveness(6.0,5.8,5.7,5.5,5.3,4.5,3.4,0.0,5.5,3.7,3.1,4.4,2.9,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_heavy_bolter_baneblade_3",
+				effectiveness = GenerateUnitEffectiveness(6.0,5.8,5.7,5.5,5.3,4.5,3.4,0.0,5.5,3.7,3.1,4.4,2.9,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_battle_cannon_baneblade",
+				effectiveness = GenerateUnitEffectiveness(7.1,7.0,6.8,6.7,6.3,5.7,4.3,5.4,6.5,6.9,4.9,5.7,4.2,0.1,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_autocannon_baneblade",
+				effectiveness = GenerateUnitEffectiveness(4.6,4.7,4.7,4.7,4.7,6.9,6.5,6.2,4.6,5.2,4.5,6.9,6.5,6.1,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_lascannon_baneblade_2",
+				effectiveness = GenerateUnitEffectiveness(5.1,5.1,5.1,5.1,5.1,7.3,7.1,6.9,5.1,6.6,5.1,7.4,6.9,6.7,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_demolisher_cannon_baneblade",
+				effectiveness = GenerateUnitEffectiveness(7.3,7.2,7.0,6.8,6.6,6.8,6.4,5.5,6.8,7.0,5.9,7.0,5.8,4.3,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_heavy_bolter_baneblade_1",
+				effectiveness = GenerateUnitEffectiveness(6.0,5.8,5.7,5.5,5.3,3.1,0.0,0.0,5.5,3.7,3.1,4.4,2.9,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_lascannon_baneblade_1",
+				effectiveness = GenerateUnitEffectiveness(6.2,6.2,6.2,7.2,7.1,7.3,7.1,6.9,7.0,6.6,4.0,6.4,5.1,4.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Leaders Assassin Advance Sp",
+		sbp_name = "guard_squad_assassin_advance_sp",
+		ebp_name = "guard_leaders_assassin_advance_sp",
+		class = UnitStatsAI.UC_Commander,
+		rating = 8.7,
+		potential =
+		{
+			{
+				name = "guard_exitus_rifle",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,4.4,4.4,4.2,10.0,10.0,10.0,0.0,0.1,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_exitus_pistol_assassin",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,2.5,3.0,0.0,10.0,0.0,8.5,10.0,9.0,5.4,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Vehicles Basilisk Sp Mso2",
+		sbp_name = "guard_squad_basilisk_sp_mso2",
+		ebp_name = "guard_vehicles_basilisk_sp_mso2",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 5.7,
+		potential =
+		{
+			{
+				name = "guard_earthshaker_cannon_basilisk_sp_mso2",
+				effectiveness = GenerateUnitEffectiveness(6.5,7.2,8.0,9.3,10.0,4.0,1.6,0.0,8.0,4.5,3.8,3.2,2.5,1.7,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_heavy_bolter_basilisk",
+				effectiveness = GenerateUnitEffectiveness(6.6,6.1,5.5,5.0,4.4,4.7,2.2,0.0,4.8,0.0,1.6,10.0,3.4,1.7,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Vehicles Basilisk Stronghold Sp",
+		sbp_name = "guard_squad_basilisk_stronghold_sp",
+		ebp_name = "guard_vehicles_basilisk_stronghold_sp",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 0,
+		potential =
+		{
+			{
+				name = "none",
+				effectiveness = GenerateUnitEffectiveness(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_None,
+			},
+		}
+	},
+	{
+		name = "Vehicles Chimera",
+		sbp_name = "guard_squad_chimera_sp_test",
+		ebp_name = "guard_vehicles_chimera",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 4.8,
+		potential =
+		{
+			{
+				name = "guard_multi_laser_chimera",
+				effectiveness = GenerateUnitEffectiveness(7.2,6.7,6.1,5.6,5.1,7.8,6.6,5.4,5.0,1.9,3.5,4.8,3.6,1.3,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_lasgun_chimera",
+				effectiveness = GenerateUnitEffectiveness(6.0,5.5,5.1,4.7,3.8,4.4,3.4,2.4,4.3,2.0,2.0,2.4,1.9,1.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_lasgun_chimera",
+				effectiveness = GenerateUnitEffectiveness(6.0,5.5,5.1,4.7,3.8,4.4,3.4,2.4,4.3,2.0,2.0,2.4,1.9,1.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_lasgun_chimera",
+				effectiveness = GenerateUnitEffectiveness(6.0,5.5,5.1,4.7,3.8,4.4,3.4,2.4,4.3,2.0,2.0,2.4,1.9,1.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_lasgun_chimera",
+				effectiveness = GenerateUnitEffectiveness(6.0,5.5,5.1,4.7,3.8,4.4,3.4,2.4,4.3,2.0,2.0,2.4,1.9,1.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_lasgun_chimera",
+				effectiveness = GenerateUnitEffectiveness(6.0,5.5,5.1,4.7,3.8,4.4,3.4,2.4,4.3,2.0,2.0,2.4,1.9,1.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_lasgun_chimera",
+				effectiveness = GenerateUnitEffectiveness(6.0,5.5,5.1,4.7,3.8,4.4,3.4,2.4,4.3,2.0,2.0,2.4,1.9,1.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Leaders Captain Advance Sp",
+		sbp_name = "guard_squad_command_squad_advance_sp",
+		ebp_name = "guard_leaders_captain_advance_sp",
+		class = UnitStatsAI.UC_Commander,
+		rating = 2.9,
+		potential =
+		{
+			{
+				name = "guard_laspistol_captain",
+				effectiveness = GenerateUnitEffectiveness(4.9,4.6,4.1,3.7,3.3,2.9,1.7,0.0,3.7,2.3,2.9,4.5,2.3,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_storm_bolter_captain",
+				effectiveness = GenerateUnitEffectiveness(9.0,8.4,7.6,6.7,6.0,5.5,3.1,0.0,6.9,4.2,5.4,8.3,4.3,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_plasma_pistol_captain",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,9.0,8.0,7.3,4.2,0.0,9.2,5.6,7.2,10.0,5.8,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_power_gauntlet_captain",
+				effectiveness = GenerateUnitEffectiveness(9.0,8.2,7.5,6.7,6.0,5.6,2.4,4.8,6.7,4.4,5.7,5.8,5.0,2.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "guard_master_power_claws_captain",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,8.9,7.9,7.4,3.1,6.4,8.9,5.8,7.5,7.7,6.7,3.3,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "guard_power_fist_captain",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,10.0,5.4,10.0,10.0,10.0,10.0,10.0,10.0,5.7,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_wargear_09",
+				effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_captain_greaves",
+				effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_captain_targeting_optics",
+				effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_captain_pauldrons",
+				effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_captain_chest_plate",
+				effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+			{
+				name = "space_marine_dummy_weapon",
+				effectiveness = GenerateUnitEffectiveness(1.0,1.0,1.0,1.0,1.0,0.0,0.0,0.0,1.0,1.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_captain_governor_raiment",
+				effectiveness = GenerateUnitEffectiveness(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Leaders Commissar Advance Sp",
+		sbp_name = "guard_squad_commissar_advance_sp",
+		ebp_name = "guard_leaders_commissar_advance_sp",
+		class = UnitStatsAI.UC_Commander,
+		rating = 5.4,
+		potential =
+		{
+			{
+				name = "guard_laspistol_commissar",
+				effectiveness = GenerateUnitEffectiveness(2.7,2.5,2.3,2.1,1.9,1.4,0.8,0.0,2.1,1.1,1.7,1.6,0.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_power_sword_commissar_advance_sp",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,9.3,7.6,3.3,4.4,10.0,5.3,6.3,7.2,4.4,0.1,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Support Enginseer",
+		sbp_name = "guard_squad_enginseer_advance_sp",
+		ebp_name = "guard_support_enginseer",
+		class = UnitStatsAI.UC_Commander,
+		rating = 0.8,
+		potential =
+		{
+			{
+				name = "guard_laspistol_enginseer",
+				effectiveness = GenerateUnitEffectiveness(1.8,1.4,1.3,1.1,0.9,0.3,0.3,0.0,0.9,0.0,0.3,0.8,0.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_power_axe_enginseer",
+				effectiveness = GenerateUnitEffectiveness(1.1,1.5,0.9,0.9,0.0,0.0,0.0,0.0,0.5,0.0,0.2,1.0,0.5,0.3,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Support Enginseer",
+		sbp_name = "guard_squad_enginseer_sp_transportable",
+		ebp_name = "guard_support_enginseer",
+		class = UnitStatsAI.UC_Commander,
+		rating = 0.8,
+		potential =
+		{
+			{
+				name = "guard_laspistol_enginseer",
+				effectiveness = GenerateUnitEffectiveness(1.8,1.4,1.3,1.1,0.9,0.3,0.3,0.0,0.9,0.0,0.3,0.8,0.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_power_axe_enginseer",
+				effectiveness = GenerateUnitEffectiveness(1.1,1.5,0.9,0.9,0.0,0.0,0.0,0.0,0.5,0.0,0.2,1.0,0.5,0.3,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Infantry Guardsmen Advance Sp",
+		sbp_name = "guard_squad_guardsmen_advance_sp",
+		ebp_name = "guard_infantry_guardsmen_advance_sp",
+		class = UnitStatsAI.UC_LightInfantryMed,
+		rating = 2.2,
+		potential =
+		{
+			{
+				name = "guard_lasgun_guardsmen",
+				effectiveness = GenerateUnitEffectiveness(1.4,1.4,1.4,1.4,1.0,0.3,0.2,0.0,0.7,0.3,0.9,0.4,0.3,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			--[[},
+			{
+				name = "guard_grenade_launcher_guardsmen",
+				effectiveness = GenerateUnitEffectiveness(2.9,3.8,3.5,3.3,1.8,1.0,0.9,0.3,1.8,0.5,0.6,1.2,0.6,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,]]
+			},
+			{
+				name = "guard_plasma_gun_guardsmen",
+				effectiveness = GenerateUnitEffectiveness(8.5,8.0,7.4,6.9,6.4,1.8,1.2,0.0,6.4,3.7,3.5,2.9,1.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_knife_guardsmen",
+				effectiveness = GenerateUnitEffectiveness(1.3,1.4,1.2,0.8,1.0,0.1,0.3,0.0,0.4,0.0,0.3,0.3,0.2,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Vehicles Hellhound",
+		sbp_name = "guard_squad_hellhound_advance_sp",
+		ebp_name = "guard_vehicles_hellhound",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 5.5,
+		potential =
+		{
+			{
+				name = "guard_inferno_cannon_hellhound",
+				effectiveness = GenerateUnitEffectiveness(5.9,5.7,5.3,5.0,4.7,0.0,0.0,0.0,4.6,2.1,3.0,10.0,7.2,7.2,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Infantry Kasrkin Sergeant Advance Sp",
+		sbp_name = "guard_squad_kasrkin_advance_single_sp",
+		ebp_name = "guard_infantry_kasrkin_sergeant_advance_sp",
+		class = UnitStatsAI.UC_HeavyInfantryMed,
+		rating = 3.5,
+		potential =
+		{
+			{
+				name = "guard_hellgun_kasrkin_sergeant",
+				effectiveness = GenerateUnitEffectiveness(5.4,4.9,4.5,4.1,3.2,1.1,0.5,0.2,6.5,0.2,2.4,3.5,1.7,1.2,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_sword_kasrkin_sergeant",
+				effectiveness = GenerateUnitEffectiveness(4.5,5.5,4.4,4.5,4.4,1.0,0.2,0.0,4.4,0.0,2.2,5.0,1.3,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Infantry Kasrkin Advance Sp",
+		sbp_name = "guard_squad_kasrkin_advance_sp",
+		ebp_name = "guard_infantry_kasrkin_advance_sp",
+		class = UnitStatsAI.UC_HeavyInfantryMed,
+		rating = 2.2,
+		potential =
+		{
+			{
+				name = "guard_hellgun_kasrkin",
+				effectiveness = GenerateUnitEffectiveness(3.9,3.5,3.3,2.9,2.3,0.8,0.3,0.1,4.7,0.2,1.8,2.5,1.2,0.8,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			--[[},
+			{
+				name = "guard_grenade_launcher_kasrkin",
+				effectiveness = GenerateUnitEffectiveness(3.2,4.2,3.9,3.6,2.1,1.0,1.0,0.3,2.0,0.6,0.8,1.3,0.7,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,]]
+			},
+			{
+				name = "guard_plasma_gun_kasrkin",
+				effectiveness = GenerateUnitEffectiveness(5.0,4.6,4.1,3.7,2.9,0.6,0.3,0.1,6.5,0.1,1.3,0.7,0.3,0.2,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_knife_kasrkin",
+				effectiveness = GenerateUnitEffectiveness(2.1,2.7,2.0,1.9,0.9,0.1,0.2,0.0,0.4,0.0,0.3,1.8,1.2,0.6,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Vehicles Lemanruss Advance Sp",
+		sbp_name = "guard_squad_lemanruss_advance_sp",
+		ebp_name = "guard_vehicles_lemanruss_advance_sp",
+		class = UnitStatsAI.UC_VehicleMed,
+		rating = 5.7,
+		potential =
+		{
+			{
+				name = "guard_battle_cannon_leman_russ",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,9.9,8.8,6.0,10.0,10.0,10.0,6.8,4.0,1.8,6.5,4.5,2.3,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_heavy_bolter_leman_russ_right",
+				effectiveness = GenerateUnitEffectiveness(7.0,6.5,5.9,5.3,4.8,3.2,0.8,0.0,3.3,0.6,1.1,4.6,2.0,0.1,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_heavy_bolter_leman_russ_left",
+				effectiveness = GenerateUnitEffectiveness(7.0,6.5,5.9,5.3,4.8,3.2,0.8,0.0,3.3,0.6,1.1,4.6,2.7,1.4,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_heavy_bolter_leman_russ_hull",
+				effectiveness = GenerateUnitEffectiveness(6.0,7.5,6.7,4.0,3.7,3.4,2.1,0.0,3.5,1.3,1.2,10.0,5.0,2.5,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+	{
+		name = "Infantry Ogryn Advance Sp",
+		sbp_name = "guard_squad_ogryns_advance_sp",
+		ebp_name = "guard_infantry_ogryn_advance_sp",
+		class = UnitStatsAI.UC_MonsterMed,
+		rating = 6.0,
+		potential =
+		{
+			{
+				name = "guard_ripper_gun_ranged_ogryn",
+				effectiveness = GenerateUnitEffectiveness(3.0,5.6,4.5,2.4,2.2,0.9,0.6,0.0,2.6,0.0,1.2,2.2,0.7,0.4,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_ripper_gun_melee_ogryn",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,7.3,10.0,4.3,10.0,4.9,5.0,4.0,6.6,3.8,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Leaders Priest Advance Sp",
+		sbp_name = "guard_squad_priest_advance_sp",
+		ebp_name = "guard_leaders_priest_advance_sp",
+		class = UnitStatsAI.UC_Commander,
+		rating = 10.0,
+		potential =
+		{
+			{
+				name = "guard_eviscerator_priest",
+				effectiveness = GenerateUnitEffectiveness(10.0,10.0,10.0,10.0,10.0,10.0,10.0,0.0,10.0,6.8,7.1,10.0,5.7,0.3,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Leaders Psyker Advance Sp",
+		sbp_name = "guard_squad_psyker_advance_sp",
+		ebp_name = "guard_leaders_psyker_advance_sp",
+		class = UnitStatsAI.UC_Commander,
+		rating = 3.4,
+		potential =
+		{
+			{
+				name = "guard_laspistol_psyker",
+				effectiveness = GenerateUnitEffectiveness(2.0,1.8,1.7,1.5,1.4,1.1,0.5,0.0,1.5,0.9,1.3,1.3,0.6,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_psychic_spike_psyker",
+				effectiveness = GenerateUnitEffectiveness(6.9,6.3,5.7,5.1,4.6,4.5,2.5,3.2,5.2,2.8,4.3,4.5,2.6,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Leaders Psyker Sp Mdc5",
+		sbp_name = "guard_squad_psyker_sp_msdc5",
+		ebp_name = "guard_leaders_psyker_sp_mdc5",
+		class = UnitStatsAI.UC_Commander,
+		rating = 3.4,
+		potential =
+		{
+			{
+				name = "guard_laspistol_psyker",
+				effectiveness = GenerateUnitEffectiveness(2.0,1.8,1.7,1.5,1.4,1.1,0.5,0.0,1.5,0.9,1.3,1.3,0.6,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+			{
+				name = "guard_psychic_spike_psyker",
+				effectiveness = GenerateUnitEffectiveness(6.9,6.3,5.7,5.1,4.6,4.5,2.5,3.2,5.2,2.8,4.3,4.5,2.6,0.0,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Melee,
+			},
+		}
+	},
+	{
+		name = "Vehicles Sentinel",
+		sbp_name = "guard_squad_sentinel_advance_sp",
+		ebp_name = "guard_vehicles_sentinel",
+		class = UnitStatsAI.UC_VehicleLow,
+		rating = 6.5,
+		potential =
+		{
+			{
+				name = "guard_multi_laser_sentinel",
+				effectiveness = GenerateUnitEffectiveness(3.5,3.6,3.4,3.3,3.6,10.0,10.0,4.9,3.5,4.9,3.9,8.2,5.1,3.4,0.0,0.0,0.0),
+				range = UnitStatsAI.RT_Ranged,
+			},
+		}
+	},
+}

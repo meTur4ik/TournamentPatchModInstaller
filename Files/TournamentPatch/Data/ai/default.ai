@@ -1,0 +1,133 @@
+----------------------------------------------------------------------------------------------
+-- default.lua
+-- This file loads the default behaviour for AI
+----------------------------------------------------------------------------------------------
+
+import( 'Core/cpu_manager.ai' )
+
+--globals
+cpu_manager 		= nil
+resource_module 	= nil
+build_module 		= nil
+military_module 	= nil
+debug_display 		= nil
+
+--for assertions
+--iCurrentPlayer = 0
+ai_assert = false
+
+function DebugDisplay()
+
+	--if (cpu_manager.player_id ~= iCurrentPlayer) then
+	--	return
+	--end
+		
+	dr_setautoclear("aidebug"..player_id, 0)
+
+	--cpu_manager:DisplayStats()
+	debug_display:DisplayStats()
+
+end
+
+function ClearScreen()
+	dr_clear("aidebug"..player_id)
+end
+
+function AI_Think()	
+
+	--ProfileAllBegin()
+
+	--if something asserted, stop processing
+	if not cpu_manager.cpu_player:DoUpdate() then
+		return
+	end
+	
+	if( ai_assert == true ) then
+		DebugDisplay()
+		return
+	end
+		
+	--reset aitraces
+	tracing = {}
+	cpu_manager.terrain_analyzer:Update()
+	cpu_manager:Update()
+	--ProfileAllEnd()
+
+	DebugDisplay()
+
+	--do garbage collection
+	collectgarbage(0)
+
+end
+
+function UpdateStats()
+	--profile_start("UpdateStats")
+	
+	cpu_manager.stats:Update()
+	
+	--profile_end("UpdateStats")
+end
+
+
+function ProfileAllBegin()
+	
+	T = {}
+	debug.sethook (function (event)
+	  local f = debug.getinfo(2, 'f').func
+	  local e = T[f]
+	  if e == nil then
+		local x = debug.getinfo(2, 'nS')
+		e = {name = x.name, line = x.linedefined, source = x.source, what = x.what,
+					 time = 0, count = 0}
+		T[f] = e
+	  end
+	  if event == 'call' then
+		e.time = e.time - os.clock()
+		e.count = e.count + 1
+	  else
+		e.time = e.time + os.clock()
+	  end
+	end, "c")
+	
+end
+
+function ProfileAllEnd()
+  
+	debug.sethook(nil, "c")   -- cannot change `T' during traversal!
+	aipushtrace("Start Profiling")
+	for k,v in T do
+		if v.count > 100 then
+			
+			aitrace( string.format( "%s | %s | %d | %s | %d | %f", tostring(v.name), tostring(v.what), v.line, v.source, v.count, v.time ) )
+			
+		end
+	end
+	aipoptrace("Stop Profiling")
+	
+end
+
+function InitializeAI()
+
+	player_id = AI_GetPlayerID()
+	
+	cpu_manager = CpuManager( player_id )
+	
+	if cpu_manager:Initialize() then
+	
+		dbAssert( build_manager ~= nil )
+		dbAssert( debug_display ~= nil )
+
+		Rule_AddInterval(AI_Think, 0.5)
+		Rule_AddInterval(UpdateStats, 5)
+		
+	else
+		cpu_manager = nil
+		print( "failed to load ai: "..player_id )
+	end
+	
+	-- turn display on and off
+	dr_setdisplay("aidebug"..player_id, 0.5)
+	
+end
+
+InitializeAI()

@@ -1,0 +1,71 @@
+----------------------------------------
+-- File: 'sluggaboyztactic.ai'
+-- Edited by Thudmeizer   @ 26.10.2006
+
+class 'SluggaBoyzTactic' (OrkInfantryTactic)
+
+function SluggaBoyzTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("SluggaBoyz Tactic")
+end
+
+function SluggaBoyzTactic:AlwaysAttack()
+	return cpu_manager.cpu_player:IsResearchComplete("ork_recruitment")
+end
+
+
+function SluggaBoyzTactic:Upgrade()
+
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+   
+	-- If there are no ressources available, don't upgrade!
+	local iRequisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	if (iRequisition < 800 and not Tactic.Options.can_reinforce) then
+		return
+	end
+
+	if (not self.squad_ai:IsReinforcing()) then
+	  
+		-- Try for upgrade if we've a leader and more than 6 troopers
+		if (self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetNumTroopers() > 6) then
+			local class_type = cpu_manager:GetFirstEnemyPlayer():GetMajorityClassType()
+			self.squad_ai:DoBestUpgrade( class_type )
+		end
+	end
+end
+
+function SluggaBoyzTactic:Reinforce()
+
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+   
+	-- If there are no ressources available, don't upgrade!
+	if (not Tactic.Options.can_reinforce) then
+		return
+	end
+	
+	-- Don't stack reinforces
+    if (self.squad_ai:IsReinforcing()) then
+    	return
+    end
+    
+    -- Try to reinforce
+    if (self.squad_ai:CanReinforce(true, 0)) then            
+        self.squad_ai:DoReinforce(true, 0)
+    elseif (self.squad_ai:CanReinforce(false, 0)) then
+    
+		-- Don't reinforce if we have ork recruitment or no leader
+		local iRequisition = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition )
+		local bOrkRecruitment = cpu_manager.cpu_player:IsResearchComplete("ork_recruitment")
+		if ((self.squad_ai:HasLeader() or self.squad_ai:GetNumTroopers() < 6) and 
+			(not bOrkRecruitment or iRequisition > 600)) then
+			self.squad_ai:DoReinforce(false, 0)
+		end
+    end
+end
+

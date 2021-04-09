@@ -1,0 +1,35 @@
+----------------------------------------
+-- File: 'vespidtactic.ai'
+-- Created by Arkhan		@ 21.03.2008
+
+class 'VespidTactic' (TauInfantryTactic)
+
+Vespid = {}
+
+function VespidTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Vespid Tactic")
+end
+
+function VespidTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Vespid.iSonicPulseID == nil) then
+		Vespid.iSonicPulseID = cpu_manager.stats:GetAbilityID( "tau_sonic_pulse" )	
+	end
+	if (Vespid.iDevourID == nil) then
+		Vespid.iDevourID = cpu_manager.stats:GetAbilityID( "tau_devour" )	
+	end
+end
+
+function VespidTactic:DoAbilities()
+
+	-- Check if I can activate sonic pulse
+	Ability.DoAbility(self.squad_ai, Vespid.iSonicPulseID, Ability.PredicateFilters.IsInCombat)
+
+	-- Check if we can use Shred on enemy buildings
+	Ability.DoAbilityTargetEntity(self.squad_ai, Vespid.iDevourID, Ability.EntityFilters.CloseBaseEntityEnemy, 1)
+	
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end

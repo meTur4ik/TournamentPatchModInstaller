@@ -1,0 +1,40 @@
+----------------------------------------
+-- File: 'guardhqtactic.ai'
+-- Edited by Arkhan		@ 24.10.2006
+
+class 'GuardHQTactic' (BaseTactic)
+
+GuardHQ = {}
+
+function GuardHQTactic:__init( base_ai ) super( base_ai )
+
+	self:SetName("Guard HQ Tactic")
+	
+	-- Building is a bunker
+	self:AddToBunkerList()
+end
+
+function GuardHQTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (GuardHQ.detection_id == nil) then
+		GuardHQ.detection_id = cpu_manager.stats:GetAbilityID("guard_detection_field")
+	end
+end
+
+function GuardHQTactic:DoAbilities()
+
+	-- Try to activate detection field
+	if (self.base_ai:CanDoAbility(GuardHQ.detection_id)) then
+	
+		local iRange = self.base_ai:GetAbilityRange(GuardHQ.detection_id)
+		local oSquad = Ability.Filters.CloseInfiltratedEnemy(self.base_ai:GetPosition(), iRange, 1)
+		if (oSquad ~= nil) then
+			
+			-- Only try to detect if the infiltrated unit is attacking
+			if (oSquad:IsAttacking()) then
+				self.base_ai:DoSpecialAbilitySquad(GuardHQ.detection_id, oSquad:GetSquad())
+			end
+		end
+	end
+end

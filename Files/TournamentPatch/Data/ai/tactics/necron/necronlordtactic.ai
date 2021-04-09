@@ -1,0 +1,74 @@
+class 'NecronLordTactic' (LeaderTactic)
+
+NecronLordTactic.SpecialAbilities = 
+{
+	{ nil, "necron_chronometron", Ability.PredicateFilters.IsInCombat, nil }, 
+	{ nil, "necron_phase_shifter", Ability.PredicateFilters.IsLowHealthAndUnderAttack, { min_health = 0.3 } },
+}
+
+NecronLordTactic.TimedSpecialAbilities = 
+{
+	{ nil, "necron_mass_resurrection", Ability.PredicateFilters.HasUsableBodies, {ability_id = nil, min_bodies = 5 } },
+}
+
+NecronLordTactic.PosAbilities = 
+{
+	{ nil, "necron_solar_pulse", Ability.Filters.CloseInfiltratedEnemy, 1 }, 
+	{ nil, "necron_solar_pulse", Ability.Filters.CloseEnemy, 4 }, 
+}
+
+NecronLordTactic.TargetAbilities = 
+{
+}
+
+NecronLordTactic.ExtAbilities = 
+{
+	{ nil, "necron_lightning_field", Ability.Filters.CloseEnemy, 4 }, -- FIX: Filter - in combat, surrounded?... EXT ABILITY? Needs Ground Position
+	{ nil, "necron_nightmare_shroud", Ability.Filters.CloseEnemy, 4 }, -- FIX: Filter - in combat, surrounded?... EXT ABILITY? No Position needed
+	{ nil, "necron_fear", Ability.Filters.CloseEnemy, 4 }, -- FIX: Filter - in combat, surrounded?... EXT ABILITY? No Position needed
+	
+}
+
+function NecronLordTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.UtilityFunctions.InitAbilitiesTable(NecronLordTactic.SpecialAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(NecronLordTactic.TimedSpecialAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(NecronLordTactic.PosAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(NecronLordTactic.TargetAbilities)
+	
+	Tactic.UtilityFunctions.SetArgAbilityID(NecronLordTactic.TimedSpecialAbilities)	
+	
+	self.timedSpecialAbilities = Timer( NecronLordTactic.DoTimedSpecialAbilities, self, 7 )
+	
+	self:SetName("Necron Lord Tactic")
+		
+end
+
+--NOTE: NecronLord must never be be attached to another squad (current doesn't) because timeSpecialAbilities is a per object value
+-- (e.g., must have typeof(self) == "NecronLordTactic")
+function NecronLordTactic:DoAbilities()
+
+	self:DoPossessAbility()
+
+	Tactic.UtilityFunctions.DoAbilities(NecronLordTactic.SpecialAbilities,self.squad_ai,Ability.DoAbility)
+	Tactic.UtilityFunctions.DoAbilities(NecronLordTactic.PosAbilities,self.squad_ai,Ability.DoAbilityPos)
+	Tactic.UtilityFunctions.DoAbilities(NecronLordTactic.TargetAbilities,self.squad_ai,Ability.DoAbilityTarget)
+	
+	self.timedSpecialAbilities:Call()
+
+end
+
+function NecronLordTactic:DoPossessAbility()
+
+	if self.squad_ai:IsInCombat() and self.squad_ai:GetHealthPercentage() < 0.5 then
+		if self.squad_ai:CanPossess() then
+			self.squad_ai:DoPossess()
+		end
+	end
+end
+
+function NecronLordTactic:DoTimedSpecialAbilities()
+
+	Tactic.UtilityFunctions.DoAbilities(NecronLordTactic.TimedSpecialAbilities,self.squad_ai,Ability.DoAbility)
+
+end

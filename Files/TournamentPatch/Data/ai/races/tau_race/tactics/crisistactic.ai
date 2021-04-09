@@ -1,0 +1,32 @@
+----------------------------------------
+-- File: 'crisistactic.ai'
+-- Edited by Thudmeizer @ 22.10.2006
+
+class 'CrisisTactic' (TauInfantryTactic)
+
+function CrisisTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Crisis Tactic")
+end
+
+function CrisisTactic:Upgrade()
+
+	-- Check if we have free ressources
+	if (not Tactic.Options.can_reinforce) then
+		return
+	end
+	
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+
+	if (not self.squad_ai:IsReinforcing()) then
+	
+		-- Upgrade if possible
+		if (self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetNumTroopers() > 0) then
+			local class_type = cpu_manager:GetFirstEnemyPlayer():GetMajorityClassType()
+			self.squad_ai:DoBestUpgrade( class_type )
+		end
+	end
+end

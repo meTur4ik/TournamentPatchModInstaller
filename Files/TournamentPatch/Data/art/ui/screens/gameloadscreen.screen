@@ -1,0 +1,3915 @@
+Screen =  
+{
+	TooltipWidgets =  
+	{
+		type = "Group",
+		name = "grp_tooltips",
+		position =  
+		{
+			0,
+			0,
+		},
+		HitArea =  
+		{
+			 
+			{
+				type = "Rectangle",
+				size =  
+				{
+					1,
+					1,
+				},
+				position =  
+				{
+					0,
+					0,
+				},
+			},
+		},
+		size =  
+		{
+			1,
+			1,
+		},
+	},
+	version = 4,
+	Widgets =  
+	{
+		type = "Group",
+		name = "grp_Screen",
+		position =  
+		{
+			0,
+			0,
+		},
+		HitArea =  
+		{
+			 
+			{
+				type = "Rectangle",
+				size =  
+				{
+					1,
+					1,
+				},
+				position =  
+				{
+					0,
+					0,
+				},
+			},
+		},
+		Children =  
+		{
+			 
+			{
+				visible = false,
+				type = "ArtLabel",
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleLabel",
+				},
+				position =  
+				{
+					0,
+					0,
+				},
+				name = "artHeader",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							ID = 4582,
+							type = "Rectangle",
+							states =  
+							{
+								"Normal",
+								"Active",
+								"Hover",
+								"Disabled",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					1,
+					0.07562,
+				},
+			},
+			 
+			{
+				type = "ArtLabel",
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleLabel",
+				},
+				position =  
+				{
+					0,
+					0.94714,
+				},
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				name = "artFooter",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							ID = 4582,
+							type = "Rectangle",
+							states =  
+							{
+								"Normal",
+								"Active",
+								"Hover",
+								"Disabled",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					1,
+					0.07953,
+				},
+			},
+			 
+			{
+				type = "ArtLabel",
+				name = "artPicture",
+				position =  
+				{
+					0,
+					0,
+				},
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Graphic",
+							ID = 4548,
+							texture = "",
+							states =  
+							{
+								"Normal",
+								"Disabled",
+								"Active",
+								"Hover",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					1,
+					1,
+				},
+			},
+			 
+			{
+				type = "Swf",
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleSwf",
+				},
+				position =  
+				{
+					0,
+					0,
+				},
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				name = "Swf",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Swf",
+							swf = [[GENERIC:ART\UI\SWF\LOADINGSCREEN.swf]],
+							ID = 353163,
+							alpha = 0,
+							states =  
+							{
+								"Normal",
+								"Active",
+								"Hover",
+								"Disabled",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					1,
+					1,
+				},
+			},
+			-- LOADING TEXT
+			--[[
+			{
+				type = "TextLabel",
+				text = "Loading", --"$12000",
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				style =  
+				{
+					"UIStyles",
+					"btn_Albertus_12pt_WHITE",
+				},
+				position =  
+				{
+					0.26034,
+					0.95675,
+				},
+				name = "txtMessage",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Text",
+							textColourBottom =  
+							{
+								221,
+								221,
+								221,
+								255,
+							},
+							fontname = "albertus extra bold16",
+							textColourTop =  
+							{
+								255,
+								255,
+								255,
+								233,
+							},
+							multiline = false,
+							ID = 4557,
+							horzAlign = "Centre",
+							states =  
+							{
+								"Normal",
+								"Active",
+								"Hover",
+								"Disabled",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					0.47934,
+					0.03111,
+				},
+			},
+			]]
+			 
+			-- START BUTTON
+			{
+				type = "Button",
+				style =  
+				{
+					"UIStyles",
+					"_btn_tech_SMALL",
+				},
+				position =  
+				{
+					0.4474,
+					0.479, --0.94175,
+				},
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				text = "Start Mission",
+				name = "btnStart",
+				size =  
+				{
+					0.10666,
+					0.0458,
+				},
+			},
+			 
+			{
+				type = "CustomListBox",
+				maxItems = 10000,
+				ItemTemplate =  
+				{
+					type = "CustomListBoxItem",
+					name = "itemTmplt_lstBoxPlayers2",
+					position =  
+					{
+						0,
+						0,
+					},
+					HitArea =  
+					{
+						 
+						{
+							type = "Rectangle",
+							size =  
+							{
+								1,
+								1,
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+						},
+					},
+					Children =  
+					{
+						--[[
+						{
+							visible = false,
+							type = "TextLabel",
+							text = "",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleTextLabel",
+							},
+							position =  
+							{
+								0.01300,
+								0.02200,
+							},
+							name = "txtTeamName2",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Text",
+										textColourBottom =  
+										{
+											225,
+											225,
+											225,
+											255,
+										},
+										vertAlign = "Bottom",
+										ID = 343782,
+										textColourTop =  
+										{
+											225,
+											225,
+											225,
+											255,
+										},
+										fontname = "albertus extra bold16",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.14700,
+								0.02300,
+							},
+						},
+						]]
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground28",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354553,
+										texture = "generic:art/ui/textures/mp_player_team8.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground27",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354545,
+										texture = "generic:art/ui/textures/mp_player_team7.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground26",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354537,
+										texture = "generic:art/ui/textures/mp_player_team6.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground25",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354521,
+										texture = "generic:art/ui/textures/mp_player_team5.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground24",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354507,
+										texture = "generic:art/ui/textures/mp_player_team4.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground23",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354485,
+										texture = "generic:art/ui/textures/mp_player_team3.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground22",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354471,
+										texture = "generic:art/ui/textures/mp_player_team2.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0.00005,
+							},
+							name = "artPlayerBackground21",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 344020,
+										texture = "generic:art/ui/textures/mp_player_team1.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "TextLabel",
+							text = "",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleTextLabel",
+							},
+							position =  
+							{
+								0.0075,
+								0.00891,
+							},
+							name = "txtPlayerName2",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										textColourBottom =  
+										{
+											221,
+											221,
+											221,
+											255,
+										},
+										textColourTop =  
+										{
+											255,
+											255,
+											255,
+											233,
+										},
+										type = "Text",
+										fontname = "albertus extra bold16",
+										dropShadow = true,
+										vertAlign = "Top",
+										ID = 343785,
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.202,
+								0.035,
+							},
+						},
+						 
+						--[[
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0.22500,
+								0.03000,
+							},
+							name = "artPlayerTeamColor2",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Rectangle",
+										ID = 344068,
+										colour =  
+										{
+											255,
+											0,
+											0,
+											255,
+										},
+										size =  
+										{
+											0.40600,
+											1,
+										},
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+									 
+									{
+										type = "Rectangle",
+										position =  
+										{
+											0.33900,
+											0,
+										},
+										ID = 344069,
+										colour =  
+										{
+											255,
+											217,
+											7,
+											255,
+										},
+										size =  
+										{
+											0.19800,
+											1,
+										},
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+									 
+									{
+										type = "Rectangle",
+										position =  
+										{
+											0.52900,
+											0,
+										},
+										ID = 344070,
+										colour =  
+										{
+											5,
+											196,
+											255,
+											255,
+										},
+										size =  
+										{
+											0.26100,
+											1,
+										},
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+									 
+									{
+										type = "Rectangle",
+										position =  
+										{
+											0.75200,
+											0,
+										},
+										ID = 344071,
+										colour =  
+										{
+											0,
+											255,
+											34,
+											255,
+										},
+										size =  
+										{
+											0.15400,
+											1,
+										},
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+									 
+									{
+										type = "Rectangle",
+										position =  
+										{
+											0.84600,
+											0,
+										},
+										ID = 344072,
+										colour =  
+										{
+											4,
+											5,
+											108,
+											255,
+										},
+										size =  
+										{
+											0.15400,
+											1,
+										},
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+									 
+									{
+										type = "Rectangle",
+										ID = 344073,
+										rectangleType = "Border",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.09930,
+								0.01500,
+							},
+						},
+						]]
+						 
+						{
+							visible = false,
+							type = "TextLabel",
+							text = "",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleTextLabel",
+							},
+							position =  
+							{
+								0.0075,
+								0.03,
+							},
+							name = "txtPlayerRace2",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										textColourBottom =  
+										{
+											90,
+											164,
+											206,
+											255,
+										},
+										textColourTop =  
+										{
+											90,
+											164,
+											206,
+											233,
+										},
+										type = "Text",
+										fontname = "gillsans_bold_16",
+										dropShadow = true,
+										vertAlign = "Top",
+										ID = 343788,
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.20200,
+								0.03600,
+							},
+						},
+					},
+					size =  
+					{
+						0.34,
+						0.07,
+					},
+				},
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				name = "lstBoxPlayers2",
+				position =  
+				{
+					0.6062,
+					0.1,
+				},
+				ScrollBar =  
+				{
+					visible = false,
+					type = "ScrollBar",
+					range =  
+					{
+						0,
+						-0.29535,
+					},
+					ButtonDecrement =  
+					{
+						type = "Button",
+						name = "btnDec_scrlBar_lstBoxPlayers2",
+						position =  
+						{
+							0,
+							0,
+						},
+						buttonType = "ClickOnPress",
+						text = "",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						size =  
+						{
+							0,
+							0,
+						},
+					},
+					HitArea =  
+					{
+						 
+						{
+							type = "Rectangle",
+							size =  
+							{
+								1,
+								1,
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+						},
+					},
+					name = "scrlBar_lstBoxPlayers2",
+					position =  
+					{
+						0.34000,
+						0,
+					},
+					stepSize = -0.29535,
+					ButtonTrack =  
+					{
+						type = "Button",
+						name = "btnTrk_scrlBar_lstBoxPlayers2",
+						position =  
+						{
+							0,
+							0,
+						},
+						text = "",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						size =  
+						{
+							0,
+							0.28400,
+						},
+					},
+					ButtonIncrement =  
+					{
+						type = "Button",
+						name = "btnInc_scrlBar_lstBoxPlayers2",
+						position =  
+						{
+							0,
+							0.28400,
+						},
+						buttonType = "ClickOnPress",
+						text = "",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						size =  
+						{
+							0,
+							0,
+						},
+					},
+					size =  
+					{
+						0,
+						0.28400,
+					},
+				},
+				ItemsGroup =  
+				{
+					type = "Group",
+					name = "items_lstBoxPlayers2",
+					position =  
+					{
+						0,
+						0,
+					},
+					HitArea =  
+					{
+						 
+						{
+							type = "Rectangle",
+							size =  
+							{
+								1,
+								1,
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+						},
+					},
+					size =  
+					{
+						0.34000,
+						0.29535,
+					},
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleCustomListBox",
+				},
+				size =  
+				{
+					0.34000,
+					0.29535,
+				},
+			},
+			 
+			{
+				visible = false,
+				ItemsGroup =  
+				{
+					type = "Group",
+					name = "items_lstBoxPlayers1",
+					position =  
+					{
+						0,
+						0,
+					},
+					HitArea =  
+					{
+						 
+						{
+							type = "Rectangle",
+							size =  
+							{
+								1,
+								1,
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+						},
+					},
+					size =  
+					{
+						0.34,
+						0.29532,
+					},
+
+				},
+				maxItems = 10000,
+				ItemTemplate =  
+				{
+					type = "CustomListBoxItem",
+					name = "itemTmplt_lstBoxPlayers1",
+					position =  
+					{
+						0,
+						0,
+					},
+					HitArea =  
+					{
+						 
+						{
+							type = "Rectangle",
+							size =  
+							{
+								1,
+								1,
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+						},
+					},
+					Children =  
+					{
+						--[[
+						{
+							visible = false,
+							type = "TextLabel",
+							text = "$12008",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleTextLabel",
+							},
+							position =  
+							{
+								0.01266,
+								0.0216,
+							},
+							name = "txtTeamName1",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Text",
+										textColourBottom =  
+										{
+											225,
+											225,
+											225,
+											255,
+										},
+										vertAlign = "Bottom",
+										horzAlign = "Right",
+										ID = 343793,
+										textColourTop =  
+										{
+											225,
+											225,
+											225,
+											255,
+										},
+										fontname = "albertus extra bold16",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.1471,
+								0.02324,
+							},
+						},
+						]]
+						
+						--[[
+						{
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerShadow",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 343992,
+										texture = "generic:art/ui/textures/mp_player_shadow.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.2,
+								0.0681,
+							},
+						},
+						]]
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground18",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354457,
+										texture = "generic:art/ui/textures/mp_player_team8.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground17",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354449,
+										texture = "generic:art/ui/textures/mp_player_team7.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground16",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354441,
+										texture = "generic:art/ui/textures/mp_player_team6.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground15",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354433,
+										texture = "generic:art/ui/textures/mp_player_team5.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground14",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354425,
+										texture = "generic:art/ui/textures/mp_player_team4.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground13",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354417,
+										texture = "generic:art/ui/textures/mp_player_team3.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground12",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 354409,
+										texture = "generic:art/ui/textures/mp_player_team2.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+							name = "artPlayerBackground11",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Graphic",
+										ID = 343992,
+										texture = "generic:art/ui/textures/mp_player_team1.tga",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.18,
+								0.0613,
+							},
+						},
+						 
+						{
+							visible = false,
+							type = "TextLabel",
+							text = "",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleTextLabel",
+							},
+							position =  
+							{
+								0.0075,
+								0.00891,
+							},
+							name = "txtPlayerName1",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										textColourBottom =  
+										{
+											221,
+											221,
+											221,
+											255,
+										},
+										textColourTop =  
+										{
+											255,
+											255,
+											255,
+											233,
+										},
+										type = "Text",
+										fontname = "albertus extra bold16",
+										dropShadow = true,
+										vertAlign = "Top",
+										ID = 343796,
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.20234,
+								0.035,
+							},
+						},
+						 
+						--[[
+						{
+							visible = false,
+							type = "ArtLabel",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleLabel",
+							},
+							position =  
+							{
+								0.22500,
+								0.02984,
+							},
+							name = "artPlayerTeamColor1",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										type = "Rectangle",
+										ID = 344055,
+										colour =  
+										{
+											255,
+											0,
+											0,
+											255,
+										},
+										size =  
+										{
+											0.40600,
+											1,
+										},
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+									 
+									{
+										type = "Rectangle",
+										position =  
+										{
+											0.33900,
+											0,
+										},
+										ID = 344056,
+										colour =  
+										{
+											255,
+											217,
+											7,
+											255,
+										},
+										size =  
+										{
+											0.19800,
+											1,
+										},
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+									 
+									{
+										type = "Rectangle",
+										position =  
+										{
+											0.52900,
+											0,
+										},
+										ID = 344057,
+										colour =  
+										{
+											5,
+											196,
+											255,
+											255,
+										},
+										size =  
+										{
+											0.26100,
+											1,
+										},
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+									 
+									{
+										type = "Rectangle",
+										position =  
+										{
+											0.75200,
+											0,
+										},
+										ID = 344058,
+										colour =  
+										{
+											0,
+											255,
+											34,
+											255,
+										},
+										size =  
+										{
+											0.10100,
+											1,
+										},
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+									 
+									{
+										type = "Rectangle",
+										position =  
+										{
+											0.84600,
+											0,
+										},
+										ID = 344059,
+										colour =  
+										{
+											4,
+											5,
+											108,
+											255,
+										},
+										size =  
+										{
+											0.15400,
+											1,
+										},
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+									 
+									{
+										type = "Rectangle",
+										ID = 344060,
+										rectangleType = "Border",
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.09896,
+								0.01500,
+							},
+						},
+						]]
+						 
+						{
+							visible = false,
+							type = "TextLabel",
+							text = "",
+							HitArea =  
+							{
+								 
+								{
+									type = "Rectangle",
+									size =  
+									{
+										1,
+										1,
+									},
+									position =  
+									{
+										0,
+										0,
+									},
+								},
+							},
+							style =  
+							{
+								"DefaultStyles",
+								"defStyleTextLabel",
+							},
+							position =  
+							{
+								0.0075,
+								0.03,
+							},
+							name = "txtPlayerRace1",
+							Presentation =  
+							{
+								Art =  
+								{
+									 
+									{
+										textColourBottom =  
+										{
+											90,
+											164,
+											206,
+											255,
+										},
+										textColourTop =  
+										{
+											90,
+											164,
+											206,
+											233,
+										},
+										type = "Text",
+										fontname = "gillsans_bold_16",
+										dropShadow = true,
+										vertAlign = "Top",
+										ID = 343799,
+										states =  
+										{
+											"Normal",
+											"Active",
+											"Hover",
+											"Disabled",
+										},
+									},
+								},
+							},
+							size =  
+							{
+								0.20234,
+								0.03604,
+							},
+						},
+					},
+					size =
+					{
+						0.34,
+						0.07,
+					},
+				},
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleCustomListBox",
+				},
+				position =  
+				{
+					0.06800,
+					0.68114,
+				},
+				ScrollBar =  
+				{
+					visible = false,
+					type = "ScrollBar",
+					range =  
+					{
+						0,
+						-0.29532,
+					},
+					ButtonDecrement =  
+					{
+						type = "Button",
+						name = "btnDec_scrlBar_lstBoxPlayers1",
+						position =  
+						{
+							0,
+							0,
+						},
+						buttonType = "ClickOnPress",
+						text = "",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						size =  
+						{
+							0,
+							0,
+						},
+					},
+					HitArea =  
+					{
+						 
+						{
+							type = "Rectangle",
+							size =  
+							{
+								1,
+								1,
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+						},
+					},
+					name = "scrlBar_lstBoxPlayers1",
+					position =  
+					{
+						0.34000,
+						0,
+					},
+					stepSize = -0.29532,
+					ButtonTrack =  
+					{
+						type = "Button",
+						name = "btnTrk_scrlBar_lstBoxPlayers1",
+						position =  
+						{
+							0,
+							0,
+						},
+						text = "",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						size =  
+						{
+							0,
+							0.28397,
+						},
+					},
+					ButtonIncrement =  
+					{
+						type = "Button",
+						name = "btnInc_scrlBar_lstBoxPlayers1",
+						position =  
+						{
+							0,
+							0.28397,
+						},
+						buttonType = "ClickOnPress",
+						text = "",
+						HitArea =  
+						{
+							 
+							{
+								type = "Rectangle",
+								size =  
+								{
+									1,
+									1,
+								},
+								position =  
+								{
+									0,
+									0,
+								},
+							},
+						},
+						size =  
+						{
+							0,
+							0,
+						},
+					},
+					size =  
+					{
+						0,
+						0.28397,
+					},
+				},
+				type = "CustomListBox",
+				name = "lstBoxPlayers1",
+				size =  
+				{
+					0.34,
+					0.29532,
+				},
+				position =  -- primary position
+				{
+					0.215,
+					0.1,
+				},
+			},
+			 
+			-- MAP NAME LABEL
+			{
+				type = "ArtLabel",
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleLabel",
+				},
+				position =  
+				{
+					0.4001,
+					0.025,
+				},
+				name = "artMapName",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Graphic",
+							ID = 356609,
+							size =  
+							{
+								1,
+								0.76,
+							},
+							texture = "generic:art/ui/textures/map_label.tga",
+							states =  
+							{
+								"Normal",
+								"Disabled",
+								"Active",
+								"Hover",
+							},
+						},
+					},
+				},
+				
+				size =  
+				{
+					0.2,
+					0.075,
+				},
+				
+			},
+			
+			-- MAP FRAME
+			{
+			
+				--visible = false,
+				type = "ArtLabel",
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleLabel",
+				},
+				position =  
+				{
+					0.398,
+					0.0878,
+				},
+				name = "artMapFrame",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Graphic",
+							ID = 356610,
+							texture = "generic:art/ui/textures/map_frame.tga",
+							states =  
+							{
+								"Normal",
+								"Disabled",
+								"Active",
+								"Hover",
+							},
+						},
+					},
+				},
+				
+				size =  
+				{
+					0.20522,
+					0.37925,
+				},
+				
+			},
+			
+			-- MAP
+			{
+				visible = false,
+				type = "ArtLabel",
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleLabel",
+				},
+				position =  
+				{
+					
+					0.405,
+					0.1,
+				},
+				name = "artMap",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Graphic",
+							ID = 353157,
+							colour =  
+							{
+								255,
+								255,
+								255,
+								100,
+							},
+							texture = "generic:art/ui/textures/black.tga",
+							states =  
+							{
+								"Normal",
+								"Disabled",
+								"Active",
+								"Hover",
+							},
+						},
+						 
+						{
+							type = "Graphic",
+							ID = 346321,
+							texture = "generic:art/ui/textures/default.tga",
+							states =  
+							{
+								"Normal",
+								"Active",
+								"Hover",
+								"Disabled",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					0.19,
+					0.33758,
+				},
+			},
+			
+			-- MAP FRAME BORDER
+			{
+				type = "ArtLabel",
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleLabel",
+				},
+				position =  
+				{
+					0.398,
+					0.0878,
+				},
+				name = "artMapFrameBorder",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Graphic",
+							ID = 356611,
+							texture = "generic:art/ui/textures/map_frame_border.tga",
+							states =  
+							{
+								"Normal",
+								"Disabled",
+								"Active",
+								"Hover",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					0.20522,
+					0.37925,
+				},
+			},
+			
+			{
+				-- PROGRESS BAR
+				type = "ProgressBar",
+				Progress =  
+				{
+					type = "ArtLabel",
+					name = "prgLbl_loadProgress",
+					position =  
+					{
+						0,
+						0,
+					},
+					HitArea =  
+					{
+						 
+						{
+							type = "Rectangle",
+							size =  
+							{
+								1,
+								1,
+							},
+							position =  
+							{
+								0,
+								0,
+							},
+						},
+					},
+					Presentation =  
+					{
+						Art =  
+						{
+							{
+								type = "Graphic",
+								ID = 226028,
+								colour =  
+								{
+									111,
+									193,
+									234,
+									255,
+								},
+								texture = "art/ui/textures/art_gradient_ability.tga",
+								states =  
+								{
+									"Normal",
+									"Active",
+									"Hover",
+									"Disabled",
+								},
+							},
+						},
+					},
+					size =  
+					{
+						0,
+						0.01,
+					},
+				},
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				name = "loadProgress",
+				position =
+				{
+					0.41995,
+					0.4508,
+				},
+				style =  
+				{
+					"UIStyles",
+					"cmd_AbilityProgress",
+				},
+				size =  
+				{
+					0.1591,
+					0.01,
+				},
+			},
+			 
+			-- MAP NAME
+			{
+				visible = false,
+				type = "TextLabel",
+				text = "",
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleTextLabel",
+				},
+				position =  
+				{
+					0.361,
+					0.031,
+				},
+				
+				name = "txtMapName",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							textColourTop =  
+							{
+								225,
+								225,
+								225,
+								255,
+							},
+							textColourBottom =  
+							{
+								225,
+								225,
+								225,
+								255,
+							},
+							type = "Text",
+							fontname = "albertus extra bold16",
+							ID = 346298,
+							horzAlign = "Centre",
+							dropShadow = false,
+							states =  
+							{
+								"Normal",
+								"Active",
+								"Hover",
+								"Disabled",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					0.27751,
+					0.04674,
+				},
+			},
+			 
+			{
+				visible = false,
+				type = "TextLabel",
+				text = "$15008",
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleTextLabel",
+				},
+				position =  
+				{
+					0.26033,
+					0.83667,
+				},
+				name = "txtWarpGates2",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Text",
+							textColourBottom = "TestTitleText",
+							fontname = "gillsans_bold_16",
+							textColourTop =  
+							{
+								255,
+								255,
+								255,
+								192,
+							},
+							ID = 354903,
+							horzAlign = "Centre",
+							dropShadow = true,
+							states =  
+							{
+								"Normal",
+								"Active",
+								"Hover",
+								"Disabled",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					0.48310,
+					0.06511,
+				},
+			},
+			 
+			{
+				visible = false,
+				type = "TextLabel",
+				text = "$15068",
+				HitArea =  
+				{
+					 
+					{
+						type = "Rectangle",
+						size =  
+						{
+							1,
+							1,
+						},
+						position =  
+						{
+							0,
+							0,
+						},
+					},
+				},
+				style =  
+				{
+					"UIStyles",
+					"Albertus12pt",
+				},
+				position =  
+				{
+					0.37422,
+					1.03961,
+				},
+				name = "txtWarpGates1",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Text",
+							textColourBottom =  
+							{
+								0,
+								0,
+								0,
+								192,
+							},
+							horzAlign = "Centre",
+							ID = 356608,
+							textColourTop =  
+							{
+								255,
+								255,
+								255,
+								192,
+							},
+							fontname = "albertus extra bold16",
+							states =  
+							{
+								"Normal",
+								"Active",
+								"Hover",
+								"Disabled",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					0.25156,
+					0.03595,
+				},
+			},
+		},
+		size =  
+		{
+			1,
+			1,
+		},
+	},
+}
+
+ToolInfo =  
+{
+	version = 3,
+	WidgetInfo =  
+	{
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "grp_Screen",
+			HitAreaGuides =  
+			{
+			},
+			type = "Group",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artHeader",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artFooter",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPicture",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "Swf",
+			HitAreaGuides =  
+			{
+			},
+			type = "Swf",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "loadProgress",
+			HitAreaGuides =  
+			{
+			},
+			type = "ProgressBar",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "prgLbl_loadProgress",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "txtMessage",
+			HitAreaGuides =  
+			{
+			},
+			type = "TextLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnStart",
+			HitAreaGuides =  
+			{
+			},
+			type = "Button",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "lstBoxPlayers2",
+			HitAreaGuides =  
+			{
+			},
+			type = "CustomListBox",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "items_lstBoxPlayers2",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			type = "Component",
+			name = "scrlBar_lstBoxPlayers2",
+			HitAreaGuides =  
+			{
+			},
+			hidden = true,
+			ArtGuides =  
+			{
+			},
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnDec_scrlBar_lstBoxPlayers2",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnInc_scrlBar_lstBoxPlayers2",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnTrk_scrlBar_lstBoxPlayers2",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnPgDn_scrlBar_lstBoxPlayers2",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnPgUp_scrlBar_lstBoxPlayers2",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			type = "Component",
+			name = "itemTmplt_lstBoxPlayers2",
+			HitAreaGuides =  
+			{
+			},
+			hidden = true,
+			ArtGuides =  
+			{
+			},
+		},
+		 
+		--[[
+		{
+			ArtGuides =  
+			{
+			},
+			name = "txtTeamName2",
+			HitAreaGuides =  
+			{
+			},
+			type = "TextLabel",
+		},
+		]]
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground28",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground27",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground26",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground25",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground24",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground23",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground22",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground21",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "txtPlayerName2",
+			HitAreaGuides =  
+			{
+			},
+			type = "TextLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerTeamColor2",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "txtPlayerRace2",
+			HitAreaGuides =  
+			{
+			},
+			type = "TextLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "lstBoxPlayers1",
+			HitAreaGuides =  
+			{
+			},
+			type = "CustomListBox",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "items_lstBoxPlayers1",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			type = "Component",
+			name = "scrlBar_lstBoxPlayers1",
+			HitAreaGuides =  
+			{
+			},
+			hidden = true,
+			ArtGuides =  
+			{
+			},
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnDec_scrlBar_lstBoxPlayers1",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnInc_scrlBar_lstBoxPlayers1",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnTrk_scrlBar_lstBoxPlayers1",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnPgDn_scrlBar_lstBoxPlayers1",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "btnPgUp_scrlBar_lstBoxPlayers1",
+			HitAreaGuides =  
+			{
+			},
+			type = "Component",
+		},
+		 
+		{
+			type = "Component",
+			name = "itemTmplt_lstBoxPlayers1",
+			HitAreaGuides =  
+			{
+			},
+			hidden = true,
+			ArtGuides =  
+			{
+			},
+		},
+		 
+		--[[
+		{
+			ArtGuides =  
+			{
+			},
+			name = "txtTeamName1",
+			HitAreaGuides =  
+			{
+			},
+			type = "TextLabel",
+		},
+		]]
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground18",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground17",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground16",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground15",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground14",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground13",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground12",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerBackground11",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "txtPlayerName1",
+			HitAreaGuides =  
+			{
+			},
+			type = "TextLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artPlayerTeamColor1",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "txtPlayerRace1",
+			HitAreaGuides =  
+			{
+			},
+			type = "TextLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artMap",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "txtMapName",
+			HitAreaGuides =  
+			{
+			},
+			type = "TextLabel",
+		},
+		 
+		{
+			type = "TextLabel",
+			name = "txtWarpGates2",
+			HitAreaGuides =  
+			{
+			},
+			hidden = true,
+			ArtGuides =  
+			{
+			},
+		},
+		 
+		{
+			type = "TextLabel",
+			name = "txtWarpGates1",
+			HitAreaGuides =  
+			{
+			},
+			hidden = true,
+			ArtGuides =  
+			{
+			},
+		},
+		 
+		{
+			ArtGuides =  
+			{
+			},
+			name = "grp_tooltips",
+			HitAreaGuides =  
+			{
+			},
+			type = "",
+		},
+			--NEW ASSETS
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artMapName",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artMapFrame",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		
+		{
+			ArtGuides =  
+			{
+			},
+			name = "artMapFrameBorder",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+		
+	},
+	Guides =  
+	{
+	},
+	ScreenInfo =  
+	{
+		LocaleRange =  
+		{
+			12000,
+			12499,
+		},
+	},
+}

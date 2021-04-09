@@ -1,0 +1,163 @@
+class 'EngineerTactic' (InfantryTactic)
+
+
+function EngineerTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Engineer Tactic")
+
+	self.tagged_flag = nil
+
+	self.go_to_post = false
+	
+	self.m_vDestination = nil
+	
+	self.m_iValidRange = sqr(35)
+	self.m_bBusy = false
+end
+
+function EngineerTactic:ValidMove( vDestination )
+	
+	aitrace("Move Engineer to "..tostring(vDestination.x)..", "..tostring(vDestination.z))
+	
+	-- Check distance and jump capability
+	self.m_vDestination = Vector3f(vDestination)
+	local vMyPos = self.squad_ai:GetPosition()
+	if (distance_sqr(vMyPos, vDestination) > sqr(50) and self.squad_ai:CanJump()) then
+	
+		-- Jump only if locked, injured or with threat in range
+		if (self.squad_ai:IsLocked() or self.squad_ai:WasRecentlyHurt() or cpu_manager.terrain_analyzer:HasThreat(vMyPos, 35)) then
+			
+			-- Try to jump
+			if (cpu_manager:JumpBuilder(self.squad_ai, vDestination)) then
+				return
+			end
+		end
+	end
+	self.squad_ai:DoMove(vDestination)
+end
+
+function EngineerTactic:IsAttacker()
+	return false
+end
+
+function EngineerTactic:IsDefender()
+	return false
+end
+
+function EngineerTactic:Update()
+
+	-- State machine
+	if (not InfantryTactic.Update(self)) then
+		return false
+	end
+	
+	-- Arkhan 01.2006: Check state
+	local vSquadPos = self.squad_ai:GetPosition()
+	if (self.squad_ai:IsLocked()) then
+	
+		-- Arkhan 01.2006: Reset destination if squad is locked
+   		self.m_vDestination = nil
+   		self.m_bBusy = false
+   		
+		-- Release the flag
+		if (self.tagged_flag ~= nil) then
+			self.tagged_flag:TagFlagForEngineer( false )
+			self.tagged_flag = nil
+		end
+		return true
+   	
+   	elseif (self.m_vDestination ~= nil and not self.m_bBusy) then
+   	
+   		-- Arkhan 01.2006: Make sure that the squad moves to the target position
+   		if (self.squad_ai:IsInStateMove()) then
+   		
+   			if (distance_sqr(cpu_manager.start_pos, vSquadPos) > self.m_iValidRange) then
+   			
+   				if (cpu_manager.terrain_analyzer:HasThreat(self.m_vDestination, 35)) then
+   					self:GoToNextPost()
+   				else
+   					self.squad_ai:DoMove(self.m_vDestination)
+   				end
+   				return true
+   			end
+   		end
+   	
+   	elseif (distance_sqr(cpu_manager.start_pos, vSquadPos) > self.m_iValidRange and not self.m_bBusy) then
+   	
+   		-- Arkhan 01.2006: The move command seems invalid and the engineer should therefore return to a safe place
+		self:GoToNextPost()
+		return true
+	end
+   	
+   	if (self.tagged_flag == nil and not self.squad_ai:IsInStateMove()) then
+   	
+   		-- Arkhan 01.2006: Get new job
+		self:GoToNextPost()
+	end	
+	return true
+end
+
+function EngineerTactic:IsAffectedByMorale()
+	return self.squad_ai:IsBuilding() == 0
+end
+
+function EngineerTactic:GoToNextPost()
+
+	-- Try to reach a save position if HQ is attacked
+	self.m_bBusy = false
+	local vEngineerPos = self.squad_ai:GetPosition()
+	if (cpu_manager:HQThreat() or self.squad_ai:WasRecentlyHurt()) then
+		local vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(vEngineerPos, cpu_manager.start_pos, true, true)
+		if (vBasePos ~= nil) then
+			self:ValidMove(vBasePos)
+			self.m_iValidRange = 35
+			return
+		end
+	end
+
+	-- Only attempt vehicle repair if we can
+	local iClosestDistance = 0
+	if (self.squad_ai:CanRepair()) then
+
+		-- Find the closest vehicle that can be repaired
+		local oVehicleToRepair = cpu_manager:GetDamagedVehicleInRange()
+		if (oVehicleToRepair ~= nil) then
+			aitrace("EngineerTactic: Repairing vehicle...")
+			self.squad_ai:DoRepairSquad(oVehicleToRepair)
+			self.m_vDestination = oVehicleToRepair:GetPosition()
+			self.m_bBusy = true
+			return
+		end
+	end
+
+	-- Try to help finish a building
+	local oBuildingToFinish = cpu_manager:GetUnfinishedBuildingInRange()
+	if (oBuildingToFinish ~= nil) then
+		aitrace("EngineerTactic: Help finishing a building...")
+		self.squad_ai:DoFinishBuilding(oBuildingToFinish)
+		self.m_vDestination = oBuildingToFinish:GetPosition()
+		self.m_bBusy = true
+		return
+	end
+				
+	-- Only attempt building repair if we can
+	if (self.squad_ai:CanRepair()) then
+	
+		-- Find the closest building that can be repaired
+		local oBuildingToRepair = cpu_manager:GetDamagedBuildingInRange()
+		if (oBuildingToRepair ~= nil) then
+			aitrace("EngineerTactic: Repairing building...")
+			self.squad_ai:DoRepairBase(oBuildingToRepair)
+			self.m_vDestination = oBuildingToRepair:GetPosition()
+			self.m_bBusy = true
+			return
+		end
+	end
+
+	-- Return to home base
+	if (distance_sqr(cpu_manager.start_pos, vEngineerPos) > sqr(35)) then
+		aitrace("EngineerTactic: Return to home base")
+		self:ValidMove(cpu_manager.start_pos)
+		return
+	end
+end

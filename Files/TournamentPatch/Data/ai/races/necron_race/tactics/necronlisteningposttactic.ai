@@ -1,0 +1,14 @@
+----------------------------------------
+-- File: 'necronlisteningposttactic.ai'
+-- Edited by Arkhan		@ 24.10.2006
+
+class 'NecronListeningPostTactic' (BaseTactic)
+
+function NecronListeningPostTactic:__init( base_ai ) super( base_ai )
+
+	self:SetName("Necron Listening Post Tactic")
+	
+	-- Init abilities
+	table.insert(BaseTactic.TargetAbilities, { nil, "necron_listening_post", Ability.Filters.CloseEnemy, 3 })
+	self:InitAbilities()
+end

@@ -1,0 +1,73 @@
+----------------------------------------
+-- File: 'chaosmarineinfantrytactic.ai'
+-- Created by Arkhan		@ 12.01.2006
+-- Edited by Thudmeizer         @ 11.10.2006
+
+class 'ChaosMarineInfantryTactic' (InfantryTactic)
+
+function ChaosMarineInfantryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Chaos Marine Infantry Tactic")
+	
+	-- Basic chaos infantry is able to enter transport vehicles
+	local sSquadName = squad_ai:GetSquadName()
+	if (sSquadName == "chaos_squad_possessed_marine") then
+		self.m_iTransportable = 2
+	elseif (sSquadName == "chaos_squad_cultist" or
+			sSquadName == "chaos_marine_squad" or
+			sSquadName == "chaos_squad_khorne_berserker" or
+			sSquadName == "chaos_squad_sorcerer" or
+			sSquadName == "chaos_squad_lord") then
+		self.m_iTransportable = 1
+	elseif (sSquadName == "chaos_squad_horror") then
+		self.m_iDeepStrikeBlueprintID = cpu_manager.stats:GetBuildingID("chaos_sacrificial_circle")
+	elseif (sSquadName == "chaos_squad_obliterator") then
+		self.m_iDeepStrikeBlueprintID = cpu_manager.stats:GetBuildingID("chaos_greater_sacrificial_circle")
+	end
+end
+
+function ChaosMarineInfantryTactic:AddTargetAbilities()
+	table.insert(InfantryTactic.TargetAbilities, { nil, "chaos_frag_grenades", Ability.Filters.CloseSquadEnemy, 1, 0 })
+end
+
+function ChaosMarineInfantryTactic:AddCommanders()
+	table.insert(self.commander, { "chaos_squad_lord", true })
+	table.insert(self.commander, { "chaos_squad_sorcerer", false })
+end
+
+function ChaosMarineInfantryTactic:DoAbilities()
+
+	-- I might have these attached
+	if (self.squad_ai:IsAttached()) then
+	
+		if (self.squad_ai:HasSquadAttached("chaos_squad_lord")) then
+			ChaosLordTactic.InitAbilities( self )
+			ChaosLordTactic.DoAbilities( self )
+		elseif (self.squad_ai:HasSquadAttached("chaos_squad_sorcerer")) then
+			SorcererTactic.InitAbilities( self )
+			SorcererTactic.DoAbilities( self )
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end
+
+function ChaosMarineInfantryTactic:CheckDance(oSquad)
+
+	-- Check opponent
+	if (oSquad == nil) then
+		return false
+	end
+	
+	-- Compare opponents
+	local sSquadName = self.squad_ai:GetSquadName()
+	if (sSquadName == "chaos_marine_squad" or sSquadName == "chaos_squad_obliterator") then
+		
+		-- Check opponent
+		if (oSquad:GetSquadName() == "chaos_squad_cultist") then
+			return false
+		end
+	end
+	return true
+end

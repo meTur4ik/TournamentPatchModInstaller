@@ -1,0 +1,57 @@
+----------------------------------------
+-- File: 'stormboyztactic.ai'
+-- Edited by Thudmeizer   @ 26.10.2008
+
+class 'StormBoyzTactic' (OrkInfantryTactic)
+
+StormBoyz = {}
+
+function StormBoyzTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("StormBoyz Tactic")
+end
+
+function StormBoyzTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (StormBoyz.boost_id == nil) then
+		StormBoyz.boost_id = cpu_manager.stats:GetAbilityID("ork_turbo_boost_stormboyz")
+	end
+	if (StormBoyz.stikkbombs_id == nil) then
+		StormBoyz.stikkbombs_id = cpu_manager.stats:GetAbilityID("ork_stikkbombs")
+	end
+end
+
+function StormBoyzTactic:DoAbilities()
+	
+	-- Check if jump squad can speed up with boost
+	if ((not self.squad_ai:IsInCombat() and self.squad_ai:IsInStateMove()) or self.stateID ~= Tactic.StateID.NoState) then
+		Ability.DoAbility(self.squad_ai, StormBoyz.boost_id)
+	end
+
+	-- Try to use stikk bomb ability
+	Ability.DoAbilityTarget(self.squad_ai, StormBoyz.stikkbombs_id, Ability.Filters.CloseSquadEnemy, 1)
+end
+
+function StormBoyzTactic:Reinforce()
+
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+   
+	-- If there are no ressources available, don't upgrade!
+	local iRequisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	if (iRequisition < 800 and not Tactic.Options.can_reinforce) then
+		return
+	end
+			
+	-- Don't reinforce more than 8 stormboyz
+    if (not self.squad_ai:IsReinforcing()) then
+        if (self.squad_ai:CanReinforce(true, 0)) then            
+            self.squad_ai:DoReinforce(true, 0)
+        elseif (self.squad_ai:CanReinforce(false, 0) and self.squad_ai:GetNumTroopers() < 8) then
+            self.squad_ai:DoReinforce(false, 0)
+        end
+    end
+end

@@ -1,0 +1,38 @@
+----------------------------------------
+-- File: 'darkeldarslavetactic.ai'
+-- Edited by Thudmeizer @ 15.11.2007
+
+class 'DarkEldarSlaveTactic' (EngineerTactic)
+
+function DarkEldarSlaveTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Dark Eldar Slave Tactic")
+end
+
+function DarkEldarSlaveTactic:IsAttacker()
+	return false
+end
+
+function DarkEldarSlaveTactic:IsAffectedByMorale()
+	return false
+end
+
+function DarkEldarSlaveTactic:DoAbilities()
+
+	if (not self.squad_ai:IsBuilding() or self.squad_ai:IsIdle()) then
+	
+		-- Check if we have corpses in range
+		local numCorpses = self.squad_ai:GetNumCorpses(35);
+		if (numCorpses > 0) then
+			self.squad_ai:DoCannibalize();
+		end
+	end
+end
+
+function DarkEldarSlaveTactic:Update()
+
+	if (not EngineerTactic.Update( self )) then
+		return false
+	end
+	return true
+end

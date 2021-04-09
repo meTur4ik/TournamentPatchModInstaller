@@ -1,0 +1,99 @@
+----------------------------------------
+-- File: 'guardiantactic.ai'
+-- Edited by Thudmeizer		@ 26.10.2008
+
+class 'GuardianTactic' (EldarInfantryTactic)
+
+Guardian = {}
+
+function GuardianTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Guardian Tactic")
+end
+
+function GuardianTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Guardian.grenades_id == nil) then
+		Guardian.grenades_id = cpu_manager.stats:GetAbilityID( "eldar_plasma_grenades" )
+	end
+
+	if (Guardian.embolden_id == nil) then
+		Guardian.embolden_id = cpu_manager.stats:GetAbilityID( "eldar_embolden" )
+	end
+
+	if (Guardian.entanglement_id == nil) then
+		Guardian.entanglement_id = cpu_manager.stats:GetAbilityID( "eldar_entanglement" )
+	end
+end
+
+function GuardianTactic:DoAbilities()
+
+	Ability.DoAbilityTarget( self.squad_ai, Guardian.grenades_id, Ability.Filters.CloseSquadEnemy, 1 ) 
+
+	-- Embolden if low morale
+	if (self.squad_ai:CanDoAbility( Guardian.embolden_id ) and self.squad_ai:GetMoralePercentage() < 0.6) then
+		self.squad_ai:DoSpecialAbility( Guardian.embolden_id )
+	end
+
+	-- Warlock entanglement
+	if (self.squad_ai:CanDoAbility( Guardian.entanglement_id )) then
+	
+		local range = self.squad_ai:GetAbilityRange( Guardian.entanglement_id )
+		local squad_pos = self.squad_ai:GetPosition()
+		local target = nil
+		
+		melee = function( squad )
+		
+		 	local is_cc = false    
+			if (squad:GetMeleeStance() == SquadAI.MSTANCE_Assault) then
+				is_cc = true   
+			end
+			return is_cc and squad:GetNumTroopers() >= 4
+		end
+		
+		local target = cpu_manager:FindClosestEnemy( squad_pos, range, melee )
+		
+		if (target ~= nil) then
+			self.squad_ai:DoSpecialAbilitySquad( Guardian.entanglement_id, target:GetSquad() )
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	EldarInfantryTactic.DoAbilities(self)
+end
+
+function GuardianTactic:Reinforce()
+
+	-- Check if we are reinforcing
+	if (self.squad_ai:IsReinforcing()) then
+		return
+	end
+	
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+	
+	-- Don't reinforce squads in critical condition
+	if (self.squad_ai:GetNumTroopers() <= self.squad_ai:GetMaxTroopers() / 3 and self.squad_ai:IsUnderAttack()) then
+		return
+	end
+
+	-- Always try to get the leader first
+	if (self.squad_ai:CanReinforce(true, 0)) then
+		self.squad_ai:DoReinforce(true, 0)
+		return
+	end
+
+	-- Check resources
+	local iRequisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	if ((iRequisition < 800 or self.m_bPowerCost) and not Tactic.Options.can_reinforce) then
+		return
+	end
+	
+	-- Always try to reinforce, as long as I have money
+	if (self.squad_ai:CanReinforce( false, 0 ) and self.squad_ai:HasLeader() and cpu_manager:GetTierLevel() >= 2) then
+		self.squad_ai:DoReinforce( false, 0 )
+	end
+end

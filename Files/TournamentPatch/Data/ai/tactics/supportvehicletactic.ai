@@ -1,0 +1,30 @@
+class 'SupportVehicleTactic' (VehicleTactic)
+
+function SupportVehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Support Vehicle Tactic")
+
+end
+
+
+function SupportVehicleTactic:Update()
+
+	if not VehicleTactic.Update( self ) then
+		return false
+	end
+
+	if self.squad_ai:IsInCombat() then
+	
+		local attachable_filter = function( squad_ai )
+			return self.squad_ai:CanAttachTo( squad_ai ) 
+		end
+
+		local attach_to = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), 25, attachable_filter )
+		if attach_to ~= nil then 
+			self.squad_ai:DoAttachSquad( attach_to )
+		end
+	end
+	
+	return true
+end
+

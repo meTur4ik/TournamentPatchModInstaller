@@ -1,0 +1,330 @@
+----------------------------------------
+-- File: 'orkstrategyinfo.ai'
+-- Edited by Thudmeizer  @ 22.10.2008
+
+BuildBaseStrategyInfo = 
+{
+	ork_race =
+	{
+		post_builder = 1,
+		flag_capture = 1,
+		
+		-- Reserve this amount for building units, reinforcing and upgrading
+		req_reserve = 150,
+		
+		-- need at least this at all times
+		squad_cap_threshold = 3,
+		
+		--need at least this at all times
+		support_cap_threshold = 3,
+
+		-- used to calculate wants for engineers
+		Engineers =
+		{
+			--number of engineers we're aiming for
+			want = 2,
+		},
+		
+		-- Is used to modify the army strength in the build programs (Allows faster balancing adjustments)
+		ArmyStrengthModifier = 1.0,
+		
+		-- Item-Syntax: Min. Tier, Min. Requisition, Min. Power, Min. ArmyStrength, Object-Count, Object-Type, Object-Name
+		BuildPrograms =
+		{
+			-- Research Total: 23
+			-- Allround strategy
+			{
+				{ 1, 650, 150, 0, 1,	 "Building",	"ork_hq" },
+				{ 1, 225, 0, 0, 1,	 "Building",	"ork_boy_hut" },
+				{ 1, 150, 0, 0, 1,	 "Building",	"ork_generator" },
+				{ 1, 190, 50, 0, 1,	 "Unit",	"ork_squad_mek_boy" },
+				{ 1, 120, 0, 0, 2,       "Unit",	"ork_squad_slugga" },
+				{ 1, 140, 0, 0, 2,	 "Unit",	"ork_squad_shoota_boy" },
+				{ 1, 170, 0, 0, 1,	 "Building",	"ork_waagh_banner" },
+				{ 1, 170, 0, 500, 2,	 "Building",	"ork_waagh_banner" },
+				{ 1, 170, 70, 500, 1,	 "Building",	"ork_pile_o_guns" },
+				{ 1, 100, 75, 750, 60,	 "TurretAddon", "ork_gork_totem_addon_1" },
+				{ 1, 150, 0, 0, 2,	 "Building",	"ork_generator" },
+			   	{ 1, 170, 0, 0, 3,	 "Building",	"ork_waagh_banner" },
+			        { 1, 170, 0, 1000, 5,	 "Building",	"ork_waagh_banner" },
+				{ 1, 100, 75, 250, 100,	 "TurretAddon", "ork_gork_totem_addon_1" },
+				{ 1, 150, 0, 500, 4,	 "Building",	"ork_generator" },
+
+				{ 2, 235, 135, 250, 1,	 "Building",	"ork_mek_shop" },
+				{ 2, 150, 135, 0, 1,	 "Unit",	"ork_squad_trukk" },
+				{ 2, 250, 75, 0, 1,	 "Unit",	"ork_squad_nob" },
+				{ 2, 150, 30, 0, 1,	 "Unit",	"ork_squad_tankbusta" },
+				{ 2, 190, 300, 0, 1,	 "Unit",	"ork_squad_killa_kan" },
+				{ 2, 100, 45, 0, 1,	 "Unit",	"ork_squad_armored_nob" },
+				{ 2, 150, 0, 1000, 6,	 "Building",	"ork_generator" },
+				{ 2, 50, 25, 1000, 50,	 "TurretAddon", "ork_waagh_banner_gunzaddon" },
+				{ 2, 200, 40, 1000, 1,	 "Research",    "ork_power_research_1" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "ork_requisition_research_1" },
+			   	{ 2, 170, 0, 1500, 6,	 "Building",	"ork_waagh_banner" },
+				{ 2, 340, 340, 1500, 1,	 "Addon",	"ork_hq_addon" },
+				{ 2, 250, 145, 2000, 40, "TurretAddon", "ork_gork_totem_addon_2" },
+				{ 2, 50, 25, 2000, 100,	 "TurretAddon", "ork_waagh_banner_gunzaddon" },
+				{ 2, 50, 50, 2000, 50,	 "TurretAddon", "ork_waagh_banner_gunzaddon_2" },
+				{ 2, 170, 70, 2000, 2,	 "Building",	"ork_pile_o_guns" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"ork_mine_field" },
+
+				{ 3, 200, 75, 0, 1,	 "Unit",	"ork_squad_warboss" },
+				{ 3, 210, 30, 0, 2,	 "Unit",	"ork_flash_gitz_squad" },
+				{ 3, 100, 350, 2000, 1,	 "Research",    "ork_requisition_research_2" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "ork_power_research_2" },
+				{ 3, 225, 0, 2000, 2,	 "Building",	"ork_boy_hut" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "ork_research_extra_armour" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"ork_mine_field" },
+
+				{ 4, 200, 0, 0, 1,	 "Research",    "ork_recruitment" },
+				{ 4, 0, 0, 0, 4,	 "Unit",	"ork_squad_slugga" },
+				{ 4, 400, 400, 0, 1,	 "Unit",	"ork_squad_squiggoth" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"ork_mine_field" },
+				{ 4, 250, 145, 3000, 100,"TurretAddon", "ork_gork_totem_addon_2" },
+				{ 4, 650, 150, 4000, 2,	 "Building",	"ork_hq" }
+			},
+
+			-- Shoota Strategy
+			{
+				{ 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" },
+				{ 1, 190, 50, 0, 1,	 "Unit",	"ork_squad_mek_boy" },
+				{ 1, 140, 0, 0, 3,	 "Unit",	"ork_squad_shoota_boy" },
+				{ 1, 120, 0, 0, 2,       "Unit",	"ork_squad_slugga" },
+				{ 1, 650, 150, 0, 1,     "Building",	"ork_hq" },
+				{ 1, 225, 0, 0, 1,	 "Building",	"ork_boy_hut" },
+				{ 1, 150, 0, 0, 1,	 "Building",	"ork_generator" },
+				{ 1, 170, 0, 0, 1,	 "Building",	"ork_waagh_banner" },
+				{ 1, 170, 0, 500, 2,	 "Building",	"ork_waagh_banner" },
+				{ 1, 170, 70, 500, 1,	 "Building",	"ork_pile_o_guns" },
+				{ 1, 100, 75, 750, 60,	 "TurretAddon", "ork_gork_totem_addon_1" },
+				{ 1, 150, 0, 0, 2,	 "Building",	"ork_generator" },
+				{ 1, 170, 0, 0, 3,	 "Building",	"ork_waagh_banner" },
+				{ 1, 100, 25, 0, 1,	 "Research",    "ork_research_bigshoota" },
+				{ 1, 170, 0, 1000, 5,	 "Building",	"ork_waagh_banner" },
+				{ 1, 100, 75, 250, 100,	 "TurretAddon", "ork_gork_totem_addon_1" },
+				{ 1, 150, 0, 500, 4,	 "Building",	"ork_generator" },
+
+				{ 2, 235, 135, 250, 1,	 "Building",	"ork_mek_shop" },
+				{ 2, 150, 135, 0, 1,	 "Unit",	"ork_squad_trukk" },
+				{ 2, 250, 75, 0, 1,	 "Unit",	"ork_squad_nob" },
+				{ 2, 150, 30, 0, 1,	 "Unit",	"ork_squad_tankbusta" },
+				{ 2, 190, 300, 0, 1,	 "Unit",	"ork_squad_killa_kan" },
+				{ 2, 100, 45, 0, 1,	 "Unit",	"ork_squad_armored_nob" },
+				{ 2, 150, 0, 1000, 6,	 "Building",	"ork_generator" },
+				{ 2, 50, 25, 1000, 50,	 "TurretAddon", "ork_waagh_banner_gunzaddon" },
+				{ 2, 200, 40, 1000, 1,	 "Research",    "ork_power_research_1" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "ork_requisition_research_1" },
+				{ 2, 170, 0, 1500, 6,	 "Building",	"ork_waagh_banner" },
+				{ 2, 340, 340, 1500, 1,	 "Addon",	"ork_hq_addon" },
+				{ 2, 100, 350, 1500, 1,	 "Research",    "ork_requisition_research_2" },
+				{ 2, 250, 145, 2000, 40, "TurretAddon", "ork_gork_totem_addon_2" },
+				{ 2, 50, 25, 2000, 100,	 "TurretAddon", "ork_waagh_banner_gunzaddon" },
+				{ 2, 50, 50, 2000, 50,	 "TurretAddon", "ork_waagh_banner_gunzaddon_2" },
+				{ 2, 170, 70, 2000, 2,	 "Building",	"ork_pile_o_guns" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"ork_mine_field" },
+
+				{ 3, 200, 75, 0, 1,	 "Unit",	"ork_squad_warboss" },
+				{ 3, 210, 30, 0, 2,	 "Unit",	"ork_flash_gitz_squad" },
+				{ 3, 100, 350, 2000, 1,	 "Research",    "ork_requisition_research_2" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "ork_power_research_2" },
+				{ 3, 225, 0, 2000, 2,	 "Building",	"ork_boy_hut" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "ork_research_extra_armour" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"ork_mine_field" },
+
+				{ 4, 200, 0, 0, 1,	 "Research",    "ork_recruitment" },
+				{ 4, 0, 0, 0, 4,	 "Unit",	"ork_squad_slugga" },
+				{ 4, 400, 400, 0, 1,	 "Unit",	"ork_squad_squiggoth" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"ork_mine_field" },
+				{ 4, 250, 145, 3000, 100,"TurretAddon", "ork_gork_totem_addon_2" },
+				{ 4, 650, 150, 4000, 2,	 "Building",	"ork_hq" }
+			},
+			
+			-- Stormboy Strategy
+			{
+				{ 1, 0, 0, 0, 0,	 "Rush", 	"Prepare" },
+				{ 1, 190, 50, 0, 1,	 "Unit",	"ork_squad_mek_boy" },
+				{ 1, 180, 0, 0, 3,	 "Unit",	"ork_squad_stormboy" },		
+				{ 1, 650, 150, 0, 1,	 "Building",	"ork_hq" },
+				{ 1, 225, 0, 0, 1,	 "Building",	"ork_boy_hut" },
+				{ 1, 150, 0, 0, 1,	 "Building",	"ork_generator" },
+				{ 1, 170, 0, 0, 2,	 "Building",	"ork_waagh_banner" },
+				{ 1, 100, 75, 750, 60,	 "TurretAddon", "ork_gork_totem_addon_1" },
+				{ 1, 150, 0, 0, 2,	 "Building",	"ork_generator" },
+				{ 1, 170, 70, 750, 1,	 "Building",	"ork_pile_o_guns" },
+				{ 1, 170, 0, 0, 3,	 "Building",	"ork_waagh_banner" },
+				{ 1, 50, 50, 0, 1,	 "Research",    "ork_research_speed_boost_stormboyz" },
+				{ 1, 170, 0, 1000, 5,	 "Building",	"ork_waagh_banner" },
+				{ 1, 100, 75, 250, 100,	 "TurretAddon", "ork_gork_totem_addon_1" },
+				{ 1, 150, 0, 500, 4,	 "Building",	"ork_generator" },
+
+				{ 2, 235, 135, 250, 1,	 "Building",	"ork_mek_shop" },
+				{ 2, 150, 135, 0, 1,	 "Unit",	"ork_squad_trukk" },
+				{ 2, 250, 75, 0, 1,	 "Unit",	"ork_squad_nob" },
+				{ 2, 150, 30, 0, 1,	 "Unit",	"ork_squad_tankbusta" },
+				{ 2, 190, 300, 0, 1,	 "Unit",	"ork_squad_killa_kan" },
+				{ 2, 100, 45, 0, 1,	 "Unit",	"ork_squad_armored_nob" },
+				{ 2, 150, 0, 1000, 6,	 "Building",	"ork_generator" },
+				{ 2, 50, 25, 1000, 50,	 "TurretAddon", "ork_waagh_banner_gunzaddon" },
+				{ 2, 200, 40, 1000, 1,	 "Research",    "ork_power_research_1" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "ork_requisition_research_1" },
+				{ 2, 170, 0, 1500, 6,	 "Building",	"ork_waagh_banner" },
+				{ 2, 340, 340, 1500, 1,	 "Addon",	"ork_hq_addon" },
+				{ 2, 100, 350, 1500, 1,	 "Research",    "ork_requisition_research_2" },
+				{ 2, 250, 145, 2000, 40, "TurretAddon", "ork_gork_totem_addon_2" },
+				{ 2, 50, 25, 2000, 100,	 "TurretAddon", "ork_waagh_banner_gunzaddon" },
+				{ 2, 50, 50, 2000, 50,	 "TurretAddon", "ork_waagh_banner_gunzaddon_2" },
+				{ 2, 170, 70, 2000, 2,	 "Building",	"ork_pile_o_guns" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"ork_mine_field" },
+
+				{ 3, 200, 75, 0, 1,	 "Unit",	"ork_squad_warboss" },
+				{ 3, 210, 30, 0, 2,	 "Unit",	"ork_flash_gitz_squad" },
+				{ 3, 100, 350, 2000, 1,	 "Research",    "ork_requisition_research_2" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "ork_power_research_2" },
+				{ 3, 225, 0, 2000, 2,	 "Building",	"ork_boy_hut" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "ork_research_extra_armour" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"ork_mine_field" },
+
+				{ 4, 200, 0, 0, 1,	 "Research",    "ork_recruitment" },
+				{ 4, 0, 0, 0, 4,	 "Unit",	"ork_squad_slugga" },
+				{ 4, 400, 400, 0, 1,	 "Unit",	"ork_squad_squiggoth" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"ork_mine_field" },
+				{ 4, 250, 145, 3000, 100,"TurretAddon", "ork_gork_totem_addon_2" },
+				{ 4, 650, 150, 4000, 2,	 "Building",	"ork_hq" }
+			},
+			
+			-- Killa Kan / Shoota Strategy
+			{
+				{ 1, 0, 0, 0, 1,	 "Rush", 	"Prepare" },
+				{ 1, 60, 0, 0, 3,	 "Unit",	"ork_squad_grot" },
+				{ 1, 190, 50, 0, 1,	 "Unit",	"ork_squad_mek_boy" },
+				{ 1, 650, 150, 0, 1,     "Building",	"ork_hq" },
+				{ 1, 225, 0, 0, 1,	 "Building",	"ork_boy_hut" },
+				{ 1, 150, 0, 0, 2,	 "Building",	"ork_generator" },
+				{ 1, 170, 0, 0, 1,	 "Building",	"ork_waagh_banner" },
+				{ 1, 170, 0, 0, 3,	 "Building",	"ork_waagh_banner" },
+				{ 1, 100, 75, 0, 100,	 "TurretAddon", "ork_gork_totem_addon_1" },
+				{ 1, 170, 0, 0, 4,	 "Building",	"ork_waagh_banner" },
+				{ 1, 150, 0, 0, 6,	 "Building",	"ork_generator" },
+
+				{ 2, 0, 0, 0, 1,	 "Rush", 	"Prepare" },
+				{ 2, 235, 135, 0, 1,	 "Building",	"ork_mek_shop" },
+				{ 2, 190, 50, 0, 1,	 "Unit",	"ork_squad_mek_boy" },
+				{ 2, 250, 75, 0, 2,	 "Unit",	"ork_squad_nob" },
+				{ 2, 150, 135, 0, 1,	 "Unit",	"ork_squad_trukk" },
+				{ 2, 170, 0, 0, 5,	 "Building",	"ork_waagh_banner" },
+				{ 2, 100, 45, 0, 1,	 "Unit",	"ork_squad_armored_nob" },
+				{ 2, 190, 300, 0, 2,	 "Unit", 	"ork_squad_killa_kan" },
+				{ 2, 0, 0, 1500, 0,	 "Rush", 	"Unleash" },
+				{ 2, 170, 70, 1500, 1,	 "Building",	"ork_pile_o_guns" },
+				{ 2, 200, 40, 1500, 1,	 "Research",    "ork_power_research_1" },
+				{ 2, 75, 250, 1500, 1,	 "Research",    "ork_requisition_research_1" },
+				{ 2, 50, 25, 1500, 50,	 "TurretAddon", "ork_waagh_banner_gunzaddon" },
+				{ 2, 170, 0, 1500, 6,	 "Building",	"ork_waagh_banner" },
+				{ 2, 340, 340, 1500, 1,	 "Addon",	"ork_hq_addon" },
+				{ 2, 250, 145, 2000, 40, "TurretAddon", "ork_gork_totem_addon_2" },
+				{ 2, 50, 25, 2000, 100,	 "TurretAddon", "ork_waagh_banner_gunzaddon" },
+				{ 2, 50, 50, 2000, 50,	 "TurretAddon", "ork_waagh_banner_gunzaddon_2" },
+				{ 2, 170, 70, 2000, 2,	 "Building",	"ork_pile_o_guns" },
+				{ 2, 50, 50, 2000, 2,	 "Building",	"ork_mine_field" },
+
+				{ 3, 200, 75, 0, 1,	 "Unit",	"ork_squad_warboss" },
+				{ 3, 210, 30, 0, 2,	 "Unit",	"ork_flash_gitz_squad" },
+				{ 3, 100, 350, 2000, 1,	 "Research",    "ork_requisition_research_2" },
+				{ 3, 350, 0, 2000, 1,	 "Research",    "ork_power_research_2" },
+				{ 3, 225, 0, 2000, 2,	 "Building",	"ork_boy_hut" },
+				{ 3, 450, 450, 2000, 1,	 "Research",    "ork_research_extra_armour" },
+				{ 3, 50, 50, 2000, 4,	 "Building",	"ork_mine_field" },
+
+				{ 4, 200, 0, 0, 1,	 "Research",    "ork_recruitment" },
+				{ 4, 0, 0, 0, 4,	 "Unit",	"ork_squad_slugga" },
+				{ 4, 400, 400, 0, 1,	 "Unit",	"ork_squad_squiggoth" },
+				{ 4, 50, 50, 2000, 6,	 "Building",	"ork_mine_field" },
+				{ 4, 250, 145, 3000, 100,"TurretAddon", "ork_gork_totem_addon_2" },
+				{ 4, 650, 150, 4000, 2,	 "Building",	"ork_hq" }
+			}
+		},
+		
+        SquadLimits = 
+		{
+			standard =
+			{
+				ork_squad_grot = 0,
+				ork_squad_bad_dok = 4, 
+				ork_squad_slugga = math.random( 4,6 ),
+				ork_squad_shoota_boy = math.random( 4,6 ),
+				ork_squad_stormboy = math.random( 3,4 ),
+				ork_squad_tankbusta = math.random( 3,4 ),
+				ork_squad_nob = 2,
+				ork_squad_armored_nob = 1,
+				ork_flash_gitz_squad = 2,
+				ork_squad_mek_boy = 1,
+				ork_squad_warboss = 1, 
+				ork_squad_trukk = math.random( 2,3 ),
+				ork_squad_wartrak = math.random( 2,3 ),
+				ork_squad_killa_kan = math.random( 3,5 ),
+				ork_squad_fighta_bomba = 2,
+				ork_squad_looted_tank = 2,
+				ork_squad_squiggoth = 1,
+			}
+		}
+	},
+}
+
+BuildOrderStrategyInfo = 
+{
+	ork_race =
+	{
+		Basic = 
+		{
+			{ "flag_capture" }, { "flag_capture" },
+			{ "flag_capture" },
+			{ "squad", "ork_squad_slugga" },
+			{ "squad", "ork_squad_grot" },
+			{ "squad", "ork_squad_slugga" },
+			{ "squad", "ork_squad_slugga" },
+			{ "post_builder" }, { "post_builder" },
+			{ "building", "ork_boy_hut", true },
+			{ "building", "ork_generator" },
+			{ "building", "ork_waagh_banner" }
+		},
+		 
+		QuickStart = 
+		{
+			{ "flag_capture" }, { "flag_capture" },
+			{ "flag_capture" },
+			{ "squad", "ork_squad_slugga" },
+			{ "squad", "ork_squad_grot" },
+			{ "squad", "ork_squad_slugga" },
+			{ "squad", "ork_squad_slugga" },
+			{ "squad", "ork_squad_grot" },
+			{ "post_builder" }, { "post_builder" },
+			{ "building", "ork_boy_hut", true },
+			{ "building", "ork_boy_hut", true },
+			{ "building", "ork_generator" },
+			{ "building", "ork_waagh_banner" }
+		},
+		 
+		LargeMap = 
+		{
+			{ "flag_capture" }, { "flag_capture" },
+			{ "flag_capture" },
+			{ "squad", "ork_squad_slugga" },
+			{ "squad", "ork_squad_grot" },
+			{ "squad", "ork_squad_slugga" },
+			{ "squad", "ork_squad_slugga" },
+			{ "post_builder" }, { "post_builder" },
+			{ "building", "ork_boy_hut", true },
+			{ "building", "ork_generator" },
+			{ "building", "ork_waagh_banner" },
+			{ "building", "ork_waagh_banner" }
+		}
+	}
+}
+
+AttackStrategyInfo = 
+{	
+	ork_race =
+	{
+		MinArmyStrength = 750,
+	},
+}

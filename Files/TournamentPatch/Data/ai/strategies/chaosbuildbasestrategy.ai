@@ -1,0 +1,453 @@
+class 'ChaosBuildBaseStrategy' (BuildBaseStrategy)
+
+
+ChaosBuildBaseStrategy.ResearchOrder =
+{
+	{ 2, "chaos_max_weapons_research" },
+	{ 2, "chaos_raptor_research" },
+	{ 2, "chaos_frag_grenade_research" },	
+	{ 2, 	"chaos_requisition_research_1" },
+	{ 2, 	"chaos_power_research_1" },
+
+	{ 2, "chaos_champion_melee_research_1" },
+	{ 2,  "chaos_furious_charge_research" },
+	{ 2,  "chaos_champion_melee_research_2" },
+	{ 2,  "chaos_infiltration_research"},
+	{ 2,  "chaos_plasma_pistol_research" },
+	{ 2,  "chaos_max_weapons_research" },
+	{ 2,  "chaos_smoke_launcher_research" },
+	{ 2, 	"chaos_purge_the_weak" },
+
+	{ 3, 	"chaos_projectiles" },
+	{ 3, 	"chaos_power_research_2" },
+	{ 3, 	"chaos_requisition_research_2" },
+	{ 3,  "chaos_infiltration_marine_research" },
+	{ 3,  "chaos_lord_research_1" },
+	{ 3,  "chaos_sorcerer_research_1" },
+	{ 3,  "chaos_lord_research_2" },
+	{ 3,  "chaos_sorcerer_research_2" },
+	{ 3, 	"chaos_commander_health_research_1" },
+	{ 3, 	"chaos_commander_health_research_2" },
+--	{ 3, 	"chaos_possessed_daemon_mutation_research" }, -- removed
+	{ 3, 	"chaos_possessed_daemon_fire_research" },
+
+	{ 4,  "chaos_personalteleporters" },
+}
+
+
+function ChaosBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+
+	-- Limit tactics
+	-- NOTE: These #'s are horrifically dependent on balance changes, we should
+	-- scan the costs of all structures / add-ons / researches that let us tier up 
+	-- and figure out a min from that
+	self.spend_now_req = 400
+	self.spend_later_req = 600
+	self.spend_now_pow = 75
+	self.spend_later_pow = 150
+	
+	self.generator_name = "chaos_plasma_generator"
+	self.bigger_generator_id = cpu_manager.stats:GetBuildingID( "chaos_thermo_plasma_generator" )
+
+	self.hq_building_name = "chaos_hq"
+	self.hq_building_id = cpu_manager.stats:GetBuildingID( self.hq_building_name )
+	
+	self.vehicle_building_name = "chaos_machine_pit"
+	self.vehicle_building_id = cpu_manager.stats:GetBuildingID( self.vehicle_building_name )
+
+	self.infantry_building0_name = "chaos_temple"
+	self.infantry_building0_id = cpu_manager.stats:GetBuildingID( self.infantry_building0_name )
+	
+	-- We don't want a secondary temple, we want a sacrificial pit
+	self.infantry_building_name = "chaos_sacrificial_circle"
+	self.infantry_building_id = cpu_manager.stats:GetBuildingID( self.infantry_building_name )
+
+	self.infantry_building2_name = "chaos_greater_sacrificial_circle"
+	self.infantry_building2_id = cpu_manager.stats:GetBuildingID( self.infantry_building2_name )
+
+	self.research_building_name = "chaos_armoury"
+	self.research_building_id = cpu_manager.stats:GetBuildingID( self.research_building_name )
+	
+	self.post_addon1_id = cpu_manager.stats:GetAddOnID( "chaos_list_post_addon_1" )
+	self.post_addon2_id = cpu_manager.stats:GetAddOnID( "chaos_list_post_addon_2" )
+	
+	self.tier2_addon_id = cpu_manager.stats:GetAddOnID( "chaos_hq_addon_1" )
+	self.tier3_addon_id = cpu_manager.stats:GetAddOnID( "chaos_hq_addon_2" )
+	
+	self.turret_building_name = "chaos_turret_bolter"
+	self.turret_building_id = cpu_manager.stats:GetBuildingID( self.turret_building_name )
+	dbAssert( self.turret_building_id ~= nil )
+	
+	self.turret_addon_id = cpu_manager.stats:GetAddOnID( "chaos_turret_addon")
+
+	self.tier4_research_name = "chaos_projectiles"
+	self.tier4_research_id = cpu_manager.stats:GetResearchID( self.tier4_research_name )
+	
+	self.blood_research_name = "chaos_bloodthirster_research"
+	self.blood_research_id = cpu_manager.stats:GetResearchID( self.blood_research_name )	
+	self.blood_squad_id = cpu_manager.stats:GetSquadID( "chaos_squad_bloodthirster" )
+	dbAssert( self.blood_squad_id ~= nil )
+
+	self.prince_research_name = "chaos_daemon_prince_research"
+	self.prince_research_id = cpu_manager.stats:GetResearchID( self.prince_research_name )	
+	self.prince_squad_id = cpu_manager.stats:GetSquadID( "chaos_squad_daemon_prince" )
+	dbAssert( self.prince_squad_id ~= nil )
+
+	self.detect_research_name = "chaos_cultist_sight_research"
+	self.detect_research_id = cpu_manager.stats:GetResearchID( self.detect_research_name )
+	
+end
+
+
+function ChaosBuildBaseStrategy:EvaluateSquadCap()
+
+	local tierLevel = self:GetTierLevel()
+	if tierLevel >=2 then
+
+		-- evalulate support cap first at T2 and above
+		if	build_manager:GetSupportCapCurrentMax() < build_manager:GetSupportCapTotalMax() and
+			build_manager:GetSupportCapLeft() <= self.support_cap_threshold then
+
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Research
+			
+			if not cpu_manager.cpu_player:IsResearchComplete( "chaos_support_cap_research" ) then
+				build_type.name = "chaos_support_cap_research"
+				self:TryBuild( build_type )
+			elseif not cpu_manager.cpu_player:IsResearchComplete( "chaos_support_cap_research_1" ) then
+				build_type.name = "chaos_support_cap_research_1"
+				self:TryBuild( build_type )
+			elseif not cpu_manager.cpu_player:IsResearchComplete( "chaos_support_cap_research_2" ) then
+				build_type.name = "chaos_support_cap_research_2"
+				self:TryBuild( build_type )
+			elseif not cpu_manager.cpu_player:IsResearchComplete( "chaos_support_cap_research_3" ) then
+				build_type.name = "chaos_support_cap_research_3"
+				self:TryBuild( build_type )
+			end
+		end
+	end
+
+	-- evaluate squad cap
+	if	build_manager:GetSquadCapCurrentMax() < build_manager:GetSquadCapTotalMax() and
+		build_manager:GetSquadCapLeft() <= self.squad_cap_threshold then
+
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Research
+		
+		if not cpu_manager.cpu_player:IsResearchComplete( "chaos_squad_cap_research" ) then
+			build_type.name = "chaos_squad_cap_research"
+			self:TryBuild( build_type )
+		elseif not cpu_manager.cpu_player:IsResearchComplete( "chaos_squad_cap_research_1" ) then
+				build_type.name = "chaos_squad_cap_research_1"
+				self:TryBuild( build_type )
+		elseif not cpu_manager.cpu_player:IsResearchComplete( "chaos_squad_cap_research_2" ) then
+				build_type.name = "chaos_squad_cap_research_2"
+				self:TryBuild( build_type )
+		elseif not cpu_manager.cpu_player:IsResearchComplete( "chaos_squad_cap_research_3" ) then
+				build_type.name = "chaos_squad_cap_research_3"
+				self:TryBuild( build_type )
+		end
+	end
+end
+
+
+function ChaosBuildBaseStrategy:DoSecondaryBuildings()
+
+	local tierLevel = self:GetTierLevel()
+	if tierLevel >=2 then
+
+		-- count how many structures we have	
+		local num_vehicle_buildings = 0
+		local num_infantry_buildings = 0
+		self.num_hq = 0
+	
+		for build_channel in build_manager:GetBuildChannelAIs() do
+	
+			if build_channel:GetBlueprintID() == self.vehicle_building_id then
+				num_vehicle_buildings = num_vehicle_buildings + 1
+			end
+		
+			if build_channel:GetBlueprintID() == self.infantry_building_id then
+				num_infantry_buildings = num_infantry_buildings + 1
+			end
+
+			if build_channel:GetBlueprintID() == self.hq_building_id then
+				self.num_hq = self.num_hq + 1
+			end
+		end
+
+		-- build secondary vehicle buildings
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 800 then
+
+			local bBuild = false
+
+			if tierLevel == 2 and num_vehicle_buildings < 2 then
+				bBuild = true
+			elseif num_vehicle_buildings < 3 then
+				bBuild = true
+			end
+
+			if bBuild == true then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.vehicle_building_name
+				self:TryBuild( build_type )
+			end
+		end
+
+		-- build secondary infantry
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 1000 then
+
+			local bBuild = false
+
+			if tierLevel == 2 and num_infantry_buildings < 2 then
+				bBuild = true
+			elseif num_infantry_buildings < 3 then
+				bBuild = true
+			end
+
+			if bBuild == true then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.infantry_building_name
+				self:TryBuild( build_type )
+			end
+		end
+
+		-- build secondary HQ
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 1000 then
+
+			if tierLevel >= 3 and self.num_hq < 2 then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.hq_building_name
+				self:TryBuild( build_type )
+			end
+		end
+	end
+end
+
+
+function ChaosBuildBaseStrategy:UpdateTierLevel()
+
+	self.tierLevel = 1
+
+	for base in military_manager:GetBases() do
+
+		if base:HasAddOn( self.tier3_addon_id ) then
+			-- we still have the proper add-on
+			if cpu_manager.cpu_player:IsResearchComplete( self.tier4_research_name ) then
+				self.tierLevel = 4
+				return
+			else
+				self.tierLevel = 3
+				return
+			end
+		elseif base:HasAddOn( self.tier2_addon_id ) then
+			self.tierLevel = 2
+		end
+	end
+	
+end
+
+
+function ChaosBuildBaseStrategy:DevalueUnitByTier( unit_stats )
+
+	local devalue = 0
+
+	local tierLevel = self:GetTierLevel()
+
+	if tierLevel == 1 then
+	
+		-- even at tier 1 these guys somewhat suck
+		if unit_stats:GetSquadName() == "chaos_squad_cultist" then
+			devalue = -100
+		end
+
+	elseif tierLevel == 2 then
+		if unit_stats:GetSquadName() == "chaos_squad_cultist" then
+			devalue = VALUE_PER_TIER * 2
+		elseif unit_stats:GetSquadName() == "chaos_marine_squad" then
+			devalue = VALUE_PER_TIER
+		elseif unit_stats:GetSquadName() == "chaos_squad_cultist" then
+			devalue = VALUE_PER_TIER
+		elseif unit_stats:GetSquadName() == "chaos_squad_raptor" then
+			devalue = VALUE_PER_TIER
+		end
+
+	elseif tierLevel == 3 then
+		if unit_stats:GetSquadName() == "chaos_squad_cultist" then
+			devalue = VALUE_PER_TIER * 3
+		elseif unit_stats:GetSquadName() == "chaos_marine_squad" then
+			devalue = VALUE_PER_TIER * 2
+		elseif unit_stats:GetSquadName() == "chaos_squad_cultist" then
+			devalue = VALUE_PER_TIER * 2
+		elseif unit_stats:GetSquadName() == "chaos_squad_raptor" then
+			devalue = VALUE_PER_TIER * 2
+		elseif unit_stats:GetSquadName() == "chaos_squad_khorne_berserker" then
+			devalue = VALUE_PER_TIER
+		end
+
+	elseif tierLevel == 4 then
+
+		if unit_stats:GetSquadName() == "chaos_squad_cultist" then
+			devalue = VALUE_PER_TIER * 4
+		elseif unit_stats:GetSquadName() == "chaos_marine_squad" then
+			devalue = VALUE_PER_TIER * 3
+		elseif unit_stats:GetSquadName() == "chaos_squad_cultist" then
+			devalue = VALUE_PER_TIER * 3
+		elseif unit_stats:GetSquadName() == "chaos_squad_raptor" then
+			devalue = VALUE_PER_TIER * 3
+		elseif unit_stats:GetSquadName() == "chaos_squad_khorne_berserker" then
+			devalue = VALUE_PER_TIER * 2
+		elseif unit_stats:GetSquadName() == "chaos_squad_defiler" then
+			devalue = VALUE_PER_TIER
+		elseif unit_stats:GetSquadName() == "chaos_squad_horror" then
+			devalue = VALUE_PER_TIER
+		end
+	end
+
+	return devalue
+end
+
+
+function ChaosBuildBaseStrategy:DoResearch()
+
+	local tierLevel = self:GetTierLevel()
+
+	if tierLevel == 4 then
+
+	-- Ensure we have Greater Sacrificial research building	
+		local player_stats = cpu_manager.player_stats
+		local building_count = player_stats:GetNumBasesByBPID(self.infantry_building2_id,true)
+	
+		if (building_count == 0) and (not self:PlanExists("Build Building Plan",self.infantry_building2_id)) then
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Building
+			build_type.name = self.infantry_building2_name
+			self:TryBuild( build_type)
+			-- don't try to research until we have building
+			return
+		end
+
+		-- can we research the blood thirster?
+		if build_manager:CanBuildSquad( self.blood_squad_id ) then
+			if	not cpu_manager.cpu_player:IsResearchComplete( self.blood_research_name ) and
+				self:PlanExists( "Build Research Plan", self.blood_research_id ) == false then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Research
+				build_type.name = self.blood_research_name
+				self:TryBuild( build_type )
+				return
+			end
+		end
+
+		-- can we research the daemon prince?
+		if build_manager:CanBuildSquad( self.prince_squad_id ) then
+			if	not cpu_manager.cpu_player:IsResearchComplete( self.prince_research_name ) and
+				self:PlanExists( "Build Research Plan", self.prince_research_id ) == false then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Research
+				build_type.name = self.prince_research_name
+				self:TryBuild( build_type )
+				return
+			end
+		end
+	end
+	
+	
+	-- Ensure we have Armoury research building	
+	if (tierLevel >= 2) then
+		local player_stats = cpu_manager.player_stats
+		local building_count = player_stats:GetNumBasesByBPID(self.research_building_id,true)
+		local infantry_building_count = player_stats:GetNumBasesByBPID(self.infantry_building0_id,true)
+	
+		if (infantry_building_count >= 1) and (building_count == 0) and 
+			(not self:PlanExists("Build Building Plan",self.research_building_id))  then 
+			local reqAmount = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition )
+
+			if (reqAmount > 400) and
+				(self:PlanExists("Build Building Plan",self.research_building_id) == false) then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.research_building_name
+				self:TryBuild( build_type)
+			end
+		end
+	end
+	
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,ChaosBuildBaseStrategy.ResearchOrder,tierLevel)
+end
+
+function ChaosBuildBaseStrategy:CalculateDetectorDemand()
+
+	-- don't build detector units if enemy has no stealth units
+	if (cpu_manager.cpu_player:FindFirstInfiltratedEnemy(Vector3f(0,0,0),1000,1) == nil) then
+		return
+	end
+	
+	-- build stealth detectors: cultists 
+	local detector_name = "chaos_squad_cultist"
+	local bpid = cpu_manager.stats:GetSquadID(detector_name)
+	local s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(bpid)
+	local b_cnt = cpu_manager.player_stats:GetNumSquads() - s_cnt
+	
+	if (s_cnt < math.max(b_cnt / 3,3)) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Squad
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+
+	if	not cpu_manager.cpu_player:IsResearchComplete( self.detect_research_name ) and
+				self:PlanExists( "Build Research Plan", self.detect_research_id ) == false then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Research
+		build_type.name = self.detect_research_name
+		self:TryBuild( build_type )
+	end
+	
+	detector_name = "chaos_turret_bolter"
+	bpid = cpu_manager.stats:GetBuildingID(detector_name)	
+	s_cnt = cpu_manager.player_stats:GetNumBasesByBPID(bpid,true)
+	local b_cnt = cpu_manager.player_stats:GetNumBases()
+	
+	if (s_cnt < math.max(b_cnt-4,2)) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+end
+
+function ChaosBuildBaseStrategy:BuildStructureAddons()
+
+	local tierLevel = self:GetTierLevel()
+
+	if (tierLevel >= 2 and  self:PlanExists( "Build AddOn Plan", self.post_addon1_id ) == false ) then 
+		self.AddPlan( self, BuildAddOnPlan( self.post_addon1_id ) )
+	end
+		
+	if (tierLevel >= 3 and resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 200) then
+		if( self:PlanExists( "Build AddOn Plan", self.post_addon2_id ) == false ) then 
+			self.AddPlan( self, BuildAddOnPlan( self.post_addon2_id ) )
+		end
+	end
+
+	if (tierLevel >= 2 and  self:PlanExists( "Build AddOn Plan", self.turret_addon_id ) == false ) then 
+		self.AddPlan( self, BuildAddOnPlan( self.turret_addon_id ) )
+	end
+	
+	if tierLevel == 1 then
+		if not self:PlanExists( "Build AddOn Plan", self.tier2_addon_id ) then 
+			self.AddPlan( self, BuildAddOnPlan( self.tier2_addon_id ) )
+		end
+	end
+	
+	if (tierLevel == 2 and resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power ) > 500) then
+		if( self:PlanExists( "Build AddOn Plan", self.tier3_addon_id ) == false ) then 
+			self.AddPlan( self, BuildAddOnPlan( self.tier3_addon_id ) )
+		end
+	end
+	
+end

@@ -1,0 +1,34 @@
+----------------------------------------
+-- File: 'SistersRhinotactic.ai'
+-- Edited by Thudmeizer @ 23.03.2008
+
+class 'SistersRhinoTactic' (SistersVehicleTactic)
+
+SistersRhino = {}
+
+function SistersRhinoTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Rhino Tactic")
+	
+	-- Vehicle is a light transport
+	self.m_iTransportVehicle = 1
+	self.m_iTransportSlots = 2
+end
+
+function SistersRhinoTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (SistersRhino.hailers_id == nil) then
+		SistersRhino.hailers_id = cpu_manager.stats:GetAbilityID( "sisters_laud_hailers_fx_rhino" )	
+	end
+end
+
+function SistersRhinoTactic:DoAbilities()
+
+	-- Adversely affects enemy morale but boosts allies
+	if (self.squad_ai:IsInCombat()) then
+		Ability.DoAbilityArea(self.squad_ai, SistersRhino.hailers_id, Ability.Filters.CloseInfantryEnemy, 10, 3)
+	end
+end
+
+

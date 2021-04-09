@@ -1,0 +1,90 @@
+import ("Plans/BuildPlan.ai")
+
+class 'BuildResearchPlan' (BuildPlan)
+
+function BuildResearchPlan:__init( research_id, wait_on_builder) super( CpuPlayer.CT_BuildResearch )
+	
+	--nil if you want to automatically quit out on failure
+	self.wait_on_builder = wait_on_builder
+
+	-- the squad i'm trying to build
+	BuildPlan.SetItemID( self, research_id )
+	BuildPlan.SetItemName( self, cpu_manager.stats:GetResearchName( research_id ) )
+	
+	Plan.SetNeeds( self, "Asking for researcher", BuildResearchPlan.ObtainBuilder )
+	Plan.SetState( self, "Wanting to research: "..self.item_name, BuildResearchPlan.BuildResearch )
+
+	Plan.SetName( self, "Build Research Plan" )
+end
+
+
+function BuildResearchPlan:ObtainBuilder()
+
+	--ZZZ
+	--print ("obtain builder START "..self.item_name.."   ID "..self.item_id)
+	
+	for build_channel in build_manager:GetUnlockedBuildChannelAIs() do
+
+		--don't queue
+		if( build_channel:IsBuilding() == 0 ) then
+			
+			--find the thing to build
+			local item_index  = build_channel:GetItemIndexFromID( BuildChannelAI.PQ_Research, self.item_id )
+
+	--ZZZ
+	--print ("obtain builder INDEX "..item_index)
+
+			if( item_index ~= BuildChannelAI.INVALID_INDEX ) then
+		
+				if( build_channel:CanAddToQueue( BuildChannelAI.PQ_Research, self.item_id ) == BuildChannelAI.CANBUILD_Ok ) then
+					
+					--lock and save it!
+					BuildPlan.SetBuilder( self, build_channel )
+
+					--no needs
+					Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )
+					return
+					
+				end
+			end	
+		end
+	end
+
+	--ZZZ
+	--print ("obtain builder DONE")
+end
+
+
+function BuildResearchPlan:Retry()
+	aitrace("retry research: "..self.item_name)
+	if( self.builder:CanAddToQueue( BuildChannelAI.PQ_Research, self.item_id ) == BuildChannelAI.CANBUILD_Ok ) then
+		self.builder:BuildResearch( self.item_id )
+	else
+		local slot = self.builder:GetItemIndexFromID(BuildChannelAI.PQ_Research, self.item_id)
+
+		if (self.builder:GetItemRequiredTicksAt(BuildChannelAI.PQ_Research, slot) < 5) then
+			-- assume it was built, so give up
+			Plan.SetComplete(self, true)
+		end
+	end
+end
+
+
+function BuildResearchPlan:BuildResearch()
+
+	if self.builder ~= nil then
+		--build it!
+		self.builder:BuildResearch( self.item_id )
+
+		--change state
+		Plan.SetState( self, "Researching a "..self.item_name, BuildPlan.BuildingState )
+		return
+	end
+	
+	aitrace( "can't research "..self.item_name )
+
+	if self.wait_on_builder == nil then
+		Plan.SetComplete( self, true )
+	end
+end
+

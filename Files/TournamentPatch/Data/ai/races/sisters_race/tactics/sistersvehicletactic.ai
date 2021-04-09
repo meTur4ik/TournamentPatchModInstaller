@@ -1,0 +1,23 @@
+----------------------------------------
+-- File: 'Sistersvehicletactic.ai'
+-- Edited by Thudmeizer			@ 06.03.2008
+-- Edited by Arkhan			@ 16.03.2008
+
+class 'SistersVehicleTactic' (VehicleTactic)
+
+function SistersVehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Vehicle Tactic")
+end
+
+-- Check if the vehicle should dance away in melee
+function SistersVehicleTactic:CheckVehicleDance(sName)
+
+	if (sName == "sisters_squad_rhino" or
+	    sName == "sisters_squad_immolator_tank" or
+	    sName == "sisters_squad_exorcist_tank" or
+	    sName == "sisters_squad_penitent_engine") then
+		return true
+	end
+	return false
+end

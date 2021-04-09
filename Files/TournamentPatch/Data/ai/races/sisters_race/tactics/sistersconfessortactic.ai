@@ -1,0 +1,70 @@
+----------------------------------------
+-- File: 'sistersconfessortactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'SistersConfessorTactic' (SistersInfantryTactic)
+
+SistersConfessor = {}
+
+function SistersConfessorTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Canoness Tactic")
+end
+
+function SistersConfessorTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (SistersConfessor.pronouncement_id == nil) then
+		SistersConfessor.pronouncement_id = cpu_manager.stats:GetAbilityID( "sisters_divine_pronouncement" )
+	end
+
+	if (SistersConfessor.witchhammer_id == nil) then
+		SistersConfessor.witchhammer_id = cpu_manager.stats:GetAbilityID( "sisters_witch_hammer" )
+	end
+end
+
+function SistersConfessorTactic:DoAbilities()
+
+	-- stun enemy squad (Faith cost: 30)
+	Ability.DoAbilityTarget( self.squad_ai, SistersConfessor.pronouncement_id, Ability.Filters.CloseSquadEnemy, 2 )
+
+	-- damages everything in affected area (Faith cost: 50)
+	Ability.DoAbilityPos( self.squad_ai, SistersConfessor.witchhammer_id, Ability.Filters.CloseEnemy, 12 )
+
+	-- We are dying, lower requisites for attacks
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+		Ability.DoAbilityTarget( self.squad_ai, SistersConfessor.pronouncement_id, Ability.Filters.CloseSquadEnemy, 1 )
+		Ability.DoAbilityPos( self.squad_ai, SistersConfessor.witchhammer_id, Ability.Filters.CloseEnemy, 6 )
+	end
+end
+
+function SistersConfessorTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function SistersConfessorTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function SistersConfessorTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update(self)) then
+		return
+	end
+	
+	-- Attach to melee in tier3+
+	if (cpu_manager:GetTierLevel() > 2) then
+	
+		if (self:TryAttachSquad(true, true, 50, 100, nil) ~= nil) then
+			return
+		end
+	end
+	if (self:TryAttachSquad(false, true, 50, 100, self.m_fCommanderAttachHealth) == nil) then
+		self:TryAttachSquadMelee()
+	end
+end

@@ -1,0 +1,22 @@
+----------------------------------------
+-- File: 'tauvehicletactic.ai'
+-- Edited by Thudmeizer         @ 26.10.2008
+
+class 'TauVehicleTactic' (VehicleTactic)
+
+function TauVehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Tau Vehicle Tactic")
+end
+
+-- Check if the vehicle should dance away in melee
+function TauVehicleTactic:CheckVehicleDance(sName)
+
+	if (sName == "tau_devilfish_troop_carrier" or
+	    sName == "tau_skyray_squad" or
+	    sName == "tau_drone_harbinger_squad" or
+	    sName == "tau_hammerhead_gunship_squad") then
+		return true
+	end
+	return false
+end

@@ -1,0 +1,17 @@
+class 'NightBringerTactic' (InfantryTactic)
+
+function NightBringerTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Night Bringer Tactic")
+		
+end
+
+function NightBringerTactic:DoPossessAbility()
+
+-- don't return to Necron Lord
+
+end
+
+function NightBringerTactic:AlwaysAttack()
+	return true
+end

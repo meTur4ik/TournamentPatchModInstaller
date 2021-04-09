@@ -1,0 +1,15 @@
+----------------------------------------
+-- File: 'servitortactic.ai'
+-- Edited by Thudmeizer   @ 26.10.2006
+
+class 'ServitorTactic' (EngineerTactic)
+
+function ServitorTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Servitor Tactic")
+end
+
+function ServitorTactic:IsAffectedByMorale()
+	return false
+end
+

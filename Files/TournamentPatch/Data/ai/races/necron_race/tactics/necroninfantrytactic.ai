@@ -1,0 +1,82 @@
+----------------------------------------
+-- File: 'necroninfantrytactic.ai'
+-- Created by Thudmeizer  @ 26.10.2006
+
+class 'NecronInfantryTactic' (InfantryTactic)
+
+function NecronInfantryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Necron Infantry Tactic")
+
+	-- Necrons don't get cover boni
+	self.m_bTakeCover = false
+end
+
+function NecronInfantryTactic:AddCommanders()
+	table.insert(self.commander, { "necron_lord_squad", true })
+	table.insert(self.commander, { "necron_lord_destroyer_squad", false })
+end
+
+-- Unstable with Necron units
+function NecronInfantryTactic:JumpAttack()
+
+end
+
+-- Necron infantry has problems with the jump option
+function NecronInfantryTactic:MoveToDisengage()
+	
+	local maxd = 100
+	local mind = 40
+	local safe_radius = 35
+	local squad_pos = self.squad_ai:GetPosition()
+	
+	-- Broken squad will need bigger safe area than others
+	if (self.squad_ai:IsBroken()) then
+  		maxd = 140
+  		safe_radius = 50
+  	end
+  	
+	-- We are safe
+	if (not cpu_manager.terrain_analyzer:HasThreat( squad_pos, safe_radius )) then
+		mind = 10
+	end
+	
+	-- Get closest strat to retreat
+	local move_pos = nil
+	local vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(squad_pos, cpu_manager.start_pos, true, false)
+	if (vBasePos ~= nil) then
+		move_pos = Vector3f(vBasePos)
+	end
+	
+	-- No SP, check for friendly squad
+	if (move_pos == nil) then
+	
+		local squad_filter = function( squad_ai )
+			return not squad_ai:IsBroken() and not squad_ai:IsCapturing() and
+				   not squad_ai:IsInStateMove() and not squad_ai:GetTactic():IsInSubState() and
+				   not cpu_manager.terrain_analyzer:HasThreat( squad_ai:GetPosition(), 35 )
+		end
+	
+		-- Check for friendly squad
+		move_pos = cpu_manager:GetClosestSquadWithin( squad_pos, mind, maxd, squad_filter )
+	end
+	
+	-- We have a valid destination
+	if (move_pos ~= nil) then
+	
+		cpu_manager:DoMove( self.squad_ai, move_pos, false, "Disengage", false )
+		self.safe_point = Vector3f( move_pos )
+		return true
+	end
+	return false
+end
+
+-- Necron infantry doesn't dance
+function NecronInfantryTactic:CheckForDance()
+
+end
+
+-- Necron infantry doesn't dance
+function NecronInfantryTactic:CheckForDeath()
+	
+end

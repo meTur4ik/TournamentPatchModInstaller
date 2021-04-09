@@ -1,0 +1,23 @@
+class 'MissionaryTactic' (InfantryTactic)
+
+
+function MissionaryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Missionary Tactic")
+	
+end
+
+function MissionaryTactic:DoAbilities()
+
+	if not self.squad_ai:IsInCombat() then
+	
+		local node = self.squad_ai:GetClosestWorshipNode(25);
+		
+		if(node ~= nil) then
+			aitrace("worship")
+			self.squad_ai:DoWorship(node)
+		end
+	end
+	
+end
+

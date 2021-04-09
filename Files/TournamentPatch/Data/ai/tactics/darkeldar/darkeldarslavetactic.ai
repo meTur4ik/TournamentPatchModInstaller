@@ -1,0 +1,46 @@
+class 'DarkEldarSlaveTactic' (EngineerTactic)
+
+function DarkEldarSlaveTactic:__init( squad_ai ) super( squad_ai )
+
+
+	self:SetName("Dark Eldar Slave Tactic")
+
+end
+
+
+function DarkEldarSlaveTactic:Update()
+
+	if not EngineerTactic.Update( self ) then
+		return false
+	end
+
+	local numCorpses = self.squad_ai:GetNumCorpses(40);	
+	
+	if not self.squad_ai:IsBuilding() then
+		if (numCorpses > 0) then
+			aitrace("cannibalize")
+			print("DE slave cannibalize")
+			self.squad_ai:DoCannibalize();
+		end
+	end
+			
+	--if not self.squad_ai:IsReinforcing() and 
+	--	self.squad_ai:GetNumTroopers() < self.squad_ai:GetMaxTroopers() then
+	--	if self.squad_ai:CanReinforce( false, 0 ) then
+	--		self.squad_ai:DoReinforce( false, 0 )
+	--	end
+	--end
+	
+	return true
+end
+
+
+function DarkEldarSlaveTactic:IsAttacker()
+	return false
+end
+
+
+function DarkEldarSlaveTactic:IsAffectedByMorale()
+	return false
+end
+

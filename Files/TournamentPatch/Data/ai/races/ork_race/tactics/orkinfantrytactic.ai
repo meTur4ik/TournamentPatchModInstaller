@@ -1,0 +1,81 @@
+----------------------------------------
+-- File: 'orkinfantrytactic.ai'
+-- Created by Arkhan		@ 12.01.2006
+
+class 'OrkInfantryTactic' (InfantryTactic)
+
+function OrkInfantryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Ork Infantry Tactic")
+	
+	-- Basic ork infantry is able to enter transport vehicles
+	local sSquadName = squad_ai:GetSquadName()
+	if (sSquadName == "ork_flash_gitz_squad" or sSquadName == "ork_squad_nob" or sSquadName == "ork_squad_armored_nob") then
+		self.m_iTransportable = 2
+	elseif (sSquadName ~= "ork_squad_stormboy") then
+		self.m_iTransportable = 1
+	end
+end
+
+function OrkInfantryTactic:AddCommanders()
+	table.insert(self.commander, { "ork_squad_mek_boy", true })
+	table.insert(self.commander, { "ork_squad_warboss", false })
+end
+
+function OrkInfantryTactic:DoAbilities()
+	
+	-- I might have these attached
+	if (self.squad_ai:IsAttached()) then
+	
+		if (self.squad_ai:HasSquadAttached("ork_squad_bad_dok")) then
+			BadDokTactic.InitAbilities( self )
+			BadDokTactic.DoAbilities( self )
+		elseif (self.squad_ai:HasSquadAttached("ork_squad_mek_boy")) then
+			MekBoyTactic.InitAbilities( self )
+			MekBoyTactic.DoAbilities( self )
+		elseif (self.squad_ai:HasSquadAttached("ork_squad_warboss")) then
+			WarBossTactic.InitAbilities( self )
+			WarBossTactic.DoAbilities( self )
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end
+
+function OrkInfantryTactic:CheckForDetach()
+
+	if (not self.squad_ai:IsInCombat() and not self.squad_ai:WasRecentlyHurt()) then
+	  
+		-- Detach dok from weak squad, perhaps we can find a better one 
+		if (self.squad_ai:HasSquadAttached( "ork_squad_bad_dok" )) then	
+		 
+			if (self.squad_ai:GetTactic():GetUnitStrength() < 200) then
+				self.squad_ai:DoDetachSquad()
+				self.squad_ai:DoSetDefaultMeleeStance()
+			end
+		end
+	end
+	
+	-- Call basic detach method
+	InfantryTactic.CheckForDetach(self)
+end
+
+function OrkInfantryTactic:CheckDance(oSquad)
+
+	-- Check opponent
+	if (oSquad == nil) then
+		return false
+	end
+	
+	-- Compare opponents
+	local sSquadName = self.squad_ai:GetSquadName()
+	if (sSquadName == "ork_flash_gitz_squad") then
+		
+		-- Check opponent
+		if (oSquad:GetSquadName() == "chaos_squad_cultist") then
+			return false
+		end
+	end
+	return true
+end

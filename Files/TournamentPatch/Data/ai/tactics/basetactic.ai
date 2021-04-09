@@ -1,0 +1,228 @@
+class 'BaseTactic'
+
+BaseTactic.SpecialAbilities = 
+{
+	{ nil, "eldar_shroud", 								Ability.PredicateFilters.IsNotInfiltrating, nil },
+}
+
+BaseTactic.PosAbilities = 
+{
+}
+
+BaseTactic.TargetAbilities = 
+{
+	{ nil, "necron_listening_post", 				Ability.Filters.CloseEnemy, 3 },
+}
+
+BaseTactic.LocationAbilities = 
+{
+	{ nil, "guard_detection_field", 				Ability.LocationFilters.CloseInfiltratedEnemyRandomOffset, {radius = 20} },
+}
+
+
+--? @shortdesc ctor
+--? @args BaseAI base_ai
+--? @result void
+function BaseTactic:__init( base_ai )
+
+	dbAssert( base_ai ~= nil )
+	
+	self.base_ai = base_ai
+	self.status = "Initialized"
+	self.prev_sub_state = nil
+	
+	self.state = nil
+	self.state_function = nil
+	self.state_function_map = {}
+
+	self.tactic_name = nil
+	
+	self.state_function_map[ Tactic.States.Idle ] = BaseTactic.IdleState
+	self.state_function_map[ Tactic.States.Disabled ] = BaseTactic.StartDisabledState
+	
+	self.sub_state_name = "No Sub State"
+	
+	self:SetState( Tactic.States.Idle )
+	
+	Tactic.UtilityFunctions.InitAbilitiesTable(BaseTactic.SpecialAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(BaseTactic.PosAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(BaseTactic.TargetAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(BaseTactic.LocationAbilities)
+	
+	self:SetName("Base Tactic")
+end
+
+
+function BaseTactic:IsComplete()
+	return not self.base_ai:IsValid()
+end
+
+--? @shortdesc Set the name of the plan
+--? @args name
+--? @result void
+function BaseTactic:SetName( name )
+	self.tactic_name = name
+end
+
+--? @shortdesc Get the name of the tactic
+--? @args 
+--? @result string
+function BaseTactic:GetName()
+	dbAssert( self.tactic_name ~= nil )
+	return self.tactic_name
+end
+
+
+function BaseTactic:Update()
+	
+	profile_start("Update")
+	
+	local continue = true 
+	if self:GetState() == Tactic.States.Disabled then
+		continue = false
+	end
+	
+	if continue and self:IsComplete() then
+		continue = false
+	end
+	
+	if continue then
+		self.state_function( self )
+	end
+	
+	profile_end("Update")
+	
+	if (not continue) then
+		return false
+	end
+
+	self:DoAbilities()
+
+	return true
+end
+
+
+--? @shortdesc stay in the same state, but use a new state function (a substate)
+--? @args function state_function
+--? @result void
+function BaseTactic:SetSubState( state_function, sub_state_name )
+
+	dbAssert( state_function ~= nil )
+	
+	self.prev_sub_state = self.state_function
+	self.prev_sub_state_name = self.sub_state_name
+	
+	self.state_function = state_function
+	self.sub_state_name = sub_state_name
+
+end
+
+
+function BaseTactic:GetSubState()
+	return self.state_function, self.sub_state_name
+end
+
+
+function BaseTactic:GetPrevSubState()
+	
+	return self.prev_sub_state, self.prev_sub_state_name
+	
+end
+
+--? @shortdesc change the current state of the tactic and enter the starting state function 
+--? @extdesc will use IdleState if no appropriate beginning state function exists \n
+--? available states: \n
+--? Tactic.States.Idle \n
+--? Tactic.States.Attack \n
+--? Tactic.States.Hold \n
+--? @args Tactic.State state
+--? @result void
+function BaseTactic:SetState( state )
+
+	dbAssert( state ~= nil )
+	self.state = state
+	
+	--if you don't have a function for this, use idle state
+	if( self.state_function_map[ state ] == nil ) then
+		self.state_function = BaseTactic.IdleState
+	else
+		self.state_function = self.state_function_map[ state ]
+	end
+
+	--reset
+	self.sub_state_name = "Initialized"
+	self.prev_sub_state_name = "Initialized"
+	self.prev_sub_state = nil
+	
+end
+
+
+--? @shortdesc returns the current state for this tactic
+--? @args 
+--? @result Tactic.State state
+function BaseTactic:GetState()
+	return self.state
+end
+
+
+--? @shortdesc assign the starting function to use when this tactic enters a state
+--? @args Tactic.State state, function state_func
+--? @result void
+function BaseTactic:AssignStateFunction( state, state_func )
+	
+	dbAssert( state_func ~= nil )
+	self.state_function_map[ state ] = state_func
+end
+
+
+--? @shortdesc state used when the tactic is not locked
+--? @args 
+--? @result void
+function BaseTactic:IdleState()
+
+end
+
+
+--? @shortdesc state used when a designer locks a resource
+--? @args 
+--? @result void
+function BaseTactic:StartDisabledState()
+	self:SetSubState( BaseTactic.DisabledState )
+end
+
+
+--? @shortdesc state used when the tactic should not do anything
+--? @args 
+--? @result void
+function BaseTactic:DisabledState()
+end
+
+
+--? @shortdesc set a target for the tactic. This target is a variant, so it may be of different types depending on the current state
+--? @extdesc available variants: \n
+--? Tactic.Variant.Vector \n
+--? Tactic.Variant.SquadAI \n
+--? Tactic.Variant.BaseAI \n
+--? @args Variant target
+--? @result void
+function BaseTactic:SetTarget( target, variant_type )
+
+	dbAssert( variant_type < Tactic.Variant.Invalid )
+	self.variant_type = variant_type
+	self.target = target
+end
+
+
+function BaseTactic:CanSpendMoney()
+	return cpu_manager.build_base_strategy:CanTacticSpendMoney()
+end
+
+
+function BaseTactic:DoAbilities()
+
+	Tactic.UtilityFunctions.DoAbilities(BaseTactic.SpecialAbilities,self.base_ai,Ability.DoAbility)
+	Tactic.UtilityFunctions.DoAbilities(BaseTactic.PosAbilities,self.base_ai,Ability.DoAbilityPos)
+	Tactic.UtilityFunctions.DoAbilities(BaseTactic.TargetAbilities,self.base_ai,Ability.DoAbilityTarget)
+	Tactic.UtilityFunctions.DoAbilities(BaseTactic.LocationAbilities,self.base_ai,Ability.DoAbilityLocation)
+
+end

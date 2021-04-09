@@ -1,0 +1,407 @@
+----------------------------------------
+-- File: 'taubuildbasestrategy.ai'
+-- Edited by Thudmeizer @ 06.03.2008
+
+class 'TauBuildBaseStrategy' (BuildBaseStrategy)
+
+function TauBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+
+	-- Add detector units (Best first, worst last)
+	self:AddDetectorUnit("tau_pathfinder_squad")
+	self:AddDetectorUnit("tau_vespid_auxiliary_squad")
+	self:AddDetectorUnit("tau_ethereal_squad")
+end
+
+function TauBuildBaseStrategy:ChooseBuildProgram()
+
+	-- Check build program count
+	if (table.getn(self.info.BuildPrograms) ~= 4) then
+		return BuildBaseStrategy.ChooseBuildProgram(self)
+	end
+
+	-- Try to maintain the same strategy, on AI re-initiation (Save->Load, Change Players, etc.)
+	for oBuilding in military_manager:GetBases() do
+		if (oBuilding:IsValid()) then
+			local oBuildingName = oBuilding:GetBaseName()
+			if oBuildingName == "tau_shrine_of_montka" then return math.random( 1,2 )
+			elseif oBuildingName == "tau_shrine_of_kauyon" then return math.random( 3,4 )
+			end
+		end
+	end
+	if cpu_manager.cpu_player:IsResearchComplete("tau_teachings_of_montka_research") then
+		return  math.random( 1,2 )
+	elseif (cpu_manager.cpu_player:IsResearchComplete("tau_targeting_optics") or
+	cpu_manager.cpu_player:IsResearchComplete("tau_improved_metallurgy")or
+	cpu_manager.cpu_player:IsResearchComplete("tau_teachings_of_kauyon_research")) then
+		return  math.random( 3,4 )
+	end
+	
+	-- Get map size and closest enemy distance
+	local sMapSize, iClosestEnemyDistance = self:GetMapSize()
+		
+	-- Set probabilities of the strategies according to the map size
+	local iBuildProgram1	-- Basic strategy
+	local iBuildProgram2	-- Fire warrior rush
+	local iBuildProgram3	-- Kroot karnivore rush
+	local iBuildProgram4	-- Devilfish/Broadside rush
+	if (sMapSize == "small" or iClosestEnemyDistance <= 70 or cpu_manager.iPlayerCount == 2) then
+	
+		iBuildProgram1 = 30
+		iBuildProgram2 = 30
+		iBuildProgram3 = 40
+		iBuildProgram4 = 0
+		
+	elseif (sMapSize == "large" and cpu_manager.iPlayerCount >= 6) then
+	
+		iBuildProgram1 = 30
+		iBuildProgram2 = 20
+		iBuildProgram3 = 25
+		iBuildProgram4 = 25
+	else
+	
+		iBuildProgram1 = 30
+		iBuildProgram2 = 30
+		iBuildProgram3 = 40
+		iBuildProgram4 = 0
+	end
+	
+	-- Modify probabilities according to the closest enemy player
+	local oEnemy = cpu_manager:FindClosestEnemyPlayer(false)
+	local sEnemy = oEnemy:GetPlayerRaceName()		
+	if (sEnemy == "space_marine_race" or sEnemy == "guard_race" or sEnemy == "necron_race") then
+	
+		iBuildProgram1 = iBuildProgram1 + 10
+		iBuildProgram2 = iBuildProgram2 + 10
+		iBuildProgram3 = iBuildProgram3 - 20
+		
+	elseif (sEnemy == "chaos_marine_race") then
+
+		iBuildProgram1 = iBuildProgram1 - 10
+		iBuildProgram2 = iBuildProgram2 - 10
+		iBuildProgram3 = iBuildProgram3 + 20
+	end
+		
+	-- Now choose a program
+	iBuildProgram2 = iBuildProgram1 + iBuildProgram2
+	iBuildProgram3 = iBuildProgram2 + iBuildProgram3
+	iBuildProgram4 = iBuildProgram3 + iBuildProgram4
+	local iRandom = math.random(1, 100)
+	if (iRandom <= iBuildProgram1) then
+		return 1
+	elseif (iRandom <= iBuildProgram2) then
+		return 2
+	elseif (iRandom <= iBuildProgram3) then
+		return 3
+	elseif (iRandom <= iBuildProgram4) then
+		return 4
+	end
+	return 1
+end
+
+function TauBuildBaseStrategy:EvaluateSquadCap()
+	
+	-- Check if any buildings are in production
+	local iBuildingID = cpu_manager.stats:GetBuildingID("tau_research_building")
+	if (self:PlanExists("Build Building Plan", iBuildingID)) then
+		return
+	end
+
+	-- Check squad and support cap
+	if (self:CheckSquadCap(250, 250) or self:CheckSupportCap(300, 300)) then
+		
+		-- Build this building
+		local tBuildType = CpuBuildType()
+		tBuildType.btype = CpuPrerequisites.BT_Building
+		tBuildType.name = "tau_research_building"
+		if (self:TryBuild( tBuildType )) then
+			aitrace("BuildController: Dynamic build of "..tBuildType.name)
+		end
+		return
+	end
+end
+
+function TauBuildBaseStrategy:GetBuildingName( sType )
+
+	-- Return race specific object string
+	if (sType == "HQ") then
+		return "tau_hq"
+		
+	elseif (sType == "Generator") then
+		return "tau_plasma_generator"
+		
+	elseif (sType == "BiggerGenerator") then
+		return "tau_thermoplasma_generator"
+		
+	elseif (sType == "VehicleBuilding") then
+		return "tau_vehicle_building"
+		
+	elseif (sType == "ListeningPost") then
+		return "tau_listening_post"
+		
+	elseif (sType == "Turret") then
+		return nil
+		
+	elseif (sType == "Mine") then
+		return nil
+	end
+	
+	return nil
+end
+
+function TauBuildBaseStrategy:GetAddonBuilding( sType )
+
+	if (sType == "addon_tau_list_post_1") then
+		return "tau_listening_post"
+		
+	elseif (sType == "addon_tau_list_post_2") then
+		return "tau_listening_post"
+	end
+	return nil
+end
+
+-- Returns the squad cap and support cap of the given squad
+function TauBuildBaseStrategy:GetUnitStats(sSquadName)
+
+	if (sSquadName == "tau_stealth_team_squad") then
+		return 1, 0
+	elseif (sSquadName == "tau_fire_warrior_squad") then
+		return 2, 0
+	elseif (sSquadName == "tau_shasui_fire_warrior_bodyguard_sp") then
+		return 2, 0
+	elseif (sSquadName == "tau_vespid_auxiliary_squad") then
+		return 2, 0
+	elseif (sSquadName == "tau_kroot_carnivore_squad") then
+		return 2, 0
+	elseif (sSquadName == "tau_kroot_hound_squad") then
+		return 3, 0
+	elseif (sSquadName == "tau_pathfinder_squad") then
+		return 2, 0
+	elseif (sSquadName == "tau_broadside_battlesuit_squad") then
+		return 3, 0
+	elseif (sSquadName == "tau_crisis_suit_squad") then
+		return 2, 0
+	elseif (sSquadName == "tau_devilfish_troop_carrier") then
+		return 0, 1
+	elseif (sSquadName == "tau_drone_squad") then
+		return 0, 2
+	elseif (sSquadName == "tau_skyray_squad") then
+		return 0, 3
+	elseif (sSquadName == "tau_drone_harbinger_squad") then
+		return 0, 5
+	elseif (sSquadName == "tau_barracuda_squad") then
+		return 0, 4
+	elseif (sSquadName == "tau_hammerhead_gunship_squad") then
+		return 0, 3
+	elseif (sSquadName == "tau_krootox_squad") then
+		return 0, 3
+	elseif (sSquadName == "tau_greater_knarloc_squad") then
+		return 0, 5
+	end
+	return 0, 0
+end
+
+function TauBuildBaseStrategy:UpdateTierLevel()
+
+	-- Reset tier level
+	self.tierLevel = 1
+
+	-- Check presence of buildings
+	if (self:GetBuildingCountByName("tau_research_building") > 0) then
+		self.tierLevel = 2
+	end
+
+	-- Check presence of buildings
+ 	if (self:GetBuildingCountByName("tau_shrine_of_montka") > 0 or self:GetBuildingCountByName("tau_shrine_of_kauyon") > 0) then
+		self.tierLevel = 3
+	end
+
+	-- Check presence of researches
+	if (cpu_manager.cpu_player:IsResearchComplete("tau_teachings_of_montka_research") or 
+		cpu_manager.cpu_player:IsResearchComplete("tau_teachings_of_kauyon_research")) then
+		self.tierLevel = 4
+	end
+end
+
+function TauBuildBaseStrategy:BuildFlexible()
+
+	-- Dynamic research item syntax: ResearchName, MinTier, RequisitionCost, PowerCost, MinSquadCap, MinSupportCap, SquadName, SquadMinCount
+	local iArmyStrength = cpu_manager:GetArmyStrength()
+	local iScoutSquads = self:CountSquads("tau_stealth_team_squad")
+	local iInfantrySquads = self:CountSquads("tau_fire_warrior_squad") + iScoutSquads
+	local iKrootSquads = self:CountSquads("tau_kroot_carnivore_squad") + self:CountSquads("tau_kroot_hound_squad")
+	
+	-- Compute tier 1 researches
+	if (self.tierLevel >= 1) then
+
+		-- Compute basic research (Affects commander, vespids, stealth suits)
+		self:DynamicResearch("tau_anti_grav_research", 1, 50, 25, 0, 0, "tau_commander_squad", 1)
+		
+		-- Compute bonus researches
+		if (iArmyStrength >= 1250) then
+		
+			-- Compute scout researches
+			if (iScoutSquads >= 2) then
+				self:DynamicResearch("tau_stealth_suit_damage_research", 1, 50, 50, 0, 0, nil, 0)
+			end
+		end
+	end
+	
+	-- Compute tier 2 researches
+	if (self.tierLevel >= 2) then
+		
+		-- Compute infantry research
+		if (iInfantrySquads >= 3) then
+			self:DynamicResearch("tau_improved_power_source_research", 2, 50, 100, 0, 0, nil, 0)
+		end
+		
+		-- Compute Kroot researches
+		if (iKrootSquads >= 2) then
+			self:DynamicResearch("tau_feral_leap_research", 2, 75, 50, 0, 0, nil, 0)
+		end
+
+		-- Compute vehicle researches
+		self:DynamicResearch("tau_missile_barrage_research", 2, 100, 100, 0, 0, "tau_skyray_squad", 1)
+		
+		-- Compute secondary researches
+		if (iArmyStrength >= 1250) then
+		
+			-- Compute scout researches
+			if (iScoutSquads >= 2) then
+				self:DynamicResearch("tau_target_lock", 2, 75, 50, 0, 0, nil, 0)
+				self:DynamicResearch("tau_stealth_suit_damage_research", 1, 50, 50, 0, 0, nil, 0)
+			end
+		end
+	end
+	
+	-- Compute tier 3 researches
+	if (self.tierLevel >= 3) then
+	
+		-- Compute infantry research
+		if (iInfantrySquads >= 3) then
+			self:DynamicResearch("tau_improved_metallurgy", 3, 150, 150, 0, 0, nil, 0)
+		end
+		
+		-- Compute secondary researches
+		if (iArmyStrength >= 1750) then
+
+			-- Compute infantry research
+			if (iInfantrySquads >= 3) then
+				self:DynamicResearch("tau_targeting_optics", 3, 100, 100, 0, 0, nil, 0)
+			end		
+		end
+	end
+
+	-- Restrict dynamic builds to hard difficulty or higher
+	if (CpuManager.AISettings.bMultiBuildings) then
+	
+		-- Dynamic buildings
+		-- Item-Syntax: BuildingName, BuildingCount, MinTier, MinRequisition, MinPower, MinSquadCap, MinSupportCap
+		self:DynamicBuild("tau_barracks", 2, 1, 800, 0, 0, 0)
+		self:DynamicBuild("tau_kroot_nest", 2, 1, 800, 0, 0, 0)
+		self:DynamicBuild("tau_vehicle_building", 2, 2, 200, 600, 0, 0)
+		self:DynamicBuild("tau_barracks", 3, 3, 2000, 0, 0, 0)
+		self:DynamicBuild("tau_kroot_nest", 3, 3, 2000, 0, 0, 0)
+		self:DynamicBuild("tau_vehicle_building", 3, 3, 500, 1500, 0, 0)
+		self:DynamicBuild("tau_hq", 2, 2, 1500, 0, 0, 0)
+	end
+end
+
+-- Method to check if force tech should be computed
+function TauBuildBaseStrategy:ForceTech()
+
+	-- Check time
+	if (g_iGMT < 60 * CpuManager.ForceTech.StartTier1) then
+		return false
+	end
+	
+	-- Check ressources
+	local iRequisition = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition )
+	local iPower = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Power )
+
+	-- Check tier
+	local iTierLevel = self:GetTierLevel()
+	if (iTierLevel == 1) then
+	
+		-- Check resources
+		if (iRequisition > 600 and iPower > 200) then
+			return false
+		end
+	
+		-- Check build channel for building
+		if (self:GetBuildingCountByName("tau_research_building", false) >= 1) then
+			return false
+		end
+		return true
+		
+	elseif (iTierLevel == 2) then
+
+		-- Check for vehicle building
+		if (self:GetBuildingCountByName("tau_vehicle_building", false) < 1) then
+			return true
+		end
+		
+		-- Check time
+		if (g_iGMT > 60 * CpuManager.ForceTech.StartTier2 and (iRequisition < 600 or iPower < 600)) then
+			return true
+		end
+		
+	elseif (iTierLevel == 3) then	
+
+		-- Check time
+		if (g_iGMT > 60 * CpuManager.ForceTech.StartTier3 and (iRequisition < 600 or iPower < 600)) then
+			return true
+		end
+	end
+	return false
+end
+
+-- Arkhan 03.2006: Return placement type for buildings
+function TauBuildBaseStrategy:GetPlacementType(iBuildingID)
+	
+	-- Check building
+	if (cpu_manager:IsHQ(iBuildingID)) then
+		return "HQ"
+	elseif (iBuildingID == cpu_manager.stats:GetBuildingID("tau_barracks") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("tau_kroot_nest") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("tau_vehicle_building")) then
+		return "Military"
+	elseif (cpu_manager:IsGenerator(iBuildingID) or
+			iBuildingID == cpu_manager.stats:GetBuildingID("tau_research_building") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("tau_shrine_of_montka") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("tau_shrine_of_kauyon") or
+			iBuildingID == cpu_manager.stats:GetBuildingID("tau_shrine_of_purpose")) then
+		return "BaseBack"
+	end
+	return "Basic"
+end
+
+-- Inherited method to modify squad demand
+function TauBuildBaseStrategy:ModifySquadDemand(iUnitID)
+
+	-- No more shapers then regular squads 
+	if (iUnitID == cpu_manager.stats:GetSquadID("tau_kroot_shaper_squad")) then
+		
+		-- Check number of attachable squads 
+		local shaper_attach = function ( squad_ai )
+			return (squad_ai:GetTactic():GetUnitStrength() >= 250 and squad_ai:CanReceiveAttachment())
+		end
+		local num_attach = self:CountSquads("tau_kroot_carnivore_squad", shaper_attach) +
+						   self:CountSquads("tau_kroot_hound_squad", shaper_attach)
+ 		-- Check shaper count
+		local num_shaper = self:CountSquads("tau_kroot_shaper_squad")
+		if (num_shaper >= num_attach) then
+			return 0
+		end	
+	end
+	return BuildBaseStrategy.ModifySquadDemand(self, iUnitID)
+end
+
+-- Arkhan 11.2006: Virtual method for checking out relic units
+function TauBuildBaseStrategy:RelicRequired(sName)
+
+	-- Check name
+	if (sName == "tau_greater_knarloc_squad") then
+		return true
+	end
+	return false
+end

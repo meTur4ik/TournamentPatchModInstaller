@@ -1,0 +1,62 @@
+----------------------------------------
+-- File: 'maraudertactic.ai'
+-- Edited by Thudmeizer @ 22.03.2008
+
+class 'MarauderTactic' (GuardVehicleTactic)
+
+Marauder = {}
+
+function MarauderTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Marauder Tactic")
+end
+
+function MarauderTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Marauder.smoke_id == nil) then
+		Marauder.smoke_id = cpu_manager.stats:GetAbilityID( "guard_smoke_bombs" )
+	end
+
+	if (Marauder.krak_id == nil) then
+		Marauder.krak_id = cpu_manager.stats:GetAbilityID( "guard_krak_bombs" )
+	end
+
+	if (Marauder.incendiary_id == nil) then
+		Marauder.incendiary_id = cpu_manager.stats:GetAbilityID( "guard_incendiary_bombs" )
+	end
+end
+
+function MarauderTactic:DoAbilities()
+
+	-- Check if we can deploy smoke
+	if (self.squad_ai:CanDoAbility(Marauder.smoke_id)) then
+	
+		-- Search a squad
+		local iRange = self.squad_ai:GetAbilityRange(Marauder.smoke_id)
+		local oUnit = Ability.Filters.CloseHurt(self.squad_ai:GetPosition(), iRange, 1)
+		if (oUnit ~= nil and oUnit:IsInCombat() and cpu_manager:GetUnitStrength(oUnit) > 150) then
+			self.squad_ai:DoSpecialAbilitySquad(Marauder.smoke_id, oUnit:GetSquad())
+		end
+	end
+
+	-- Check if we're in close combat - Krak
+	local oEnemySquad = Ability.Filters.CloseVehicleEnemy(self.squad_ai:GetPosition(), 0, 1)
+	if (oEnemySquad ~= nil) then
+	
+		-- Check if we can drop Krak Bombs
+		if (self.squad_ai:CanDoAbility(Marauder.krak_id)) then
+			self.squad_ai:DoSpecialAbility(Marauder.krak_id) 
+		end
+	end
+
+	-- Check if we're in close combat - Incendiary
+	oEnemySquad = Ability.Filters.CloseInfantryEnemy(self.squad_ai:GetPosition(), 0, 5)
+	if (oEnemySquad ~= nil and not oEnemySquad:IsBroken()) then
+	
+		-- Check if we can drop Incendiary Bombs
+		if (self.squad_ai:CanDoAbility(Marauder.incendiary_id)) then
+			self.squad_ai:DoSpecialAbility(Marauder.incendiary_id) 
+		end
+	end
+end

@@ -1,0 +1,591 @@
+----------------------------------------
+-- File: 'defendplan.ai'
+-- Edited by LarkinVB @		11.10.2005
+-- Edited by Arkhan			06.01.2006
+
+class 'DefendPlan' (Plan)
+
+function DefendPlan:__init(vDefendPos, iDefendRange, bDefendHQ) super( CpuPlayer.CT_Defending )
+
+	dbAssert( vDefendPos ~= nil )
+	
+	self.defend_pos = Vector3f(vDefendPos)
+	self.m_iDefendRange = iDefendRange
+	self.m_bDefendHQ = bDefendHQ
+	
+	Plan.SetName( self, "Defend Plan" )	
+	
+	self.defend_units = {}
+	
+	Plan.SetNeeds( self, "Obtain Force", DefendPlan.ObtainForce )
+	Plan.SetState( self, "Defend: "..vec2str(self.defend_pos), DefendPlan.Defending )
+	
+	self.m_iTargetChange = 0
+	self.m_iLastCaptureTry = 0
+	self.m_iLastDefenseStart = 0
+	self.m_iDefenseDelay = 0
+	self.m_vLastDefendPos = Vector3f(self.defend_pos)
+	self.m_bGatherTroops = false
+	
+	self.m_iArmyStrength = 0
+	self.m_vArmyPosition = nil
+	self.m_iLastUpdate = 0
+	
+	self.m_oSupportDetector = nil
+end
+
+function DefendPlan:CheckDefendable()
+
+	aitrace("DefendPlan: Check defendable...")
+
+	-- Check situation
+	local iEnemyStrength, iAlliedStrength, iMyStrength = cpu_manager:GetArmyStrengthAtPos(self.defend_pos, self.m_iDefendRange)
+	if (iEnemyStrength == 0) then
+		return 0
+	end
+
+	-- Don't check too often
+	if (g_iGMT < self.m_iLastDefenseStart + 25) then
+		return 1
+	end
+	
+	-- Check army strengh and position
+	local iArmyStrength, vArmyCenter = self:GetArmyStrength()
+	if (iArmyStrength > 1500) then
+		return 1
+	end
+	
+	-- Check turret strength
+	local iTurretStrength = 0
+	for oPlayer in cpu_manager.stats:GetPlayerStats() do
+	
+		-- Check turret strength at defend position
+		iTurretStrength = iTurretStrength + cpu_manager:GetDefensiveBuildingsCostAt(oPlayer, self.defend_pos, 35)
+	end
+	
+	-- Check if we defend a HQ
+	if (self.m_bDefendHQ and iArmyStrength > 500) then
+		self.m_iLastDefenseStart = g_iGMT
+		return 1
+	end
+
+	-- Compare army strengths
+	local iDefendPower = iTurretStrength + iAlliedStrength - iMyStrength + iArmyStrength
+	if (3 * iDefendPower < 2 * iEnemyStrength) then
+		return -1
+	end
+	
+	-- Set last check time
+	self.m_iLastDefenseStart = g_iGMT
+	return 1
+end
+
+function DefendPlan:IsEqual( plan_name, plan_id )
+	--check if we're defending the same place
+   return self:GetName() == plan_name and distance_sqr( plan_id, self.defend_pos ) < sqr(10)
+end
+
+function DefendPlan:GetArmyStrength()
+
+	-- Check if we've already calculated the army strenth
+	if (g_iGMT <= self.m_iLastUpdate) then
+		return self.m_iArmyStrength, self.m_vArmyPosition
+	end
+	
+	-- Calculate army strength
+	local iArmyStrength = 0
+	local vArmyPosition = Vector3f(0, 0, 0)
+	for iLoop1 in self.defend_units do
+	
+		-- Get unit
+		local oUnit = self.defend_units[iLoop1]
+				
+		-- Check if unit is valid			
+		if (oUnit:IsValid()) then
+		
+			-- Add unit strength to army strength
+			local iUnitStrength = oUnit:GetTactic():GetUnitStrength()
+			iArmyStrength = iArmyStrength + iUnitStrength
+			
+			-- Add unit position to army position
+			local vUnitPosition = oUnit:GetPosition()
+			vArmyPosition.x = vArmyPosition.x + iUnitStrength * vUnitPosition.x
+			vArmyPosition.z = vArmyPosition.z + iUnitStrength * vUnitPosition.z
+		end
+	end
+	if (iArmyStrength > 0) then
+		vArmyPosition.x = vArmyPosition.x / iArmyStrength
+		vArmyPosition.z = vArmyPosition.z / iArmyStrength
+	end
+	
+	-- Get closest valid position to army center
+	local vClosestPosition = nil
+	local iClosestDistance = 0
+	for iLoop1 in self.defend_units do
+	
+		-- Get unit
+		local oUnit = self.defend_units[iLoop1]
+		
+		-- Check if unit is valid			
+		if (oUnit:IsValid()) then
+		
+			-- Check distance to army center
+			local vSquadPos = oUnit:GetPosition()
+			local iDistance = distance_sqr(vArmyPosition, vSquadPos)
+			if (vClosestPosition == nil or iDistance < iClosestDistance) then
+				vClosestPosition = vSquadPos
+				iClosestDistance = iDistance
+			end
+		end
+	end
+	if (vClosestPosition ~= nil) then
+		vArmyPosition = vClosestPosition
+	else
+		vArmyPosition = self.defend_pos
+	end
+	
+	-- Store and return result
+	self.m_iArmyStrength = iArmyStrength + cpu_manager:GetDeepStrikeArmyStrength()
+	self.m_vArmyPosition = vArmyPosition
+	self.m_iLastUpdate = g_iGMT
+	return iArmyStrength, vArmyPosition
+end
+
+function DefendPlan:GetAverageUnitDistance(vCenter)
+	
+	-- Calculate distances
+	local fAverageDistance = 0
+	local iArmyStrength = 0
+	for iLoop1 in self.defend_units do
+	
+		-- Get unit
+		local oUnit = self.defend_units[iLoop1]
+	
+		-- Check if unit is valid
+		if (oUnit:IsValid()) then
+		
+			-- Calculate average distances
+			local iDistance = math.min(distance(vCenter, oUnit:GetPosition()), 200)
+			local iUnitStrength = oUnit:GetTactic():GetUnitStrength()
+			iArmyStrength = iArmyStrength + iUnitStrength
+			fAverageDistance = fAverageDistance + iUnitStrength * iDistance
+		end
+	end
+	if (iArmyStrength > 0) then
+		return fAverageDistance / iArmyStrength
+	end
+	return 0
+end
+
+function DefendPlan:ObtainForce()
+
+	aitrace("DefendPlan: Obtain Force...")
+	
+	-- Check the army power of my defense force
+	local iDefendPower = self:GetArmyStrength()
+	
+	local defend_units = {}
+	
+	-- Check if we defend our home base
+	local bDefendHomeBase = false
+	if (distance_sqr(cpu_manager.start_pos, self.defend_pos) <= sqr(50) and
+		(cpu_manager:GetCriticalThreat() > 0 or cpu_manager:HQThreat())) then
+		bDefendHomeBase = true
+	end
+	
+	-- Check enemy infiltrator threat
+	local bNeedSupportDetector = cpu_manager:EnemyHasUnitInfiltrators()
+	if (self.m_oSupportDetector ~= nil) then
+		bNeedSupportDetector = false
+	end
+	
+	-- Find the forces and defend
+	local iMinStrength = 60
+	if (cpu_manager:GetTierLevel() == 2) then
+		iMinStrength = 120
+	elseif (cpu_manager:GetTierLevel() >= 3) then
+		iMinStrength = 180
+	end
+	local oSupportDetector = nil
+	for oSquad in military_manager:GetUnlockedSquads() do
+	
+		-- Check if squad is valid
+		if (oSquad:IsValid()) then 
+		
+			-- Check if squad is strong enough
+			local bSquadOk = true
+			if (oSquad:CanReinforce(false, 0) and oSquad:GetTactic():GetUnitStrength() < iMinStrength and
+				(oSquad:IsRanged() or not oSquad:IsInCombat())) then
+				bSquadOk = false
+			end 
+			
+			-- Check if unit is not a vehicle in urgent need of repairing
+			local oTactic = oSquad:GetTactic()
+			if (oTactic:GetType() == Tactic.Types.Vehicle and oTactic:NeedRepair() and not bDefendHomeBase) then
+				bSquadOk = false
+			end
+		
+			-- Check if squad should be added to defend army
+			if (oTactic:AlwaysAttack() or (bSquadOk and oTactic:IsDefender())) then
+				table.insert( defend_units, oSquad )
+				--iDefendPower = iDefendPower + squad_ai:GetTactic():GetUnitStrength()
+			
+			-- Check if the unit is a support detector
+			elseif (bNeedSupportDetector and oTactic:IsSupportDetector()) then
+				oSupportDetector = oSquad
+				bNeedSupportDetector = false
+			end
+		end
+	end
+
+	--lock the forces (must be done AFTER the loop inside GetUnlockedSquads!)
+	for i in defend_units do
+		
+		-- Assign a tactic to it
+		local tactic = defend_units[i]:GetTactic()
+		if (tactic ~= nil) then
+			Plan.LockResource( self, defend_units[i] )
+			
+			table.insert( self.defend_units, defend_units[i] )
+			if (self.m_bGatherTroops) then
+				tactic:SetState( Tactic.States.Retreat )
+			else
+				tactic:SetState( Tactic.GlobalDefenseState )
+			end
+			tactic:SetTarget( self.m_vLastDefendPos, Tactic.Variant.Vector )
+		end
+	end
+	if (oSupportDetector ~= nil) then
+	
+		-- Lock resource
+		Plan.LockResource(self, oSupportDetector)
+		self.m_oSupportDetector = oSupportDetector
+		
+		-- Assign a tactic
+		local oTactic = oSupportDetector:GetTactic()
+		oTactic:SetState(Tactic.States.Retreat)
+		oTactic:SetTarget(self.m_vLastDefendPos, Tactic.Variant.Vector)
+	end
+end
+
+function DefendPlan:Defending()
+
+	aitrace("DefendPlan: Defending...")
+	
+	-- Check if there is a building left to defend
+	local iRange = sqr(self.m_iDefendRange)
+	local bAbort = true
+	local iClosestEnemyDistance = 0
+	for oPlayer in cpu_manager.stats:GetPlayerStats() do
+	
+		-- Check if we have to defend our or an allied home base
+		if (cpu_manager:IsFriendly(oPlayer:GetPlayerID())) then
+		
+			-- Get buildings
+			for oBuilding in oPlayer:GetBases() do
+
+	  			-- Check for valid building and check distance
+				if (oBuilding:IsValid() and distance_sqr(self.defend_pos, oBuilding:GetPosition()) < iRange) then
+					bAbort = false
+					break
+				end
+			end
+		else
+		
+			-- Get distance to closest enemy
+			local iDistance = distance_sqr(oPlayer:GetStartingPosition(), cpu_manager.start_pos)
+			if (iClosestEnemyDistance == 0 or iDistance < iClosestEnemyDistance) then
+				iClosestEnemyDistance = iDistance
+			end
+		end
+	end
+		
+	-- Abort, if there's nothing left to defend
+	if (bAbort) then
+		self:SetComplete( true )
+		return
+	end
+	
+	-- Check situation
+	local iSituation = self:CheckDefendable()
+	if (iSituation == 0) then
+	
+		-- Threat is over, but wait a bit until stop defending
+		if (self.m_iDefenseDelay == 0) then
+			self.m_iDefenseDelay = g_iGMT
+		elseif (g_iGMT > self.m_iDefenseDelay + 10) then
+			self.m_iDefenseDelay = 0
+			self:SetComplete( true )
+			return
+		end
+	else
+		self.m_iDefenseDelay = 0
+	end
+	
+	-- Check if we are strong enough to defend
+	local vBestDefendPosition = self.m_vLastDefendPos
+	local iArmyStrength, vArmyPos = self:GetArmyStrength()
+	if (iSituation < 0) then
+
+		-- Get save position
+		aitrace("DefendPlan: Gather defense forces...")
+		local vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(vArmyPos, self.defend_pos, true, false)
+		if (vBasePos ~= nil) then
+			vBestDefendPosition = Vector3f(vBasePos)
+		end
+		self.m_bGatherTroops = true
+		
+	elseif (g_iGMT > self.m_iTargetChange + 5) then
+	
+		-- Get best defend position
+		vDefendPosition = self:GetBestDefendPosition(self.defend_pos, self.m_iDefendRange + 35)
+		if (vDefendPosition ~= nil and distance_sqr(vDefendPosition, self.m_vLastDefendPos) > 1) then
+			vBestDefendPosition = Vector3f(vDefendPosition)
+			self.m_iTargetChange = g_iGMT
+		end
+		self.m_bGatherTroops = false
+	end
+		
+	-- Set defend moves
+	local iAttackDistance = iClosestEnemyDistance / 9
+	local vHQPos = cpu_manager.start_pos
+	if (self.m_bDefendHQ) then
+		vHQPos = self.defend_pos
+	end
+	local vDetectorTarget = nil
+	local iClosestDistance = 0
+	for iLoop1 in self.defend_units do
+	
+		-- Get squad tactic
+		local oSquad = self.defend_units[iLoop1]
+		local vSquadPos = oSquad:GetPosition()
+		local oTactic = oSquad:GetTactic()
+		local bUpdateTactic = false
+		
+		-- Check distance to defend position
+		local iDistance = distance_sqr(vSquadPos, vBestDefendPosition)
+		if (vDetectorTarget == nil or iDistance < iClosestDistance) then
+			vDetectorTarget = vSquadPos
+			iClosestDistance = iDistance
+		end
+		
+		-- Check distance to HQ
+		local oState = Tactic.GlobalDefenseState
+		local iDistanceToHQ = math.min(distance_sqr(vSquadPos, vHQPos),
+									   distance_sqr(vSquadPos, cpu_manager.start_pos))
+		if (iDistanceToHQ < iAttackDistance) then
+			oState = Tactic.States.Attack
+		end
+		
+		-- Check if we should update the tactic
+		if (oTactic:GetState() ~= oState or distance_sqr(oTactic:GetTarget(), vBestDefendPosition) > 1) then
+			bUpdateTactic = true
+		end
+		
+		-- Check if unit should gather
+		local vGatherPos = self:GatherUnit(oSquad)
+		
+		-- Order unit to best defend position
+		if (vGatherPos ~= nil and iArmyStrength < 3000) then
+			oTactic:GatherMove(vGatherPos)
+		elseif (bUpdateTactic) then
+			oTactic:SetState(oState)
+			oTactic:SetTarget(vBestDefendPosition, Tactic.Variant.Vector)
+		end
+	end
+	self.m_vLastDefendPos = Vector3f(vBestDefendPosition)
+	
+	-- Set deepstrike pos
+	local vDeepStrikePos = vBestDefendPosition
+	if (vDetectorTarget == nil) then
+		vDetectorTarget = vArmyPos
+	else
+		vDeepStrikePos = vDetectorTarget
+	end
+	
+	-- Deepstrike if I can
+	for build_channel in build_manager:GetBuildChannelAIs() do
+		 
+		local id = build_channel:GetBlueprintID()
+		if (build_channel:CanDeepStrike() and cpu_manager:MilitaryDeepStrike(id)) then
+	
+			if (build_channel:CanOnlyDeepStrikeToEntity()) then
+ 			   
+				-- Find someone who can summon
+				local can_summon = function( squad_ai )
+					return squad_ai:CanSummon()
+				end
+				
+				-- Summon unit
+				local summon_unit = cpu_manager:GetClosestSquad(vDeepStrikePos, 100, can_summon)
+				if (summon_unit) then
+					build_channel:DoDeepStrikeToSquad( summon_unit:GetSquad() )
+				end
+			else
+				build_channel:DoDeepStrikeToPos(vDeepStrikePos)
+			end
+		end
+	end
+	
+	-- Move support detector
+	if (self.m_oSupportDetector ~= nil) then
+	
+		-- Move support detector to army center
+		local oTactic = self.m_oSupportDetector:GetTactic()
+		oTactic:SetTarget(vDetectorTarget, Tactic.Variant.Vector)
+		oTactic:SetState(Tactic.States.Retreat)
+	end
+end
+
+-- Arkhan 05.2006: Check if the unit should make a gather move
+function DefendPlan:GatherUnit(oSquad)
+
+	-- Don't gather units in substate
+	local oTactic = oSquad:GetTactic()
+	if (oTactic:IsInSubState() or oSquad:IsCapturing()) then
+		return nil
+	end
+
+	-- Check last gather move
+	if (g_iGMT < oTactic:GetLastGatherMove() + 20 or table.getn(self.defend_units) <= 1) then
+		return nil
+	end
+	
+	-- Only gather if we were recently hurt
+	if (not oSquad:WasRecentlyHurt()) then
+		return nil
+	end
+	
+	-- Don't gather if we're close to army center
+	local iArmyStrength, vArmyCenter = self:GetArmyStrength()
+	local iValidRange = 40 + math.ceil(iArmyStrength / 100)
+	if (distance_sqr(oSquad:GetPosition(), vArmyCenter) < sqr(iValidRange)) then
+		return nil
+	end
+		
+	-- Try to get closer to army center
+	return vArmyCenter
+end
+
+function DefendPlan:GetBestDefendPosition(vDefendPosition, iRange)
+
+    -- Get closest enemy unit to last defend position which is still in range
+    local oEnemySquad = cpu_manager.cpu_player:FindFirstEnemy(self.m_vLastDefendPos, iRange, 1)
+    if (oEnemySquad ~= nil and distance_sqr(oEnemySquad:GetPosition(), vDefendPosition) <= sqr(iRange)) then
+		return Vector3f(oEnemySquad:GetPosition())
+	end
+	
+    -- Get closest enemy unit to current defend position
+    oEnemySquad = cpu_manager.cpu_player:FindFirstEnemy(vDefendPosition, iRange, 1)
+    if (oEnemySquad ~= nil) then
+		return Vector3f(oEnemySquad:GetPosition())
+	end
+	
+	-- Check if defending units are under attack
+	local oSquad = cpu_manager.cpu_player:FindFirstHurtSquad(vDefendPosition, iRange)
+	if (oSquad ~= nil) then
+		return Vector3f(oSquad:GetPosition())
+	end
+	return nil
+end
+
+function DefendPlan:RemoveLosses()
+
+	aitrace("DefendPlan: Remove Losses...")
+
+	-- Check if we defend our home base
+	local bDefendHomeBase = false
+	if (distance_sqr(cpu_manager.start_pos, self.defend_pos) <= sqr(50) and
+		(cpu_manager:GetCriticalThreat() > 0 or cpu_manager:HQThreat())) then
+		bDefendHomeBase = true
+	end
+
+	-- Remove lost and severly damaged squads
+	local iMinStrength = 60
+	if (cpu_manager:GetTierLevel() == 2) then
+		iMinStrength = 120
+	elseif (cpu_manager:GetTierLevel() >= 3) then
+		iMinStrength = 180
+	end
+	local iSquadCount = table.getn( self.defend_units )
+	for iLoop1 = iSquadCount, 1, -1 do
+	
+		-- Get squad
+		local oSquad = self.defend_units[iLoop1]
+		
+		-- Check squad
+		if (not oSquad:IsValid()) then
+		
+			-- Remove invalid squads
+			Plan.UnlockResource( self, oSquad )
+			table.remove(self.defend_units, iLoop1)
+			
+		else
+		
+			-- Get tactic
+			local oTactic = oSquad:GetTactic()
+			local bWeak	= (oSquad:CanReinforce(false, 0) and oTactic:GetUnitStrength() < iMinStrength)
+			local bCanRetreat = (oSquad:IsRanged() or not oSquad:IsInCombat())
+			if (not oTactic:IsDefender() or (bWeak and bCanRetreat and not oTactic:AlwaysAttack())) then
+		
+				-- Send severly hurt squads back to base
+				local vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(self.defend_pos, cpu_manager.start_pos, true, false)
+				if (vBasePos ~= nil) then
+					Plan.UnlockResource(self, oSquad)
+					table.remove(self.defend_units, iLoop1)
+					oTactic:SetState(Tactic.States.Retreat)
+					oTactic:SetTarget(vBasePos, Tactic.Variant.Vector)
+				end
+				
+			elseif (oTactic:GetType() == Tactic.Types.Vehicle and oTactic:NeedRepair() and not bDefendHomeBase) then
+		
+				-- Send severly hurt vehicles back to base for repair
+				Plan.UnlockResource(self, oSquad)
+				table.remove(self.defend_units, iLoop1)
+				oTactic:SetState(Tactic.States.Retreat)
+				oTactic:SetTarget(cpu_manager.start_pos, Tactic.Variant.Vector)
+			end
+		end
+	end
+	
+	-- Check support detector
+	if (self.m_oSupportDetector ~= nil) then
+	
+		-- Remove invalid or unnecessary support detectors
+		if (not self.m_oSupportDetector:IsValid()) then
+		
+			-- Remove invalid support detector
+			Plan.UnlockResource( self, self.m_oSupportDetector )
+			self.m_oSupportDetector = nil
+			
+		elseif (not cpu_manager:EnemyHasUnitInfiltrators()) then
+		
+			-- Release support detector
+			local vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(self.defend_pos, cpu_manager.start_pos, true, false)
+			if (vBasePos ~= nil) then
+				Plan.UnlockResource(self, self.m_oSupportDetector)
+				local oTactic = self.m_oSupportDetector:GetTactic()
+				oTactic:SetState(Tactic.States.Retreat)
+				oTactic:SetTarget(vBasePos, Tactic.Variant.Vector)
+				self.m_oSupportDetector = nil
+			end
+		end
+	end
+end
+
+function DefendPlan:Update()
+	
+	if (self:IsComplete()) then
+		aitrace("Defendplan: Defend plan is complete")
+		return
+	end
+	
+	aitrace("Defendplan: Update...", true)
+		
+	-- Remove lost and severly damaged squads
+	self:RemoveLosses()
+	
+	-- Run superclass update
+	Plan.Update( self )
+end
+

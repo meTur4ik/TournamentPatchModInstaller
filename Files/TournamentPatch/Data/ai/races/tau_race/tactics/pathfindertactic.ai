@@ -1,0 +1,51 @@
+----------------------------------------
+-- File: 'pathfindertactic.ai'
+-- Created by Arkhan		@ 21.03.2008
+
+class 'PathFinderTactic' (TauInfantryTactic)
+
+PathFinder = {}
+
+function PathFinderTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Tau Infantry Tactic")
+end
+
+function PathFinderTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (PathFinder.iMarkSquadID == nil) then
+		PathFinder.iMarkSquadID = cpu_manager.stats:GetAbilityID( "tau_mark_squad" )	
+	end
+end
+
+function PathFinderTactic:DoAbilities()
+
+	-- Check if we can use mark squad ability
+	if (self.squad_ai:CanDoAbility(PathFinder.iMarkSquadID) and self.squad_ai:IsInCombat()) then
+	
+		-- Get closest squad in range
+		local iRange = self.squad_ai:GetAbilityRange(PathFinder.iMarkSquadID)
+		local oSquad = cpu_manager.cpu_player:FindFirstEnemy(self.squad_ai:GetPosition(), iRange, 1)
+		if (oSquad ~= nil) then
+		
+			-- Get stats
+			local oStats = oSquad:GetStats()
+			if (oStats ~= nil) then
+			
+				-- Check unit type
+				local eClass = oStats:GetClass()
+				if (eClass == UnitStatsAI.UC_VehicleLow or eClass == UnitStatsAI.UC_VehicleMed or
+					eClass == UnitStatsAI.UC_VehicleHigh or eClass == UnitStatsAI.UC_Commander or
+					eClass == UnitStatsAI.UC_MonsterHigh or oSquad:GetNumTroopers() >= 4) then
+					
+					-- Use mark ability on squad
+					self.squad_ai:DoSpecialAbilitySquad(PathFinder.iMarkSquadID, oSquad:GetSquad())
+				end
+			end	
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end

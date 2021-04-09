@@ -1,0 +1,397 @@
+----------------------------------------
+-- File: 'resourceplan.ai'
+-- Edited by LarkinVB	@ 31.12.2005
+-- Edited by Arkhan		@ 14.01.2006
+
+class 'ResourcePlan' (Plan)
+
+function ResourcePlan:__init() super( CpuPlayer.CT_Resourcing )
+
+	--the flag I'm trying to capture
+	self.capturing_flag = nil
+	self.builder = nil
+	
+	self.m_iNextUpdate = 0
+	
+	self.garrison_id = nil
+
+	--find a garrison building
+	local num_buildings = build_manager:GetNumBuildableBuildings()
+	for building_index = 0, num_buildings - 1 do
+		local bid = build_manager:GetBuildableBuildingAt( building_index )
+		if( build_manager:IsGarrisonBuilding(bid) ) then
+			self.garrison_id = bid
+			break
+		end
+	end
+	
+	dbAssert( self.garrison_id ~= nil )
+	
+	Plan.SetState( self, "Find Flag", ResourcePlan.FindFlag )
+	Plan.SetName( self, "Resource Plan" )
+	
+	Plan.SetNeeds( self, "Obtain Flag and Builder", ResourcePlan.ObtainFlagAndBuilder )
+	
+	self.is_building = false
+end
+
+function ResourcePlan:IsEqual( plan_name, plan_id )
+	return self:GetName() == plan_name
+end
+
+function ResourcePlan:FindStrategicPoint()
+
+	-- Find best strategic point to capture
+	for iLoop1 in CapturePlan.OrderedStratPoints do
+	
+		-- Get strategic point
+		local oStrategicPoint = CapturePlan.OrderedStratPoints[iLoop1][1]
+		
+		-- Get position
+		local vPosition = oStrategicPoint:GetPosition()
+		
+		-- We're the owner, but no post
+		if (oStrategicPoint:Owner() == cpu_manager.player_id and not oStrategicPoint:HasListeningPost() and
+			not oStrategicPoint:IsStrategicObjective() and not oStrategicPoint:IsLocked() and
+			not (cpu_manager:CloseEnemyUnits(vPosition, 35) and cpu_manager.terrain_analyzer:HasThreat(vPosition, 35))) then
+			
+			-- Check threat on path
+			if (not cpu_manager:HasThreatOnPath(cpu_manager.start_pos, vPosition, 30)) then
+				return oStrategicPoint
+			end		
+		end
+	end
+	return nil
+end
+
+function ResourcePlan:ObtainFlagAndBuilder()
+
+	-- Check last update
+	if (g_iGMT < self.m_iNextUpdate and g_iGMT > DefendChokePointPlan.HarassingTime * 60) then
+		return
+	end
+	self.m_iNextUpdate = g_iGMT + 10
+
+	aitrace("ResourcePlan: ObtainFlagAndBuilder...")
+	
+	-- Check for available builders
+	local aBuilders = cpu_manager:GetAvailableBuilders()
+	if (table.getn(aBuilders) <= 0) then
+		aitrace( "ResourcePlan: No builders available" )
+		return
+	end
+
+	-- Get one of our strategic points without a post
+	local strat_pt = self:FindStrategicPoint()
+	if (strat_pt == nil) then
+		aitrace( "ResourcePlan: Can't find strategic point to build a post on" )
+		return
+	end
+	
+	local found_engineer = false
+	local can_build_no_money = false
+	local can_build_error = false
+	local can_build_prereq = false
+	local can_build_not_buildable = false
+	
+	--save the location of flag
+	local build_pos = strat_pt:GetEntity():GetPosition()
+
+	local iBuilderIndex = 0
+	for iLoop1 in aBuilders do
+		
+		-- Get builder
+		local oSquad = aBuilders[iLoop1]
+		
+		local can_build = oSquad:CanBuild( self.garrison_id )
+		
+		if (can_build == SquadAI.CANBUILD_NoResources) then
+			can_build_no_money = true
+		elseif (can_build == CANBUILD_NotBuildable) then
+			can_build_not_buildable = true
+		elseif (can_build == SquadAI.CANBUILD_Prerequisites) then
+			can_build_prereq = true
+		elseif (can_build == SquadAI.CANBUILD_Error) then
+			can_build_error = true
+		elseif (can_build == SquadAI.CANBUILD_Ok) then 
+		
+			local squad_pos = oSquad:GetPosition()
+		
+			if (oSquad:CanBuildAt( self.garrison_id, build_pos ) and 
+				not cpu_manager:HasThreatOnPath(squad_pos, build_pos, 30)) then
+		
+				if (self.builder == nil) then
+				
+					-- Set builder
+					found_engineer = true
+					self.builder = oSquad
+					iBuilderIndex = iLoop1
+				else
+					local curr_pos = self.builder:GetPosition()
+					if (distance_sqr(curr_pos, build_pos) > distance_sqr(squad_pos, build_pos)) then
+					
+						-- Set builder
+						found_engineer = true
+						self.builder = oSquad
+						iBuilderIndex = iLoop1
+					end
+				end
+			end	
+		end
+	end
+
+	if self.builder ~= nil then
+	
+		-- Found builder
+		table.remove(aBuilders, iBuilderIndex)
+		Plan.LockResource( self, strat_pt )
+		self.capturing_flag = strat_pt		
+		Plan.LockResource( self, self.builder )
+		Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )
+		self.capturing_flag:TagFlagForEngineer( true )
+		return
+	end
+	
+	aipushtrace("ResourcePlan")
+	
+	local some_error_found = false
+	
+	if not found_engineer then
+		some_error_found = true
+		aitrace( "no engineers to build a post" )
+	end
+	
+	if can_build_no_money then
+		some_error_found = true
+		aitrace( "ResourcePlan: No money to build a post" )
+	end
+	
+	if can_build_no_money then
+		some_error_found = true
+		aitrace( "ResourcePlan: No money to build a post" )
+	end
+	
+	if can_build_error then
+		some_error_found = true
+		aitrace( "ResourcePlan: Can build error" )
+	end
+
+	if can_build_not_buildable then
+		some_error_found = true
+		aitrace( "ResourcePlan: Not buildable" )
+	end		
+	
+	if can_build_prereq then
+		some_error_found = true
+		aitrace( "ResourcePlan: Prerequisites" )
+	end
+	
+	if not some_error_found then
+		aitrace( "ResourcePlan: Can't build post: unknown error!" )
+	end
+	
+	aipoptrace("ResourcePlan")
+	
+end
+
+function ResourcePlan:BuildPost()
+
+	if (self.builder == nil or self.capturing_flag == nil) then
+		return
+	end
+
+	-- Enemy recaptured the flag!
+	if (not self.capturing_flag:FinishedCapturing()) then
+		aitrace("ResourcePlan: Enemy recaptured flag...", true)
+		self.capturing_flag:TagFlagForEngineer( false )
+		self:FreeResources()
+		if (g_iGMT > DefendChokePointPlan.HarassingTime * 60) then
+			self:SetComplete( true )
+		else
+			Plan.SetState( self, "Build another listening post", ResourcePlan.FindFlag )
+			Plan.SetNeeds( self, "Obtain Flag and Builder", ResourcePlan.ObtainFlagAndBuilder )
+		end
+		return
+	end
+	
+	local build_pos = self.capturing_flag:GetPosition()
+	
+	-- Check if building can be built
+	if (not self.builder:CanBuildAt(self.garrison_id, build_pos)) then
+		aitrace("ResourcePlan: Can't build post for unknown reasons...", true)
+		self.capturing_flag:TagFlagForEngineer( false )
+		self:FreeResources()
+		if (g_iGMT > DefendChokePointPlan.HarassingTime * 60) then
+			self:SetComplete( true )
+		else
+			Plan.SetState( self, "Build another listening post", ResourcePlan.FindFlag )
+			Plan.SetNeeds( self, "Obtain Flag and Builder", ResourcePlan.ObtainFlagAndBuilder )
+		end
+		return
+	end
+	
+	-- Try to build post
+	self.builder:DoBuildBuilding( self.garrison_id, build_pos )
+	
+	Plan.SetState( self, "Building Garrison at "..vec2str(build_pos), ResourcePlan.BuildingListeningPost )
+
+	self:OnEvent( Plan.Events.OnPlanStart )
+end
+
+function ResourcePlan:BuildingListeningPost()
+
+	aitrace("ResourcePlan: BuildingListeningPost...")
+	if (self.builder == nil or self.capturing_flag == nil) then
+		return
+	end
+	
+	-- Check if builder is building
+	if (self.builder:IsBuilding() == 0) then
+		
+		if (not self.is_building) then
+			Plan.SetState( self, "Trying to build listening post", ResourcePlan.BuildPost )
+			return
+		end
+	else
+	
+		--tag that we started building
+		self.is_building = true
+	end
+	
+	-- Search unfinished post
+	local oBuilding = build_manager:FindUnfinishedBuilding(self.garrison_id)
+	local vFlagPos = self.capturing_flag:GetPosition()
+	if (oBuilding ~= nil and distance_sqr(oBuilding:GetPosition(), vFlagPos) < 100) then
+	
+		-- Try to jump if possible
+		if (distance_sqr(self.builder:GetPosition(), vFlagPos) > sqr(40) and cpu_manager:JumpBuilder(self.builder, vFlagPos)) then
+			return
+		end
+	end
+	
+	-- Check if builder is building
+	if (self.builder:IsBuilding() == 0) then
+	
+		-- Check for building
+		if (oBuilding ~= nil) then
+		
+			-- Check for auto-construct buildings
+			if (cpu_manager:AutoConstructBuildings()) then
+			
+				-- Get building AI
+				local oBuildingAI = military_manager:GetBaseFromID(oBuilding:GetID())
+				if (oBuildingAI ~= nil and oBuildingAI:GetHealthPercentage() <= 0.2) then
+					self.builder:DoFinishBuilding(oBuilding)
+					return
+				end
+			else
+				self.builder:DoFinishBuilding(oBuilding)
+				return
+			end
+		end
+		
+		-- Job finished
+		aitrace("ResourcePlan: Job finished!!!")
+		self.capturing_flag:TagFlagForEngineer( false )
+		self:FreeResources()
+		if (g_iGMT > DefendChokePointPlan.HarassingTime * 60) then
+			self:SetComplete( true )
+		else
+			Plan.SetState( self, "Build another listening post", ResourcePlan.FindFlag )
+			Plan.SetNeeds( self, "Obtain Flag and Builder", ResourcePlan.ObtainFlagAndBuilder )
+		end
+	end
+end
+
+function ResourcePlan:FindFlag()
+
+	if( self.capturing_flag == nil ) then
+		return
+	end
+	
+	self:OnEvent( Plan.Events.OnPlanStart )
+	
+	Plan.SetState( self, "Starting to build post", ResourcePlan.BuildPost )
+end
+
+function ResourcePlan:FreeResources()
+
+	-- Check builder
+	if (self.builder ~= nil) then
+		self:UnlockResource(self.builder)
+		self.builder = nil
+	end
+
+	-- Check capturing flag
+	if (self.capturing_flag ~= nil) then
+		self:UnlockResource(self.capturing_flag)
+		self.capturing_flag = nil	
+	end
+end
+
+function ResourcePlan:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	aitrace("ResourcePlan: Update...", true)
+	
+	-- Check if builder is valid
+	if (self.builder ~= nil and not self.builder:IsValid()) then
+		self:FreeResources()
+		if (g_iGMT > DefendChokePointPlan.HarassingTime * 60) then
+			self:SetComplete( true )
+		else
+			Plan.SetState( self, "Find Flag", ResourcePlan.FindFlag )
+			Plan.SetNeeds( self, "Obtain Flag and Builder", ResourcePlan.ObtainFlagAndBuilder )
+		end
+		return
+	end
+	
+	-- Abort if builder was hurt or target threat too dangerous
+	if (self.builder ~= nil and self.builder:WasRecentlyHurt()) then
+	
+		-- Unlock and retreat builder
+		local oTactic = self.builder:GetTactic()
+		oTactic:ValidMove(cpu_manager.start_pos)
+		self:FreeResources()
+		if (g_iGMT > DefendChokePointPlan.HarassingTime * 60) then
+			self:SetComplete( true )
+		else
+			Plan.SetState( self, "Find Flag", ResourcePlan.FindFlag )
+			Plan.SetNeeds( self, "Obtain Flag and Builder", ResourcePlan.ObtainFlagAndBuilder )
+		end
+		return
+	end
+	
+	-- Check for capturing flag
+	if (self.capturing_flag ~= nil) then
+		
+		-- Check threat
+		local vFlagPos = self.capturing_flag:GetPosition()
+		if (cpu_manager:CloseEnemyUnits(vFlagPos, 35) and cpu_manager.terrain_analyzer:HasThreat(vFlagPos, 35)) then
+		
+			-- Abort if target threat too dangerous
+			local iEnemyStrength, iAlliedStrength = cpu_manager:GetArmyStrengthAtPos(vFlagPos, 35)
+			if (iEnemyStrength > iAlliedStrength) then
+			
+				-- Unlock and retreat builder
+				if (self.builder ~= nil) then
+					local oTactic = self.builder:GetTactic()
+					oTactic:ValidMove(cpu_manager.start_pos)
+					self:FreeResources()
+				end
+				if (g_iGMT > DefendChokePointPlan.HarassingTime * 60) then
+					self:SetComplete( true )
+				else
+					Plan.SetState( self, "Find Flag", ResourcePlan.FindFlag )
+					Plan.SetNeeds( self, "Obtain Flag and Builder", ResourcePlan.ObtainFlagAndBuilder )
+				end
+				return
+			end
+		end
+	end
+	
+	Plan.Update(self)
+end

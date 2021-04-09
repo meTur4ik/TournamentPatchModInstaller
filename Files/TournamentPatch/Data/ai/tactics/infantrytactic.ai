@@ -1,0 +1,405 @@
+class 'InfantryTactic' (Tactic)
+
+InfantryTactic.MoraleAbilities = 
+{
+	{ nil, "marines_rally", Ability.PredicateFilters.IsInCombat, nil },
+}
+
+InfantryTactic.SpecialAbilities = 
+{
+	{ nil, "chaos_furious_rage", Ability.PredicateFilters.IsInCombat, nil },
+	{ nil, "chaos_speed_fiend", Ability.PredicateFilters.IsInCombat, nil },
+	{ nil, "tau_sonic_pulse", Ability.PredicateFilters.IsInCombat, nil },
+	{ nil, "tau_personal_shield", Ability.PredicateFilters.IsInCombat, nil },
+	{ nil, "necron_wraith_phase_shift", Ability.PredicateFilters.IsInCombat, nil }, -- FIX: Filter - approaching combat
+}
+
+InfantryTactic.TargetAbilities = 
+{
+	{ nil, "eldar_plasma_grenades", 			Ability.Filters.CloseInfantryEnemy, 1 },
+	{ nil, "eldar_haywire_bombs", 				Ability.Filters.CloseVehicleEnemy, 1 },
+	{ nil, "marines_frag_grenades", 			Ability.Filters.CloseInfantryEnemy, 1 },
+	{ nil, "marines_melta_bombs", 				Ability.Filters.CloseVehicleEnemy, 1 },
+	{ nil, "chaos_frag_grenades", 				Ability.Filters.CloseInfantryEnemy, 1 },
+	{ nil, "guard_kasrkin_frag_grenades", 	Ability.Filters.CloseEnemy, 1 },
+	{ nil, "tau_emp_grenade", 						Ability.Filters.CloseVehicleEnemy, 1 },
+	{ nil, "tau_photon_grenade", 				Ability.Filters.CloseInfantryEnemy, 1 },
+	{ nil, "tau_mark_squad", 						Ability.Filters.CloseEnemy, 1 },
+}
+
+InfantryTactic.TargetEntityAbilities = 
+{
+	{ nil, "tau_devour", 								Ability.EntityFilters.CloseBaseEntityEnemy, 1 },
+}
+
+InfantryTactic.LocationAbilities = 
+{
+}
+
+
+function InfantryTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.UtilityFunctions.InitAbilitiesTable(InfantryTactic.MoraleAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(InfantryTactic.SpecialAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(InfantryTactic.TargetAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(InfantryTactic.TargetEntityAbilities)
+	Tactic.UtilityFunctions.InitAbilitiesTable(InfantryTactic.LocationAbilities)
+
+	Tactic.AssignStateFunction( self, Tactic.States.Hold, self.BeginHoldState )
+	Tactic.AssignStateFunction( self, Tactic.States.Retreat, self.BeginRetreatState )
+	Tactic.AssignStateFunction( self, Tactic.States.Attack, self.BeginAttackState )
+	
+	self.safe_tolerance = 100 
+	self.strat_ai = nil;
+
+	self:SetName("Infantry Tactic")
+	
+	--try to disown a flag every 5 calls
+--	self.timerDisownFlags = Timer( InfantryTactic.TryDisownFlags, self, 5 )
+end
+
+
+function InfantryTactic:BeginHoldState()
+
+	if( self.target == nil ) then
+		return
+	end
+
+	if( self.variant_type == Tactic.Variant.Vector ) then
+		self.squad_ai:DoAttackMove( self.target )
+	end
+	
+	Tactic.SetSubState( self, self.HoldState, "Holding" )
+end
+
+
+function InfantryTactic:BeginRetreatState()
+
+	dbAssert( self.target ~= nil )
+	
+	if( self.variant_type == Tactic.Variant.Vector ) then
+		self.squad_ai:DoMove( self.target )
+	end
+	
+	Tactic.SetSubState( self, self.HoldState, "Holding" )
+end
+
+
+function InfantryTactic:UpgradeAndReinforce()
+
+	if Tactic.Options.can_reinforce == false then
+		return
+	end
+
+	if self:CanSpendMoney() == false then
+		return
+	end
+	
+	--if I am broken, don't upgrade/reinforce!
+	if self:IsAffectedByMorale() and self.squad_ai:IsBroken() then
+		return
+	end
+
+	if not self.squad_ai:IsReinforcing() then
+	
+		-- Upgrade if possible
+		if self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetNumTroopers() > 3 then
+			local class_type = cpu_manager:GetFirstEnemyPlayer():GetMajorityClassType()
+			self.squad_ai:DoBestUpgrade( class_type )
+		end
+	end
+
+	-- Check if we are upgrading
+	if not self.squad_ai:IsReinforcing() then
+
+		-- Reinforce
+		if self.squad_ai:CanReinforce( true, 0 ) then
+			self.squad_ai:DoReinforce( true, 0 )
+		elseif self.squad_ai:CanReinforce( false, 0 ) then
+			self.squad_ai:DoReinforce( false, 0 )
+		end
+	end
+end
+
+
+function InfantryTactic:HoldState()
+
+	if( self.target == nil ) then
+		return
+	end
+end
+
+
+function InfantryTactic:BeginAttackState()
+	
+	if( self.target == nil ) then
+		return
+	end
+
+	if( self.variant_type == Tactic.Variant.Vector ) then
+		self.squad_ai:DoAttackMove( self.target )
+	end
+	
+	Tactic.SetSubState( self, self.AttackingState, "Attacking" )
+end
+
+
+function InfantryTactic:BrokenMorale()
+	
+	--in threat area, or was attacked since we last checked
+	if cpu_manager.terrain_analyzer:HasThreat( self.safe_point, self.safe_tolerance ) then
+	
+		--run away some more
+		self.squad_ai:DoMoveToClosestSafePoint( self.safe_point, self.safe_tolerance )
+		
+		if self.squad_ai:CanJump() and self.squad_ai:CanJumpToPosition( self.safe_point ) then
+			self.squad_ai:DoJump( self.safe_point )
+		end
+	end
+	
+	if self.last_time ~= nil and self.squad_ai:WasAttackedSince( self.last_time )  then
+		--increase tolerance
+		self.safe_tolerance = self.safe_tolerance + 10
+	end
+	
+	self.last_time = cpu_manager.cpu_player:GetGameTime()
+	
+	--check i have enough morale
+	if not self.squad_ai:IsBroken() then
+	
+		--go back in the fray - reset my state
+		self.last_time = nil
+		Tactic.SetState( self, self:GetState() )
+	end
+end
+
+
+function InfantryTactic:AttackingState()
+
+	--if I'm idle, restart
+	if self.squad_ai:IsIdle() then		
+		Tactic.SetState( self, self:GetState() )
+	end
+	
+	if self:JumpAttackMelee() then
+		return
+	end
+end
+
+
+function InfantryTactic:TryDisownFlags()
+
+	if self.squad_ai:CanCapture() and not self.squad_ai:IsCapturing() then
+	
+		local strat_ai = resource_manager:SearchForFlagToDisown( self.squad_ai, 2500 )
+		if strat_ai ~= nil then
+			--go disown the thing
+			self:SetSubState( InfantryTactic.DisownFlag, "Taking flag away from enemy" )
+			self.strat_ai = strat_ai;
+			
+			self.squad_ai:DoCapture( strat_ai:GetEntity() )
+		end
+	end
+end
+
+
+function InfantryTactic:DisownFlag()
+
+	--only wait until there is no owner
+	dbAssert( self.strat_ai ~= nil )
+
+	--reset state
+	local id = self.strat_ai:Owner()
+	if id == 0 or cpu_manager:IsFriendly( id ) then
+		Tactic.SetState( self, self:GetState() )
+		self.strat_ai = nil
+	end
+end
+
+
+function InfantryTactic:CaptureFlag()
+
+	--wait until I've fully captured it
+	dbAssert( self.strat_ai ~= nil )
+	
+	if self.strat_ai:FinishedCapturing() then
+		Tactic.SetState( self, self:GetState() )
+		self.strat_ai = nil
+	end
+end
+
+
+function InfantryTactic:DoMoraleRecovery()
+
+	local bRecovered = false
+
+	for i in InfantryTactic.MoraleAbilities do
+
+		local ability_id = InfantryTactic.MoraleAbilities[i][1]
+		if ability_id ~= nil then
+
+			local filter = InfantryTactic.MoraleAbilities[i][3]
+			Ability.DoAbility( self.squad_ai, ability_id, filter )
+			bRecovered = true
+		end
+	end
+	
+	return bRecovered
+end
+
+
+function InfantryTactic:DoAbilities()
+
+	self:DoPossessAbility()
+	
+	Tactic.UtilityFunctions.DoAbilities(InfantryTactic.SpecialAbilities,self.squad_ai,Ability.DoAbility)
+	Tactic.UtilityFunctions.DoAbilities(InfantryTactic.TargetAbilities,self.squad_ai,Ability.DoAbilityTarget)
+	Tactic.UtilityFunctions.DoAbilities(InfantryTactic.TargetEntityAbilities,self.squad_ai,Ability.DoAbilityTargetEntity)
+	Tactic.UtilityFunctions.DoAbilities(InfantryTactic.LocationAbilities,self.squad_ai,Ability.DoAbilityLocation)
+
+	-- These might be attached
+	if self.squad_ai:IsAttached() then
+		--IMPORTANT: The following calls should only be to classes which define their own DoAbilities; and,
+		-- where DoAbilities does not depend on any member of the super-class...
+		
+		LeaderTactic.DoAbilities( self )
+		SpellCasterTactic.DoAbilities( self )
+		HealerTactic.DoAbilities( self )
+		CommissarTactic.DoAbilities( self )
+		PriestTactic.DoAbilities( self )
+		ChaosLordTactic.DoAbilities( self )
+	end
+end
+
+function InfantryTactic:DoPossessAbility()
+	if self.squad_ai:IsInCombat() then
+		if self.squad_ai:CanPossess() then
+			self.squad_ai:DoPossess()
+		end
+	end
+end
+
+function InfantryTactic:Update()
+
+	if not Tactic.Update( self ) then
+		return false
+	end
+
+	if self.squad_ai:CanReceiveAttachment() then
+	
+		if not self.squad_ai:IsAttached() then
+			if self.squad_ai:IsRanged() then
+				Tactic.Attach.num_unattached_ranged_squads = Tactic.Attach.num_unattached_ranged_squads + 1
+			else
+				Tactic.Attach.num_unattached_melee_squads = Tactic.Attach.num_unattached_melee_squads + 1
+			end
+		elseif self.squad_ai:HasSquadAttached( "guard_squad_commissar" ) then
+			Tactic.Attach.num_attached_commissars = Tactic.Attach.num_attached_commissars + 1
+		elseif self.squad_ai:HasSquadAttached( "guard_squad_priest" ) then
+			Tactic.Attach.num_attached_priests = Tactic.Attach.num_attached_priests + 1
+		end
+	end
+	
+	self:UpgradeAndReinforce()
+	
+	-- if being attacked, but not attacking, then run away if not locked
+	if (not self.squad_ai:IsLocked() and self.squad_ai:IsIdle() and 
+		self.squad_ai:IsUnderAttack() and not self.squad_ai:IsAttacking() and
+		self.squad_ai:GetHealthPercentage() < 0.9) then		
+
+		local is_squad_infiltrated = function(squad_ai)
+			return squad_ai:IsInfiltrating()
+		end
+	
+		local not_in_threat = function( base )
+			return not cpu_manager.terrain_analyzer:HasThreat( base:GetPosition(), 20 ) 
+		end
+	
+		local squad_pos = self.squad_ai:GetPosition()
+		local has_infiltrated = cpu_manager:FindClosestEnemy( squad_pos , 40, is_squad_infiltrated ) ~= nil
+
+		if (has_infiltrated) then
+			local base = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint( squad_pos, 35, nil, not_in_threat)
+			
+			if base ~= nil then
+				self.safe_point = base:GetPosition()
+				self.squad_ai:DoMove( self.safe_point)
+			else
+				self.safe_point = Vector3f()
+				self.squad_ai:DoMoveToClosestSafePoint( self.safe_point, self.safe_tolerance )
+			end
+		
+			if self.squad_ai:CanJump() and self.squad_ai:CanJumpToPosition( self.safe_point ) then
+				self.squad_ai:DoJump( self.safe_point )
+			end
+		end	
+	end
+	
+	--if my morale is broken and I'm not already running away, run away
+	if self:IsAffectedByMorale() and self.squad_ai:IsBroken() and self:GetSubState() ~= self.BrokenMorale and not self.squad_ai:IsCapturing() then
+
+		local bRecovered = self:DoMoraleRecovery()
+		if bRecovered == false then
+			--run away!
+			Tactic.SetSubState( self, self.BrokenMorale, "Broken Morale" )
+			
+			self.safe_point = Vector3f()
+			self.squad_ai:DoMoveToClosestSafePoint( self.safe_point, self.safe_tolerance )
+			
+			if self.squad_ai:CanJump() and self.squad_ai:CanJumpToPosition( self.safe_point ) then
+				self.squad_ai:DoJump( self.safe_point )
+			end
+		end
+	end
+
+	if cpu_manager.assassinate and 
+		(
+		self.squad_ai:HasSquadAttached( "space_marine_squad_force_commander" ) or
+		self.squad_ai:HasSquadAttached( "chaos_squad_lord" ) or
+		self.squad_ai:HasSquadAttached( "eldar_squad_farseer" ) or
+		self.squad_ai:HasSquadAttached( "necron_lord_squad" ) or
+		self.squad_ai:HasSquadAttached( "tau_commander_squad" )
+		) then 
+		
+		self.safe_point = Vector3f()
+
+		if self.squad_ai:GetAttachedHealthPercentage() < 0.4 then
+			self.squad_ai:DoMoveToClosestSafePoint( self.safe_point, self.safe_tolerance )
+		end
+		
+		return
+		
+	elseif self.squad_ai:IsAttached() and self:ShouldDetach() then
+		self.squad_ai:DoDetachSquad()
+		self.squad_ai:DoSetDefaultMeleeStance()
+	end
+	
+	self:DoAbilities()
+	self:UpdateStance()
+	
+	-- if at any time there is an opponent strategic point in range without a listening post, make it neutral and then leave it
+--	self.timerDisownFlags:Call()
+	return true
+end
+
+
+--runs away when morale is broken  by default
+function InfantryTactic:IsAffectedByMorale()
+	return true
+end
+
+
+function InfantryTactic:ShouldDetach() 
+	if self.squad_ai:HasSquadAttached( "chaos_squad_lord" ) then
+		return false
+	elseif self.squad_ai:HasSquadAttached( "guard_squad_commissar" ) then
+		return false
+	elseif self.squad_ai:HasSquadAttached( "guard_squad_priest" ) then
+		return false
+	elseif self.squad_ai:IsInCombat() or self.squad_ai:WasRecentlyHurt() then
+		return false
+	end
+
+	return true
+end
+

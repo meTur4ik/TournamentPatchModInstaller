@@ -1,0 +1,249 @@
+class 'ResourcePlan' (Plan)
+
+function ResourcePlan:__init() super( CpuPlayer.CT_Resourcing )
+
+	self.safe_tolerance = 30
+	
+	-- the flag I'm trying to capture
+	self.capturing_flag = nil
+	self.builder = nil
+	
+	self.garrison_id = nil 
+
+	-- find a garrison building
+	local num_buildings = build_manager:GetNumBuildableBuildings()
+	for building_index = 0, num_buildings - 1 do
+		local bid = build_manager:GetBuildableBuildingAt( building_index )
+		if( build_manager:IsGarrisonBuilding(bid) ) then
+			self.garrison_id = bid
+			break
+		end
+	end
+	
+	dbAssert( self.garrison_id ~= nil )
+	
+	Plan.SetState( self, "Find Strategic Point", ResourcePlan.FindFlag )
+	Plan.SetName( self, "Resource Plan" )
+	
+	Plan.SetNeeds( self, "Obtain SP and Builder", ResourcePlan.ObtainFlagAndBuilder )
+end
+
+
+function ResourcePlan:IsEqual( plan_name, plan_id )
+	return self:GetName() == plan_name
+end
+
+
+function ResourcePlan:FindStrategicPoint()
+
+	-- find a strat flag that can be captured
+	local strategic_flag = nil
+
+	for strat_ai in resource_manager:GetUnlockedStrategicPointAIs() do
+
+		if strat_ai:Owner() == cpu_manager.player_id and 
+			not strat_ai:HasListeningPost() and 
+			not strat_ai:IsStrategicObjective() and
+			not cpu_manager.terrain_analyzer:HasThreat( strat_ai:GetPosition(), 15 ) then
+			
+			strategic_flag = strat_ai
+			break
+		end
+	end
+
+	return strategic_flag
+end
+
+
+function ResourcePlan:ObtainFlagAndBuilder()
+
+	local strat_pt = self:FindStrategicPoint()
+	if strat_pt == nil then
+		aitrace( "can't find strategic point to build a post on" )
+		return
+	end
+	
+	local found_engineer = false
+	local can_build_no_money = false
+	local can_build_error = false
+	local can_build_prereq = false
+	local can_build_not_buildable = false
+	local can_build_at = false
+	
+	--save the location of flag
+	local build_pos = Vector3f( strat_pt:GetPosition() )
+	
+	for squad_ai in military_manager:GetUnlockedSquads() do
+		
+		if squad_ai:IsEngineer() then
+			
+			found_engineer = true
+			
+			local can_build = squad_ai:CanBuild( self.garrison_id )
+	
+			if can_build == SquadAI.CANBUILD_NoResources then
+				can_build_no_money = true
+			elseif can_build == CANBUILD_NotBuildable then
+				can_build_not_buildable = true
+			elseif can_build == SquadAI.CANBUILD_Prerequisites then
+				can_build_prereq = true
+			elseif can_build == SquadAI.CANBUILD_Error then
+				can_build_error = true
+			--check that (1) I can build it (2) I can build it there
+			elseif can_build == SquadAI.CANBUILD_Ok then 
+				
+				if squad_ai:CanBuildAt( self.garrison_id, build_pos ) then
+				
+					if self.builder == nil then
+						self.builder = squad_ai
+					else
+						local curr_pos = Vector3f( self.builder:GetSquad():GetPosition() )
+						local squad_pos = Vector3f( squad_ai:GetSquad():GetPosition() )
+
+						if distance_sqr( curr_pos, build_pos ) >
+							distance_sqr( squad_pos, build_pos ) then
+							
+							self.builder = squad_ai
+						end
+					end
+				else
+					can_build_at = true
+				end
+			end
+		end
+	end
+
+	if self.builder ~= nil then
+		Plan.LockResource( self, strat_pt )
+		self.capturing_flag = strat_pt
+		
+		Plan.LockResource( self, self.builder )
+		Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )
+		return
+	end
+	
+	aipushtrace("ResourcePlan")
+	
+	local some_error_found = false
+	
+	if not found_engineer then
+		some_error_found = true
+		aitrace( "no engineers to build a listening post" )
+	end
+	
+	if can_build_no_money then
+		some_error_found = true
+		aitrace( "no money to build a listening post" )
+	end
+	
+	if can_build_error then
+		some_error_found = true
+		aitrace( "listening post build error" )
+	end
+
+	if can_build_not_buildable then
+		some_error_found = true
+		aitrace( "listening post not buildable" )
+	end		
+	
+	if can_build_prereq then
+		some_error_found = true
+		aitrace( "listening post prerequisites" )
+	end
+	
+	if can_build_at then
+		some_error_found = true
+		aitrace( "can't build listening post at "..vec2str( build_pos ) )
+	end
+	
+	if not some_error_found then
+		aitrace( "can't build listening post: unknown error!" )
+	end
+	
+	aipoptrace("ResourcePlan")
+end
+
+
+function ResourcePlan:BuildPost()
+
+	--enemy re-captured the flag!
+	if not self.capturing_flag:FinishedCapturing() then
+		self:SetComplete( true )
+		return
+	end
+	
+	if( self.builder == nil )  then
+		return
+	end
+	
+	local build_pos = Vector3f( self.capturing_flag:GetPosition() )
+	Plan.SetState( self, "Building Garrison at <"..build_pos.x..", "..build_pos.y..", "..build_pos.z..">", ResourcePlan.BuildingListeningPost )
+	
+	--build it!
+	self.builder:DoBuildBuilding( self.garrison_id, build_pos ) 
+	self:OnEvent( Plan.Events.OnStart )
+	
+end
+
+function ResourcePlan:BuildingListeningPost()
+
+	dbAssert( self.capturing_flag ~= nil )
+	
+	if self.builder:IsBuilding() == 0 then
+		
+		--check if I was building, but now I'm not -- someone blew it up!
+		if self.is_building then
+			self:SetComplete( true )
+			return
+		end
+		
+		Plan.SetState( self, "Trying to build listening post", ResourcePlan.BuildPost )
+	else
+		--tag that we started building
+		self.is_building = true
+		self.building_id = self.builder:GetBuildingEntityID()
+	end
+	
+	if self.capturing_flag:HasListeningPost() then
+		self:UnlockResource( self.builder )
+		self.builder = nil
+		self:UnlockResource( self.capturing_flag )
+		self.capturing_flag = nil
+		Plan.SetState( self, "Build another listening post", ResourcePlan.FindFlag )
+		Plan.SetNeeds( self, "Obtain SP Builder", ResourcePlan.ObtainFlagAndBuilder )
+	end
+end
+
+
+function ResourcePlan:FindFlag()
+
+	if( self.capturing_flag == nil ) then
+		return
+	end
+	
+	self:OnEvent( Plan.Events.OnStart )
+	
+	Plan.SetState( self, "Starting to build post", ResourcePlan.BuildPost )
+end
+
+
+function ResourcePlan:Update()
+
+	if self:IsComplete() then
+		return
+	end
+	
+	if self.builder ~= nil and not self.builder:IsValid() then
+	
+		--cancel the building I was building
+		if self.building_id ~= nil then
+		
+			build_manager:CancelBuilding( self.building_id )
+		end
+		
+		self:SetComplete( true )
+		return
+	end
+	
+	Plan.Update(self)
+end

@@ -1,0 +1,28 @@
+class 'DarkEldarHQTactic' (BaseTactic)
+
+function DarkEldarHQTactic:__init( base_ai ) super( base_ai )
+
+	self:SetName("Dark Eldar HQ Tactic")
+
+	self.ability_piercing_vision_id = cpu_manager.stats:GetAbilityID( "dark_eldar_piercing_vision")
+	
+	print("DE HQ tactic")
+end
+
+
+function DarkEldarHQTactic:Update()
+
+	if not BaseTactic.Update( self ) then
+		return false
+	end
+
+	-- any time there are stealths, cast piercing vision
+	if not (cpu_manager.cpu_player:FindFirstInfiltratedEnemy(Vector3f(0,0,0),1000,1) == nil) then
+		if self.base_ai:CanDoAbility( self.ability_piercing_vision_id ) then
+			print("PIERCING VISION "..self.ability_piercing_vision_id)
+			Ability.DoAbility(self.base_ai, self.ability_piercing_vision_id, Ability.PredicateFilters.ConstantTrue)
+		end
+	end
+	
+	return true
+end

@@ -1,0 +1,15 @@
+
+1.) Replace core folder
+
+2.) Replace files in SCAR folder
+
+3.) Changes in race AI folder
+
+a.) Eldar tactic changes
+
+b.) Dark eldar tactic and build program changes
+
+c.) Necron build program changes
+
+d.) Slight tactic changes with Tau, Orcs, Marines, Guard and Chaos
+    

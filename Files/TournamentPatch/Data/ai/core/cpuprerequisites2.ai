@@ -1,0 +1,142 @@
+----------------------------------------
+-- File: 'cpuprerequisites2.ai'
+-- Edited by Dark40k @ 14.10.2008
+
+-- class created to workaround problem where for some special Addons or Units,
+-- CpuPrerequisites would return a false answer and show message 
+-- "Cannot get prerequisites: Trying to build an invalid addon:" in console
+-- 
+-- This class bypasses the call to CpuPrerequisites for a list of BuildName/BuildType
+-- otherwise it calls the original function and provides interface to the results
+-- 
+-- To add special BuildType/BuildName pairs, call CpuPrerequisites2.AddSpecialItem(BuildName, BuildType) on race init
+-- warning: AddSpecialItem is not an object method, it is a class function. It needs to be called using a "dot".
+-- examples: 
+--	CpuPrerequisites2.AddSpecialItem("legion_barracks_addon_low", CpuPrerequisites.BT_AddOn)
+--	CpuPrerequisites2.AddSpecialItem("legion_squad_recon_mk2", CpuPrerequisites.BT_Squad)
+
+class 'CpuPrerequisites2'
+
+CpuPrerequisites2.Filter={
+	[CpuPrerequisites.BT_Squad]={},
+	[CpuPrerequisites.BT_Building]={},
+	[CpuPrerequisites.BT_Research]={},
+	[CpuPrerequisites.BT_AddOn]={},
+}
+
+function CpuPrerequisites2:__init( CpuPlayer, BuildName, BuildType )
+	
+
+	-- check if use standard CpuPrerequisites
+	if CpuPrerequisites2.Filter[BuildType][BuildName]==nil then 
+		
+		-- used for debug
+--~ 		print("Calling CpuPrerequisites2 for :" .. BuildName .. " using original CpuPrerequisites")
+--~ 		aitrace( "Calling CpuPrerequisites2 for :" .. BuildName .. " using original CpuPrerequisites")
+		
+		self.Original=CpuPrerequisites(CpuPlayer,BuildName,BuildType)
+		
+	else
+		
+		-- start of bypass
+		
+		-- used for debug
+--~ 		print("Calling CpuPrerequisites2 for :" .. BuildName .. " using bypass methods")
+--~ 		aitrace( "Calling CpuPrerequisites2 for :" .. BuildName .. " using bypass methods")
+		
+		self.UnfulfilledPrerequisites={}
+		
+		if BuildType==CpuPrerequisites.BT_Squad then 
+			local PlayerStats=CpuPlayer:GetStats()
+			if not CpuPrerequisites2:TestBuildChannel(CpuPlayer:GetBuildManager(), BuildChannelAI.PQ_Squad, PlayerStats:GetSquadID(BuildName)) then
+				table.insert(self.UnfulfilledPrerequisites, {name="No PQ_Squad channel available for : " ..  BuildName})
+			end
+		elseif BuildType==CpuPrerequisites.BT_AddOn then
+			local PlayerStats=CpuPlayer:GetStats()
+			if not CpuPrerequisites2:TestBuildChannel(CpuPlayer:GetBuildManager(), BuildChannelAI.PQ_AddOn, PlayerStats:GetAddOnID(BuildName)) then
+				table.insert(self.UnfulfilledPrerequisites, {name="No PQ_AddOn channel available for : " ..  BuildName})
+			end
+		elseif BuildType==CpuPrerequisites.BT_Research then
+			local PlayerStats=CpuPlayer:GetStats()
+			if not CpuPrerequisites2:TestBuildChannel(CpuPlayer:GetBuildManager(), BuildChannelAI.PQ_Research, PlayerStats:GetResearchID(BuildName)) then
+				table.insert(self.UnfulfilledPrerequisites, {name="No PQ_Research channel available for : " ..  BuildName})
+			end
+		elseif BuildType==CpuPrerequisites.BT_Building then
+			if not CpuPrerequisites2:TestBuilder(CpuPlayer:GetMilitaryManager(), PlayerStats:GetResearchID(BuildName)) then
+				table.insert(self.UnfulfilledPrerequisites, {name="No Builder channel available for : " ..  BuildName})
+			end
+		else
+			print("Error - CpuPrerequisites2:__init - Unknown Build Type = " .. BuildType )
+			assert(false)
+		end
+		
+	end
+end
+
+function CpuPrerequisites2.AddSpecialItem(BuildName, BuildType)
+	CpuPrerequisites2.Filter[BuildType][BuildName]=true
+end
+
+-- Try to find a build channel that is capable of building the item_id.
+function CpuPrerequisites2:TestBuildChannel(PlayerBuildManager, BuildChannelType, item_id)
+	for build_channel in PlayerBuildManager:GetUnlockedBuildChannelAIs() do
+		if build_channel:GetItemIndexFromID(BuildChannelType, item_id)~=BuildChannelAI.INVALID_INDEX then
+			if build_channel:CanAddToQueue(BuildChannelType, item_id)==BuildChannelAI.CANBUILD_Ok then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function CpuPrerequisites2:TestBuilder(PlayerMilitaryManager, item_id)
+	for oSquad in PlayerMilitaryManager:GetUnlockedSquads() do
+		if (oSquad:IsValid() and oSquad:IsEngineer() and oSquad:CanBuild(self.item_id) == SquadAI.CANBUILD_Ok) then
+			return true
+		end	
+	end
+	return false
+end
+
+-- bool  UnfulfilledOwnership( Void  )
+function CpuPrerequisites2:GetNumUnfulfilledPrerequisites()
+	if self.Original~=nil then
+		return self.Original:GetNumUnfulfilledPrerequisites()
+	else
+		return table.getn(self.UnfulfilledPrerequisites)
+	end
+end
+
+-- CpuBuildType::iterator  GetUnfulfilledPrerequisites( Void  ) 
+function CpuPrerequisites2:GetUnfulfilledPrerequisites()
+	if self.Original~=nil then
+		return self.Original:GetUnfulfilledPrerequisites()
+	else
+		local key
+		local data
+		local UnfulfilledPrerequisitesTable=self.UnfulfilledPrerequisites
+		return function ()
+			key,data=next(UnfulfilledPrerequisitesTable,key)
+			return data
+		end
+	end
+end
+
+-- bool  PrerequisitesFulfilled( Void  )
+function CpuPrerequisites2:PrerequisitesFulfilled()
+	if self.Original~=nil then
+		return self.Original:PrerequisitesFulfilled()
+	else
+		return (table.getn(self.UnfulfilledPrerequisites)==0)
+	end
+end
+
+-- bool  CannotFulfillPrereqs( Void  )
+function CpuPrerequisites2:CannotFulfillPrereqs()
+	if self.Original~=nil then
+		return self.Original:CannotFulfillPrereqs()
+	else
+		return (table.getn(self.UnfulfilledPrerequisites)~=0)
+	end
+end
+

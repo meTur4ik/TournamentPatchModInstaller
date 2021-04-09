@@ -1,0 +1,181 @@
+----------------------------------------
+-- File: 'eldarinfantrytactic.ai'
+-- Created by Arkhan		@ 12.01.2006
+-- Edited by Thudmeizer         @ 26.10.2008
+
+class 'EldarInfantryTactic' (InfantryTactic)
+
+function EldarInfantryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Eldar Infantry Tactic")
+	
+	-- Eldar infantry is able to enter transport vehicles
+	local sSquadName = self.squad_ai:GetSquadName()
+	if (sSquadName == "eldar_squad_fire_dragon" or sSquadName == "eldar_squad_seer_council" or sSquadName == "eldar_squad_warp_spider") then
+		self.m_iTransportable = 2
+	elseif (sSquadName ~= "eldar_squad_avatar") then
+		self.m_iTransportable = 1
+	end
+	
+    -- Set FoF range
+    self.m_iFoFRange = 35
+    if (sSquadName == "eldar_squad_banshees" or sSquadName == "eldar_squad_seer_council" or sSquadName == "eldar_squad_farseer") then
+        self.m_iFoFRange = 15
+    elseif (sSquadName == "eldar_squad_fire_dragon") then
+        self.m_iFoFRange = 30
+    elseif (sSquadName == "eldar_guardian_squad") then
+        self.m_iFoFRange = 35
+    elseif (sSquadName == "eldar_squad_rangers") then
+        self.m_iFoFRange = 40
+    elseif (sSquadName == "eldar_squad_dark_reapers") then
+        self.m_iFoFRange = 45
+    end
+end
+
+function EldarInfantryTactic:AddTargetAbilities()
+    table.insert(InfantryTactic.TargetAbilities, { nil, "eldar_haywire_bombs", Ability.Filters.CloseVehicleEnemy, 1, 0 })
+end
+
+function EldarInfantryTactic:AddCommanders()
+	table.insert(self.commander, { "eldar_squad_farseer", true })
+end
+
+function EldarInfantryTactic:DoAbilities()
+
+	-- Check if I should enable/disable fleet of foot
+	self:DoAbilityFoF()
+	
+	-- I might have these attached
+	if (self.squad_ai:IsAttached()) then
+	
+		if (self.squad_ai:HasSquadAttached("eldar_squad_farseer")) then
+			FarSeerTactic.InitAbilities( self )
+			FarSeerTactic.DoAbilities( self )
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	InfantryTactic.DoAbilities(self)
+end
+
+function EldarInfantryTactic:TryAttachSquadMelee()
+
+   --if I'm in combat
+   local bInfiltrator = self.squad_ai:IsInfiltrating()
+   if not self.squad_ai:IsBroken() and self.squad_ai:IsInCombat() then
+	  
+	  if self.squad_ai:GetHealthPercentage() < 0.3 then
+		 
+		 local attachable_filter = function( squad_ai )
+		 	local oTactic = squad_ai:GetTactic()
+		    return self.squad_ai:CanAttachTo( squad_ai ) and not squad_ai:IsBroken() and
+			   not squad_ai:IsCapturing() and not oTactic:IsInSubState() and
+			   (not squad_ai:IsInfiltrating() or bInfiltrator) and oTactic:IsAttacker()
+		 end
+		 
+		 --find close by squads
+		 local attach_to = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), 10, attachable_filter )
+		 if attach_to ~= nil then 
+			
+			--sync FoF
+			self:ToggleFoF( self.squad_ai, false )
+			self:ToggleFoF( attach_to, false )  
+			
+			self.squad_ai:DoAttachSquad( attach_to )
+			attach_to:DoSetMeleeStance( SquadAI.MSTANCE_Assault )
+		 end
+		 
+	  else
+		 
+		 local melee_filter = function( squad_ai )
+		 	local oTactic = squad_ai:GetTactic()
+	        return self.squad_ai:CanAttachTo( squad_ai ) and not squad_ai:IsRanged() and 
+			   not squad_ai:IsBroken() and not squad_ai:IsCapturing() and not oTactic:IsInSubState() and
+			   (not squad_ai:IsInfiltrating() or bInfiltrator) and oTactic:IsAttacker()
+		 end
+		 
+		 local attach_to = cpu_manager:GetClosestSquad( self.squad_ai:GetPosition(), 10, melee_filter )
+		 if attach_to ~= nil then 
+			
+			--sync FoF
+			self:ToggleFoF( self.squad_ai, false )
+			self:ToggleFoF( attach_to, false )  
+			
+			self.squad_ai:DoAttachSquad( attach_to )
+			attach_to:DoSetMeleeStance( SquadAI.MSTANCE_Assault )
+		 end
+		 
+	  end	  
+   end
+end
+
+function EldarInfantryTactic:DoMoveAttach( attach_to )
+   
+	-- Sync FoF
+	self:ToggleFoF( self.squad_ai, fof )
+	self:ToggleFoF( attach_to, fof )
+
+	-- Call standard method
+	Tactic.DoMoveAttach(self, attach_to)
+end
+
+function EldarInfantryTactic:ToggleFoF( squad_ai, state )
+
+	-- Check if the squad can handle fleet of foot
+	local id = cpu_manager.stats:GetAbilityID( "eldar_fleetoffoot" )
+	if (not squad_ai:CanDoAbility(id)) then
+		return
+	end
+	
+	-- Check if it's already in desired state
+	if (squad_ai:IsUsingAbility(id) == state) then
+		return 
+	end
+	
+	-- Activate fleet of foot
+	squad_ai:DoSpecialAbility(id)
+end
+
+-- Dreddnott edit (April 16th)
+function EldarInfantryTactic:DoAbilityFoF()
+
+    -- Check if we should toggle FoF
+    local iFoFID = cpu_manager.stats:GetAbilityID("eldar_fleetoffoot")
+    local bToggleFoF = false
+
+    -- Check whether we're using the ability
+    local bIsUsing = self.squad_ai:IsUsingAbility(iFoFID)
+
+    -- Check if we're attacking
+    local bIsAttacking = self.squad_ai:IsInStateAttackMove()
+    
+    -- Check if we are shooting or fighting in melee
+    local bIsFighting = self.squad_ai:IsAttacking()
+    
+    -- Check if we're moving normally
+    local bIsMoving = (self.squad_ai:IsInStateMove() and not bIsAttacking)
+
+    -- Check if we're in a state that should FoF regardless of enemy presence
+    local bAvoidCombat = (self.squad_ai:IsBroken() or self:IsInSubState() or self.squad_ai:IsCapturing() or bIsMoving)
+
+    -- Check if we should slow down for enemies nearing range
+    local vSquadPos = self.squad_ai:GetPosition()
+    local oEnemy = cpu_manager.cpu_player:FindFirstEnemy(vSquadPos, self.m_iFoFRange, 1)
+    local bCloseEnemy = (oEnemy ~= nil)
+    
+    -- Helper flags
+    local bIsCharging = (bIsAttacking and bCloseEnemy)
+    local bIsDefending = (not bIsMoving and bCloseEnemy)
+    local bIsInCombat = (bIsFighting or bIsCharging or bIsDefending)
+
+    -- Check if FoF should be toggled
+    if ((bIsUsing and bIsInCombat and not bAvoidCombat) or
+    	(not bIsUsing and (not bIsInCombat or bAvoidCombat))) then        
+        bToggleFoF = true
+    end
+
+    -- Toggle FoF
+    if (bToggleFoF and self.squad_ai:CanDoAbility(iFoFID)) then
+        self.squad_ai:DoSpecialAbility(iFoFID)
+    end
+end

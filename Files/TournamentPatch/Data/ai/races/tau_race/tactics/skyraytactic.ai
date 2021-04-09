@@ -1,0 +1,30 @@
+----------------------------------------
+-- File: 'skyraytactic.ai'
+-- Edited by Thudmeizer		@ 26.10.2008
+
+class 'SkyrayTactic' (TauVehicleTactic)
+
+Skyray = {}
+
+function SkyrayTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Skyray Tactic")
+end
+
+function SkyrayTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Skyray.iBarrageID == nil) then
+		Skyray.iBarrageID = cpu_manager.stats:GetAbilityID( "tau_skyray_missile_barrage" )	
+	end
+end
+
+function SkyrayTactic:DoAbilities()
+
+     -- Check if I can launch a barrage
+ 	Ability.DoAbilityPos( self.squad_ai, Skyray.iBarrageID, Ability.Filters.CloseEnemy, 8 ) 
+
+	if (self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+ 		Ability.DoAbilityPos( self.squad_ai, Skyray.iBarrageID, Ability.Filters.CloseEnemy, 4 ) 
+	end
+end

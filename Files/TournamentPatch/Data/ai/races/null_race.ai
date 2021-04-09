@@ -1,0 +1,44 @@
+----------------------------------------
+-- File: 'loader.ai'
+-- Created by Corsix	@ 22.01.2006
+
+-- This file is here so that when you are making a race,
+-- you can play as it against AI opponents.
+
+
+class 'null_race'
+
+-- Constructor
+function null_race:__init( racename )
+	self.rname = racename
+end
+
+-- Returns the name of the race
+function null_race:GetRaceName()
+	return self.rname
+end
+
+-- This function is called if space marines are the race being played
+function null_race:LoadRace( eDifficulty )
+	return true
+end
+
+-- This function is called even if space marines are not the race being played
+function null_race:LoadGlobalInfo()
+	return true
+end
+
+-- Creates build base strategy
+function null_race:CreateBuildBaseStrategy()
+	return nil
+end
+
+-- Creates a special tactic for a space marine unit
+function null_race:CreateTactic(oSquadAI)
+	return nil
+end
+
+-- Returns a specific information
+function null_race:GetInfo(sType)
+	return nil
+end

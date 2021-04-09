@@ -1,0 +1,323 @@
+ArmyRanks =
+{
+	StartingValues =
+	{
+		{
+			PlayerStrongholdDistance = 1,
+			Value = 2,
+		},
+		{
+			PlayerStrongholdDistance = 3,
+			Value = 2,
+		},
+		{
+			PlayerStrongholdDistance = 5,
+			Value = 2,
+		},
+		{
+			PlayerStrongholdDistance = 8,
+			Value = 3,
+		}
+	}
+}
+
+Phases =
+{
+	{
+		PhaseLengthMin = 4, --11, reduced number to escalate wackiness ###
+		PhaseLengthMax = 6,
+    PhaseEndsOnPlayerTerritoriesMin = 3, --6, ### -- if you're on a roll, end sooner
+    PhaseEndsOnPlayerTerritoriesMax = 4, --8, ###
+
+		RequisitionCap = 1000,
+		
+		AttackProbability = 0.25,
+		AttackRange = 2, --2,
+
+    WeightAttackTargetRace = 0,
+    WeightBuildStrongholdPerimeter = 0.5,
+    WeightObtainWarpGate = 0,
+    WeightReconnectIsolatedTerritory = 0.5,
+
+		TargetChangeProbability = 0.5, --0, ###
+		TargetTargettingRaceCountMax = 0,
+
+		StrongholdAttackTerritoryCount = 31, --25, Assuming this should be the # of territories???
+
+		PlayerAttackFrequencyMin = 2,
+		PlayerAttackRulesIgnoreTerritoryCount = 2,
+		PlayerAttackRulesIgnoreArmyRankDifference = 2,
+
+		TerritoryOwnershipLimit = 10, --6, ###
+
+		TerritoryMilitaryStrengthDiscrepancyMax = 2, --3,
+		TerritoryMilitaryStrengthMultipleIncreasePerTurnProbability = 0.5,
+	},
+	{
+		PhaseLengthMin = 8,
+		PhaseLengthMax = 12,
+    PhaseEndsOnPlayerTerritoriesMin = 10, --6, ###
+    PhaseEndsOnPlayerTerritoriesMax = 14, --8, ###
+
+		RequisitionCap = 1000,
+		
+		AttackProbability = 0.5, --0.42, ###
+		AttackRange = 31,
+
+    WeightAttackTargetRace = 0,
+    WeightBuildStrongholdPerimeter = 0.25,
+    WeightObtainWarpGate = 0.5,
+    WeightReconnectIsolatedTerritory = 0.75,
+
+		TargetChangeProbability = 0.5,
+		TargetTargettingRaceCountMax = 2,
+
+		StrongholdAttackTerritoryCount = 31, --25, Assuming this should be the # of territories???
+
+		PlayerAttackFrequencyMin = 2,
+		PlayerAttackRulesIgnoreTerritoryCount = 2,
+		PlayerAttackRulesIgnoreArmyRankDifference = 2,
+
+		TerritoryOwnershipLimit = 20, --6, ###
+
+		TerritoryMilitaryStrengthDiscrepancyMax = 3, --3,
+		TerritoryMilitaryStrengthMultipleIncreasePerTurnProbability = 0.5,
+	},
+	{
+		PhaseLengthMin = 9999999,
+		PhaseLengthMax = 9999999,
+    PhaseEndsOnPlayerTerritoriesMin = 9999999,
+    PhaseEndsOnPlayerTerritoriesMax = 9999999,
+
+		RequisitionCap = 1000,
+
+		AttackProbability = 0.75, --0.5, ###
+		AttackRange = 31,
+
+    WeightAttackTargetRace = 0.25,
+    WeightBuildStrongholdPerimeter = 0,
+    WeightObtainWarpGate = 0.5,
+    WeightReconnectIsolatedTerritory = 0.75,
+
+		TargetChangeProbability = 0.25,
+		TargetTargettingRaceCountMax = 4,
+
+		StrongholdAttackTerritoryCount = 5,
+
+		PlayerAttackFrequencyMin = 2,
+		PlayerAttackRulesIgnoreTerritoryCount = 2,
+		PlayerAttackRulesIgnoreArmyRankDifference = 2,
+
+		TerritoryOwnershipLimit = 31, --25,
+
+		TerritoryMilitaryStrengthDiscrepancyMax = 5,
+		TerritoryMilitaryStrengthMultipleIncreasePerTurnProbability = 0.5,
+	}
+}
+
+AutoResolve = 
+{
+	-- Chance to Defend = 0.5 + (Defender Rating * DefenderRatingFactor - Attacker Rating) * ChancetoDefendFactor
+	-- Defender Rating = CommanderBonusBase [+ .04*Wargear] + Army Strength + Territory Strength
+	-- Attacker Rating = CommanderBonusBase [+ .04*Wargear] + Army Strength 
+	-- [Wargear only factored for player]
+	-- Victory Result is a die roll from .1 to 1. If > Chance to Defend, Attacker wins, otherwise Defender does
+	-- CommanderBonusBase is the value of the Commander in the army bonus equation
+	--
+	--
+	-- Basically, CommanderBonusBase is there to give attackers an early chance against territories with strengths of 3 and 4
+	CommanderBonusBase = 2.5,
+	WarGearFactor = 0.4,
+	-- DefenderRatingFactor skews battles slightly in favor of the defender on the broad average (as opposed to early)
+	DefenderRatingFactor = 0.9, --Was 1.3, Setting this value to <1 means that territories have a slight *dis*advantage against attackers
+	-- ChanceToDefendFactor determines how much is chance and how much is about the numbers. 
+	-- If the discrepency is a value of 5, then with a CTDF of 0.75 it adds .375 to the .5 random split. If the difference is 7 or over, it's a done deal: the value is > 1
+	ChanceToDefendFactor = 0.075,
+     -- In a player vs. AI battle, DefenderRating = DefenderRAting * PlayerDefendFactor, giving the player a distinct advantage
+    PlayerDefendFactor = 1.2,  -- a slight advantage
+  
+  AIWarGearPerVictories = 0.5,
+  AIWarGearCap = 10,
+  AIGarrisonBonusPerMilitaryStrength = 1.0,
+	
+	VictoryMarginValues =
+	{
+		{
+			MaxMargin = 0.1,
+			UnitLossChance = 0.7, --0.3, --0.9,
+		},
+		{
+			MaxMargin = 0.2,
+			UnitLossChance = 0.75, --0.2, --0.75,
+		},
+		{
+			MaxMargin = 0.4,
+			UnitLossChance = 0.8, --0.15, --0.6,
+		},
+		{
+			MaxMargin = 0.6,
+			UnitLossChance = 0.85, --0.1, --0.4,
+		},
+		{
+			MaxMargin = 0.8,
+			UnitLossChance = .85, --0.2,
+		},
+		{
+			MaxMargin = 1.0,
+			UnitLossChance = .9, --0.1,
+		}
+	},	
+	
+	VictoryMarginMaxUnitLossChance = 0.0,
+    ArmyRankLossFactor = .65,
+}
+
+-- Map difficulty settings
+-- NOTE: Valid difficulty values are:
+--				easy
+--				standard
+--				hard
+--				advanced
+--				insane
+DifficultySettings =
+{
+	{
+		MilitaryStrength = 1,
+    AIRank = 0,
+		
+		AIOpponents =
+		{
+			{
+				Difficulty = "Standard",
+			},
+
+			}
+	},
+
+	{
+		MilitaryStrength = 2,
+    AIRank = 1,
+		
+		AIOpponents =
+		{
+			{
+				Difficulty = "Standard",
+			},
+		}
+	},
+
+	{
+		MilitaryStrength = 3,
+    AIRank = 2,
+		
+		AIOpponents =
+		{
+			{
+				Difficulty = "Standard",
+			},
+		}
+	},
+
+	{
+		MilitaryStrength = 4,
+    AIRank = 3,
+		
+		AIOpponents =
+		{
+			{
+				Difficulty = "Standard",
+			},
+		}
+	},
+
+	{
+		MilitaryStrength = 5,
+    AIRank = 4,
+		
+		AIOpponents =
+		{
+			{
+				Difficulty = "Standard",
+			},
+			{
+				Difficulty = "Easy",
+			},
+		}
+	},
+
+	{
+		MilitaryStrength = 6,
+    AIRank = 5,
+    
+		AIOpponents =
+		{
+			{
+				Difficulty = "Standard",
+			},
+			{
+				Difficulty = "Easy",
+			},
+		}
+	},
+
+	{
+		MilitaryStrength = 7,
+    AIRank = 6,
+		
+		AIOpponents =
+		{
+			{
+				Difficulty = "Standard",
+			},
+			{
+				Difficulty = "Easy",
+			},
+		}
+	},
+
+	{
+		MilitaryStrength = 8,
+    AIRank = 7,
+		
+		AIOpponents =
+		{
+			{
+				Difficulty = "Standard",
+			},
+			{
+				Difficulty = "Standard",
+			},
+		}
+	},
+
+	{
+		MilitaryStrength = 9,
+    AIRank = 8,
+		
+		AIOpponents =
+		{
+			{
+				Difficulty = "Standard",
+			},
+			{
+				Difficulty = "Standard",
+			},
+		}
+	},
+
+	{
+		MilitaryStrength = 10,
+    AIRank = 9,
+		
+		AIOpponents =
+		{
+			{
+				Difficulty = "Standard",
+			},
+			{
+				Difficulty = "Standard",
+			},
+
+		}
+	},
+}

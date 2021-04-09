@@ -1,0 +1,284 @@
+----------------------------------------
+-- File: 'buildorderstrategy.ai'
+-- Edited by Larkin @ 19.08.2005
+-- Edited by Flenser@ 08.07.2005
+-- Edited by Dark40k@ 14.10.2008
+
+class 'BuildOrderStrategy' (Strategy)
+
+function BuildOrderStrategy:__init( info ) super( info )
+
+	self.num = 0
+	
+	--Project Midcapture
+	--Flenser added 18 May 2005
+	self.is_capturing_pos = {} --we need this to ensure the AI does not create two midCapture Plans for the same place
+	self.capture_flag = 0 --we need this to flip between mid-capture plans and normal capture plans
+	--end Project Midcapture code
+	
+	-- Check state
+	self.complete = false
+	if (self.info == nil) then
+		self.complete = true
+		return
+	end
+	
+	-- Save my player stats pointer
+	self.player_stats = cpu_manager.stats:GetPlayerStatsFromID( cpu_manager.player_id )
+	dbAssert( self.player_stats ~= nil )
+	
+	-- Begin Project QuickStart / Mapsize code (added by Flenser 12 May 2005)
+	local map_size, closest_enemy = self:GetMapSize()
+	
+	-- Get build order
+	self.aBuildOrder = nil
+	if (self:IsQuickStart()) then
+	
+		-- Use early build order for quick start
+		aitrace("BuildOrderStrategy: Quickstart build order...")
+		self.aBuildOrder = self.info.QuickStart
+		
+	elseif (map_size == "large") then
+	
+		-- Use early build order for large maps
+		aitrace("BuildOrderStrategy: LargeMap build order...")	
+		self.aBuildOrder = self.info.LargeMap
+		
+	else
+	
+		-- Use basic early build order
+		aitrace("BuildOrderStrategy: Basic build order...")	
+		self.aBuildOrder = self.info.Basic
+	end
+
+	-- Start building...
+	self:WaitOnNextPlan()
+end
+
+function BuildOrderStrategy:GetName()
+	return "BuildOrderStrategy"
+end
+
+function BuildOrderStrategy:AddToTable()
+
+end
+
+function BuildOrderStrategy:WaitOnNextPlan()
+
+	if (self.num == table.getn(self.aBuildOrder)) then
+		self.complete = true
+		return
+	end
+		
+	self.num = self.num + 1
+	local current_build_order = self.aBuildOrder[self.num]
+		
+	local plan = nil
+	if current_build_order[1] == "squad" then
+	
+		-- Dark40k 10.2008 : replaced CpuPrerequisites by CpuPrerequisites2
+		local prereq = CpuPrerequisites2( cpu_manager.cpu_player, current_build_order[2], CpuPrerequisites.BT_Squad )
+		if prereq:CannotFulfillPrereqs() then
+			self:WaitOnNextPlan()
+			return
+		else
+			local id = cpu_manager.stats:GetSquadID( current_build_order[2] )
+			plan = BuildUnitPlan( id, true )
+		end
+		
+	elseif current_build_order[1] == "flag_capture" then
+		--Project Midcapture
+        --Flenser added 9 May 2005
+		aipushtrace("Capture Plan - MidCapture")
+		
+		local enemy = cpu_manager:FindClosestEnemyPlayer()
+
+		-- this table stores the distances from the midpoint the various empty strat points are
+		local differences = {}
+
+		-- there is no point trying to capture empty strat points that are nearer the enemy base than the
+		-- AI's base, but some strat points may be just on the boundary. Tolerance sets just how much past
+		-- the exact midpoint a strat point can be and still be suitable
+		local tolerance = 20
+		if map_size == "small" then
+			local tolerance = 10
+		end
+      local mid_pos = Vector3f()
+      local base_pos = cpu_manager.start_pos
+      local enemy_pos = enemy:GetStartingPosition()
+      mid_pos.x = (base_pos.x + enemy_pos.x)/2
+      mid_pos.y = (base_pos.y + enemy_pos.y)/2
+      mid_pos.z = (base_pos.z + enemy_pos.z)/2
+      aitrace("Player starting position "..base_pos.x.."; "..base_pos.y.."; "..base_pos.z)
+      aitrace("Enemy starting position "..enemy_pos.x.."; "..enemy_pos.y.."; "..enemy_pos.z)
+      aitrace("mid position "..mid_pos.x.."; "..mid_pos.y.."; "..mid_pos.z)
+        
+		--first captureplans will look for the nearest strat_point near the mid-point
+		--between the AI and its enemy
+      local fail = 0
+    	aitrace("flip flag: "..self.capture_flag)
+		if map_size == "small" and self.capture_flag == 0 then
+			for strat_ai in resource_manager:GetUnlockedStrategicPointAIs() do
+				if not strat_ai:IsStrategicObjective() then
+					if not cpu_manager:IsFriendly( strat_ai:Owner() ) and 
+						not strat_ai:HasListeningPost() and
+						not strat_ai:IsBeingCaptured() and
+						not cpu_manager:HasThreatOnPath( base_pos, strat_ai:GetEntity():GetPosition(), 40 ) then
+						if not cpu_manager.terrain_analyzer:HasThreat( strat_ai:GetEntity():GetPosition(), 40 ) and 
+							not strat_ai:HasWeapons() then
+                            local strat_pos = strat_ai:GetEntity():GetPosition()
+                            if self.is_capturing_pos ~= nil then
+                                for i in self.is_capturing_pos do
+                                    aitrace("Already capping point "..self.is_capturing_pos[i].x.."; "..self.is_capturing_pos[i].y.."; "..self.is_capturing_pos[i].z)
+                                    if ( distance_sqr( self.is_capturing_pos [i], strat_pos ) ) == 0 then
+                                        fail = 1
+                                    end
+                                    if fail == 1 then break end
+                                end
+                            end
+                            aitrace("Fail = "..fail)
+                            if fail == 0 then    
+                                aitrace("Strategic Point position "..strat_pos.x.."; "..strat_pos.y.."; "..strat_pos.z)
+                                local distance_to_self = math.sqrt( distance_sqr( base_pos, strat_pos ) )
+                                aitrace("Distance to self "..distance_to_self)
+                                local distance_to_enemy = math.sqrt( distance_sqr( enemy_pos, strat_pos ) ) + tolerance
+                                aitrace("Distance to enemy "..distance_to_enemy)
+		    		    	           --only look at strat_pts nearer us than the enemy
+                                if distance_to_self < distance_to_enemy then
+                                    --now find out how far the strat_pt is from the midway position
+                                    local diff = math.sqrt( distance_sqr( mid_pos, strat_pos ))
+                                    aitrace("Distance from mid point to strat point "..string.format( "%.2f", diff))
+    		    			    	table.insert( differences, { strat_ai, diff } )
+	    					    end
+                      end
+                      fail = 0
+						end
+					end
+				end
+			end
+
+			--if there are no entries in differences {} then there are no suitable strat points
+			--so just capture in the usual way
+			if table.getn( differences ) == 0 then
+				aitrace("There are no suitable strategic points")
+				aitrace("Starting normal Capture Plan")
+				plan = CapturePlan( cpu_manager.start_pos, true )
+			else
+				--sort the entries in differences {} so that the one with the smallest diff is first
+				local sortfunc = function( item1, item2 )
+					return item1[2] < item2[2]
+				end
+				table.sort( differences, sortfunc )
+				-- returns the first sub-value of the first value - ie. the strat point with the lowest diff
+				local strategic_flag = differences [1] [1]
+            local strategic_flag_pos = strategic_flag:GetEntity():GetPosition()
+            aitrace("Chosen Strategic Point position "..strategic_flag_pos.x.."; "..strategic_flag_pos.y.."; "..strategic_flag_pos.z)
+            aitrace("Distance from mid point to strat point "..string.format( "%.2f", differences [1] [2]))
+				aitrace("Starting Capture Plan for the midway strategic point")
+            plan = CapturePlan( strategic_flag_pos, true )
+            table.insert( self.is_capturing_pos, strategic_flag_pos )
+			end
+         self.capture_flag = self.capture_flag + 1
+		else
+			aitrace("Starting normal Capture Plan")
+			plan = CapturePlan( cpu_manager.start_pos, true )	
+         self.capture_flag = self.capture_flag + 1
+		end
+		aipoptrace("Capture Plan - MidCapture")
+	    --end Project Midcapture code
+
+	elseif current_build_order[1] == "post_builder" then
+
+		plan = ResourcePlan( true )
+		
+	elseif current_build_order[1] == "building" then
+	
+		local id = cpu_manager.stats:GetBuildingID( current_build_order[2] )
+		plan = BuildBuildingPlan( id, cpu_manager.start_pos, true )
+	
+	elseif current_build_order[1] == "research" then
+	
+		local id = cpu_manager.stats:GetResearchID( current_build_order[2] )
+		plan = BuildResearchPlan( id, true )
+		
+	elseif current_build_order[1] == "addon" then
+	
+		local id = cpu_manager.stats:GetAddOnID( current_build_order[2] )
+		plan = BuildAddOnPlan( id, true )
+
+	end	
+	
+	dbAssert( plan ~= nil )
+	
+	self:AddPlan( plan )
+	
+	if current_build_order[3] == true then
+		--wait on start
+		plan:AddObserver( self )
+	else
+		--move on to the next one right away
+		self:WaitOnNextPlan()
+	end
+end
+
+function BuildOrderStrategy:OnPlanEvent( event )
+
+	if event ~= Plan.Events.OnPlanStart then
+		return
+	end
+	self:WaitOnNextPlan()
+end
+
+function BuildOrderStrategy:Update()
+
+	--FIXME: update timer, and quit out if timer reaches over limit
+	if (self.complete == true or g_iGMT > 3 * 60) then
+		self:PostEvent( Strategy.Events.OnSuccess )
+		return
+	end
+	
+	-- Finish buildings
+	self:FinishBuildings()
+
+	-- Superclass
+	Strategy.Update(self)
+end
+
+function BuildOrderStrategy:FinishBuildings() 
+
+	aitrace("BuildOrderStrategy: Finish buildings...")
+
+	-- Try to finish a building that wasn't finished (probably because the AI was reset)
+	local iBuildingID = build_manager:FindAnyUnfinishedBuildings()
+	if (iBuildingID ~= 0) then
+		
+		-- First see if I'm already trying to finish this
+		if (self:PlanExists("Build Building Plan", iBuildingID)) then
+			return
+		end
+		
+		-- Check for auto-construct buildings
+		if (cpu_manager:AutoConstructBuildings()) then
+	
+			-- Get building
+			local oBuilding = build_manager:FindUnfinishedBuilding(iBuildingID)
+			if (not oBuilding) then
+				return
+			end
+			
+			-- Get building AI
+			local oBuildingAI = military_manager:GetBaseFromID(oBuilding:GetID())
+			if (oBuildingAI == nil) then
+				return
+			end
+			
+			-- Check health
+			if (oBuildingAI:GetHealthPercentage() > 0.2) then
+				return
+			end
+		end
+		
+		-- Build it!
+		self:AddPlan(BuildBuildingPlan(iBuildingID, cpu_manager.start_pos))
+	end
+end

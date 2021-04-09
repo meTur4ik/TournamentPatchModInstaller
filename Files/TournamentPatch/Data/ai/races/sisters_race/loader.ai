@@ -1,0 +1,168 @@
+----------------------------------------
+-- File: 'loader.ai'
+-- Edited by Thudmeizer	@ 23.03.2008
+
+class 'sisters_race'
+
+-- Constructor
+function sisters_race:__init()
+
+end
+
+-- Returns the name of the race
+function sisters_race:GetRaceName()
+	return "sisters_race"
+end
+
+-- This function is called if the race is being played
+function sisters_race:LoadRace( eDifficulty )
+	
+	-- Import strategies
+	import( 'Races/sisters_race/Strategies/SistersBuildBaseStrategy.ai' )
+	
+	-- Import strategy info
+	import( "Races/sisters_race/Strategies/SistersStrategyInfo.ai" )
+
+ 	-- Import tactics
+	import( 'Races/sisters_race/Tactics/SistersInfantryTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersVehicleTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersServitorTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersRepentiaTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersMissionaryTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersSeraphimTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersCelestianTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersCanonessTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersConfessorTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersRhinoTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersExorcistTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersImmolatorTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersLivingSaintTactic.ai' )
+	import( 'Races/sisters_race/Tactics/SistersBuildingDefenseTactic.ai' )
+	return true
+end
+
+-- This function is called even if this race are not the race being played
+function sisters_race:LoadGlobalInfo()
+		
+	-- Import info files
+	import( 'Races/sisters_race/Info/sistersunitstats.ai' )
+	
+	-- Add race unit stats
+	table.insert(UnitStats, SistersUnitStats)
+	return true
+end
+
+-- Creates build base strategy
+function sisters_race:CreateBuildBaseStrategy()
+	return SistersBuildBaseStrategy(BuildBaseStrategyInfo)
+end
+
+-- Creates a special tactic for a unit
+function sisters_race:CreateTactic(oSquadAI)
+
+	-- Get unit name and class
+	local sUnitName = oSquadAI:GetSquadName()
+	local eClass = oSquadAI:GetStats():GetClass()
+	
+	-- Check if there is a special tactic for the unit available
+	local bVehicle = (eClass == UnitStatsAI.UC_VehicleLow or eClass == UnitStatsAI.UC_VehicleMed or eClass == UnitStatsAI.UC_VehicleHigh)
+	local bAirPlane = (eClass == UnitStatsAI.UC_AirLow or eClass == UnitStatsAI.UC_AirMed or eClass == UnitStatsAI.UC_AirHigh)
+	if (sUnitName == "sisters_squad_servitor") then
+		return SistersServitorTactic(oSquadAI)
+	elseif (sUnitName == "sisters_squad_repentia") then
+		return SistersRepentiaTactic(oSquadAI)
+	elseif (sUnitName == "sisters_squad_missionary") then
+		return SistersMissionaryTactic(oSquadAI)
+	elseif (sUnitName == "sisters_squad_seraphim") then
+		return SistersSeraphimTactic(oSquadAI)
+	elseif (sUnitName == "sisters_squad_celestian") then
+		return SistersCelestianTactic(oSquadAI)
+	elseif (sUnitName == "sisters_squad_canoness") then
+		return SistersCanonessTactic(oSquadAI)
+	elseif (sUnitName == "sisters_squad_confessor") then
+		return SistersConfessorTactic(oSquadAI)
+	elseif (sUnitName == "sisters_squad_rhino") then
+		return SistersRhinoTactic(oSquadAI)
+	elseif (sUnitName == "sisters_squad_immolator_tank") then
+		return SistersImmolatorTactic(oSquadAI)
+	elseif (sUnitName == "sisters_squad_exorcist_tank") then
+		return SistersExorcistTactic(oSquadAI)
+	elseif (sUnitName == "sisters_squad_living_saint") then
+		return SistersLivingSaintTactic(oSquadAI)
+	elseif (bVehicle or bAirPlane) then
+		return SistersVehicleTactic(oSquadAI)
+	end
+	return SistersInfantryTactic(oSquadAI)
+end
+
+-- Creates a base tactic
+function sisters_race:CreateBaseTactic(oBuilding)
+
+	-- Get building name
+	local sBuildingName = oBuilding:GetBaseName()
+	
+	-- Check if their is a special tactic for the building available
+	if ((sBuildingName == "sisters_hq") or (sBuildingName == "sisters_infantry") or (sBuildingName == "sisters_sanctuary") or (sBuildingName == "sisters_vehicle_building") or (sBuildingName == "sisters_holy_reliquary")) then
+		return SistersBuildingDefenseTactic(oBuilding)
+	end
+	return nil
+end
+
+-- Returns a specific information
+function sisters_race:GetInfo(sType)
+
+	-- Check info type
+	if (sType == "TurretPower") then
+		return 400
+	elseif (sType == "SupportAllyFactor") then
+		return 9 / 4
+	elseif (sType == "AttackModifier") then
+		return -5
+	elseif (sType == "CriticalRangeIncreasePerTier") then
+		return 10
+	elseif (sType == "MinArmyStrengthPerTier") then
+		return 750
+	elseif (sType == "AttackRatio") then
+		return 4 / 5
+	elseif (sType == "RetreatRatio") then
+		return 3 / 5
+	elseif (sType == "InvisibleBuildings") then
+		return false
+	elseif (sType == "HarassingLeader") then
+		return "sisters_squad_canoness"
+	elseif (sType == "AutoConstructBuildings") then
+		return false
+	end
+	return nil
+end
+
+-- Returns the building type and threat
+function sisters_race:GetBuildingType(sBuildingName)
+
+	-- Return race specific object string
+	if (sBuildingName == "sisters_hq") then
+		return "HQ", 0
+		
+	elseif (sBuildingName == "sisters_plasma_generator") then
+		return "Generator", 0
+		
+	elseif (sBuildingName == "sisters_thermo_plasma") then
+		return "BiggerGenerator", 0
+		
+	elseif (sBuildingName == "sisters_vehicle_building") then
+		return "VehicleBuilding", 0
+		
+	elseif (sBuildingName == "sisters_sanctuary") then
+		return "Armoury", 0
+		
+	elseif (sBuildingName == "sisters_listening_post") then
+		return "ListeningPost", 0
+		
+	elseif (sBuildingName == "sisters_turret_flamer") then
+		return "Turret", 300
+		
+	elseif (sBuildingName == "sisters_mines") then
+		return "Mine", 100
+	end
+	return nil, 0
+end

@@ -1,0 +1,151 @@
+----------------------------------------
+-- File: 'TauCommandertactic.ai'
+-- Edited by Thudmeizer @ 23.10.2006
+
+class 'TauCommanderTactic' (TauInfantryTactic)
+
+TauCommander = {}
+
+function TauCommanderTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Tau Commander Tactic")
+
+	self:InitAbilities()
+	self.lastused_ability_snaretrap_time = g_iGMT
+	self.lastused_ability_snaretrap_position = squad_ai:GetPosition()
+	self.min_snaretrap_requisition = 400 -- amount of requisition to have before typical use
+	self.min_snaretrap_time = 240 -- 30 seconds to wait between use, in possibly same location
+	self.min_snaretrap_distance = squad_ai:GetAbilityRange(TauCommander.ability_snaretrap_id) * 2 -- min distance between consecutive throws
+end
+
+-- Tau Commander is allowed to retreat even directly after a jump
+function TauCommanderTactic:SetTarget( target, variant_type )
+
+	self.variant_type = variant_type
+	self.target = Vector3f(target)
+	self.m_iMoveDelay = 0
+	self.last_jump = 0
+end
+
+-- Assassinate win condition -- never attack
+function TauCommanderTactic:IsAttacker()	
+	return (not cpu_manager.assassinate and self:IsCommanderAttacker())
+end
+
+-- Assassinate win condition -- never defend
+function TauCommanderTactic:IsDefender()
+	return (not cpu_manager.assassinate and self:IsCommanderDefender())
+end
+
+-- Assassinate win condition -- never jump into combat
+function TauCommanderTactic:JumpAttack()
+	if (not cpu_manager.assassinate) then
+		Tactic.JumpAttack(self)
+	end
+end
+
+function TauCommanderTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (TauCommander.acquired == nil) then
+		TauCommander.acquired = cpu_manager.stats:GetAbilityID( "tau_target_acquired" )	
+	end
+	if (TauCommander.ability_snaretrap_id == nil) then
+		TauCommander.ability_snaretrap_id = cpu_manager.stats:GetAbilityID( "tau_snare_trap" )	
+	end
+end
+
+function TauCommanderTactic:DoAbilities()
+
+	-- Target generic enemy 
+	Ability.DoAbilityTarget( self.squad_ai, TauCommander.acquired, Ability.Filters.CloseEnemy, 1 )
+
+	-- Check if we can use snare trap ability
+	if (self.squad_ai:CanDoAbility(TauCommander.ability_snaretrap_id)) then
+	
+		-- Get ability range
+		local iRange = self.squad_ai:GetAbilityRange(TauCommander.ability_snaretrap_id)
+	
+		-- If surrounded, try to use the snare trap
+		if (self.squad_ai:IsInCombat()) then
+	
+			local vSquadPos = self.squad_ai:GetPosition()
+			local fThrowFactor = 1 / 3
+			local oEnemy = Ability.Filters.CloseEnemy(vSquadPos, iRange, 4)
+			if (oEnemy ~= nil) then
+			
+				local vEnemyPos = oEnemy:GetPosition()
+				local vTargetPos = Vector3f(vSquadPos)
+				vTargetPos.x = vTargetPos.x + (vEnemyPos.x - vSquadPos.x) * fThrowFactor
+				vTargetPos.z = vTargetPos.z + (vEnemyPos.z - vSquadPos.z) * fThrowFactor
+				self:DoSpecialAbilitySnareTrap(vTargetPos, true)
+			end
+		else
+
+			-- Check for close strategic point
+			local oTarget = Ability.Filters.CloseStrategicPoint(self.squad_ai:GetPosition(), iRange)
+			if (oTarget ~= nil) then
+			
+				-- Modify position
+				local vTargetPos = oTarget:GetPosition()
+				local vDir = cpu_manager:GetDirectionToEnemy(vTargetPos)
+				local iOffset = math.random(1, 5)		
+				vTargetPos.x = vTargetPos.x + vDir.x * iOffset
+				vTargetPos.z = vTargetPos.z + vDir.z * iOffset
+				local iDistanceSqr = distance_sqr(vTargetPos, self.squad_ai:GetPosition())
+				if (iDistanceSqr < sqr(iRange) and iDistanceSqr > 1) then
+					self:DoSpecialAbilitySnareTrap(vTargetPos, false)
+				end
+			end
+		end
+	end
+end
+
+function TauCommanderTactic:Upgrade()
+
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+	
+	-- Force upgrade
+	if (not self.squad_ai:IsReinforcing() and self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetHealthPercentage() > 0.5) then
+		self.squad_ai:DoBestUpgrade(UnitStatsAI.UC_VehicleMed)
+	end
+end
+
+function TauCommanderTactic:DoSpecialAbilitySnareTrap(position,skip_prereqs)
+
+	local current_time = g_iGMT
+	local current_requisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	local last_time = self.lastused_ability_snaretrap_time
+	local last_pos = self.lastused_ability_snaretrap_position
+	local min_requisition = self.min_snaretrap_requisition
+	local min_time = self.min_snaretrap_time 
+	local min_distance = self.min_snaretrap_distance
+	
+	-- Check situation
+	if (skip_prereqs or (current_requisition > min_requisition and current_time - last_time > min_time) or 
+		(current_requisition > min_requisition and distance(position,last_pos) > min_distance)) then
+
+		-- Use snare trap ability
+		self.squad_ai:DoSpecialAbilityPos(TauCommander.ability_snaretrap_id, position)
+		self.lastused_ability_snaretrap_time = current_time
+		self.lastused_ability_snaretrap_position = position
+	end
+end
+
+function TauCommanderTactic:Update()
+
+    if (self:IsComplete()) then
+        return
+    end
+
+    -- State machine
+    if (not InfantryTactic.Update(self)) then
+        return
+    end
+    
+	-- Check if we are in serious trouble
+	self:EmergencyRetreat()
+end

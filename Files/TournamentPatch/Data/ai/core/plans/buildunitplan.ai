@@ -1,0 +1,131 @@
+----------------------------------------
+-- File: 'buildunitplan.ai'
+-- Edited by LarkinVB @   15.08.2005
+
+import ("Plans/BuildPlan.ai")
+
+class 'BuildUnitPlan' (BuildPlan)
+
+function BuildUnitPlan:__init( sbpid, wait_on_builder ) super( CpuPlayer.CT_BuildUnits )
+	
+	--nil if you want to automatically quit out on failure
+	self.wait_on_builder = wait_on_builder
+	
+	--the squad i'm trying to build
+	BuildPlan.SetItemID( self, sbpid )
+	BuildPlan.SetItemName( self, cpu_manager.stats:GetSquadName( sbpid ) )
+	
+	Plan.SetNeeds( self, "Asking for builder", BuildUnitPlan.ObtainBuilder )
+	Plan.SetState( self, "Wanting to build: "..self.item_name, BuildUnitPlan.BuildUnit )
+	
+	Plan.SetName( self, "Build Unit Plan" )
+end
+
+function BuildUnitPlan:ObtainBuilder()
+
+	local unit_stats = cpu_manager.stats:GetUnitStatsFromBPID( self.item_id )
+	if (unit_stats == nil) then
+		Plan.SetComplete( self, true )
+		return
+	end
+	
+	--find a build channel 
+	local builder = nil
+	for build_channel in build_manager:GetUnlockedBuildChannelAIs() do
+
+		-- Don't queue
+		if (build_channel:IsBuilding() == 0) then
+			
+			-- Now build something!
+			local item_index = build_channel:GetItemIndexFromID(BuildChannelAI.PQ_Squad, self.item_id)
+			
+			if (item_index ~= BuildChannelAI.INVALID_INDEX) then
+		
+				if (build_channel:CanAddToQueue( BuildChannelAI.PQ_Squad, self.item_id ) == BuildChannelAI.CANBUILD_Ok) then
+					
+					-- Check that I have enough squad cap
+					local squad_cap_req = unit_stats:GetSquadCapReq()
+					local support_cap_req = unit_stats:GetSupportCapReq()
+					local iSquadCapLeft = math.max(build_manager:GetSquadCapLeft(), 0)
+					local iSupportCapLeft = math.max(build_manager:GetSupportCapLeft(), 0)
+					if ((squad_cap_req == 0 or iSquadCapLeft - squad_cap_req >= 0) and 
+						(support_cap_req == 0 or iSupportCapLeft - support_cap_req >= 0)) then
+					
+						--lock and save it!
+						builder = build_channel
+						break
+					end
+				end
+			end
+		end
+	end
+
+	if (builder ~= nil) then
+		BuildPlan.SetBuilder( self, builder )
+		
+		--no needs
+		Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )
+	end
+end
+
+function BuildUnitPlan:Retry()
+
+	aitrace( "BuildUnitPlan: Retry building "..self.item_name )
+	if (self.builder:CanAddToQueue( BuildChannelAI.PQ_Squad, self.item_id ) == BuildChannelAI.CANBUILD_Ok) then
+		self.builder:BuildSquad( self.item_id )
+	else
+
+		local slot = self.builder:GetItemIndexFromID(BuildChannelAI.PQ_Squad, self.item_id)
+		if (self.builder:GetItemRequiredTicksAt(BuildChannelAI.PQ_Squad, slot) < 5 or
+			g_iGMT > self.m_iPlanStart + 20) then
+			-- assume it was built, so give up
+			Plan.SetComplete(self, true)
+		end
+	end
+end
+
+-- Arkhan 11.2005: Set squad cap left to minimum 0 to allow the building of zero squad cap units if squad cap is negative
+function BuildUnitPlan:BuildUnit()
+
+	--check that I have enough squad cap
+	local unit_stats = cpu_manager.stats:GetUnitStatsFromBPID( self.item_id )
+	if (unit_stats == nil) then
+		Plan.SetComplete( self, true )
+		return
+	end
+	
+	local squad_cap_req = unit_stats:GetSquadCapReq()
+	local support_cap_req = unit_stats:GetSupportCapReq()
+	local iSquadCapLeft = math.max(build_manager:GetSquadCapLeft(), 0)
+	local iSupportCapLeft = math.max(build_manager:GetSupportCapLeft(), 0)
+	if ( squad_cap_req > 0 and iSquadCapLeft - squad_cap_req < 0) or 
+		(support_cap_req > 0 and iSupportCapLeft - support_cap_req <0) then
+		
+		aitrace("squad cap left: "..build_manager:GetSquadCapLeft() )
+		aitrace("support cap left: "..build_manager:GetSquadCapLeft() )
+		aitrace("squad cap needed: "..unit_stats:GetSquadCapReq() )
+		aitrace("support cap needed: "..unit_stats:GetSupportCapReq() )
+		aitrace("not enough squad/support cap to build "..self.item_name)
+	end
+	
+	if (self.builder ~= nil) then
+
+		--build it!
+		self.builder:BuildSquad( self.item_id )
+		
+		--notify
+		cpu_manager:OnEvent( CpuManager.Events.BuildSquad, self.item_id )
+
+		--change state
+		Plan.SetState( self, "Building a "..self.item_name, BuildPlan.BuildingState, true )
+		return
+	end
+	
+	aitrace( "BuildUnitPlan: Can't build "..self.item_name )
+	
+	if (self.wait_on_builder == nil or g_iGMT > self.m_iPlanStart + 120) then
+		aitrace( "BuildUnitPlan: Give up building "..self.item_name )
+		Plan.SetComplete( self, true )
+	end
+end
+

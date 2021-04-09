@@ -1,0 +1,49 @@
+----------------------------------------
+-- File: 'seercounciltactic.ai'
+-- Edited by Thudmeizer		@ 26.10.2008
+
+class 'SeerCouncilTactic' (EldarInfantryTactic)
+
+SeerCouncil = {}
+
+function SeerCouncilTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Seer Council Tactic")
+end
+
+function SeerCouncilTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (SeerCouncil.entanglement_id == nil) then
+		SeerCouncil.entanglement_id = cpu_manager.stats:GetAbilityID( "eldar_entanglement" )
+	end
+end
+
+function SeerCouncilTactic:DoAbilities()
+
+	-- Warlock entanglement
+	if (self.squad_ai:CanDoAbility( SeerCouncil.entanglement_id )) then
+	
+		local range = self.squad_ai:GetAbilityRange( SeerCouncil.entanglement_id )
+		local squad_pos = self.squad_ai:GetPosition()
+		local target = nil
+		
+		melee = function( squad )
+		
+		 	local is_cc = false    
+			if (squad:GetMeleeStance() == SquadAI.MSTANCE_Assault) then
+				is_cc = true   
+			end
+			return is_cc and squad:GetNumTroopers() >= 4
+		end
+		
+		local target = cpu_manager:FindClosestEnemy( squad_pos, range, melee )
+		
+		if (target ~= nil) then
+			self.squad_ai:DoSpecialAbilitySquad( SeerCouncil.entanglement_id, target:GetSquad() )
+		end
+	end
+	
+	-- Call basic DoAbilities methods
+	EldarInfantryTactic.DoAbilities(self)
+end

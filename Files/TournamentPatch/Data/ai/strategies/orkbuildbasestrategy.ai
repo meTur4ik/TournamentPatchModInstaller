@@ -1,0 +1,255 @@
+class 'OrkBuildBaseStrategy' (BuildBaseStrategy)
+
+
+OrkBuildBaseStrategy.ResearchOrder =
+{
+	{ 1, 	"ork_research_moredakka" },
+	{ 1, 	"ork_research_bigshoota" },
+	
+	{ 2, 	"ork_requisition_research_1" },
+	{ 2, 	"ork_power_research_1" },
+	{ 2, 	"ork_research_eavy_armor_boyz" },
+	{ 2, 	"ork_research_tougher_bosses" },
+	{ 2, 	"ork_research_grot_infiltrate" },
+	
+	{ 3, 	"ork_requisition_research_2" },
+	{ 3, 	"ork_power_research_2" },
+	{ 3, 	"ork_research_extra_armour" },
+	{ 3, 	"ork_recruitment" },
+
+	{ 4, 	"ork_research_tougher_bosses_2" },
+	{ 4, 	"ork_research_eavy_armor_boyz_2" },
+	{ 4, 	"ork_research_moredakka" },
+	{ 4, 	"ork_research_evenmoredakka" },
+}
+
+
+function OrkBuildBaseStrategy:__init( baseinfo ) super( baseinfo )
+
+	-- Limit tactics
+	-- NOTE: These #'s are horrifically dependent on balance changes, we should
+	-- scan the costs of all structures / add-ons / researches that let us tier up 
+	-- and figure out a min from that
+	self.spend_now_req = 300
+	self.spend_later_req = 600
+	self.spend_now_pow = 75
+	self.spend_later_pow = 150
+
+	self.generator_name = "ork_generator"
+	self.bigger_generator_id = cpu_manager.stats:GetBuildingID( "ork_bigger_generator" )
+
+	self.hq_building_name = "ork_hq"
+	self.hq_building_id = cpu_manager.stats:GetBuildingID( self.hq_building_name )
+	
+	self.vehicle_building_name = "ork_mek_shop"
+	self.vehicle_building_id = cpu_manager.stats:GetBuildingID( self.vehicle_building_name )
+	
+	self.post_addon_id = cpu_manager.stats:GetAddOnID( "ork_gork_totem_addon_1" )
+
+	self.tier3_addon_id = cpu_manager.stats:GetAddOnID( "ork_hq_addon" )
+
+	self.tier4_research_name = "ork_research_extra_armour"
+	self.tier4_research_id = cpu_manager.stats:GetResearchID( self.tier4_research_name )
+
+	self.squiggoth_name = "ork_squad_squiggoth"
+	self.squiggoth_id = cpu_manager.stats:GetSquadID( self.squiggoth_name )
+	dbAssert( self.squiggoth_id ~= nil )
+end
+
+
+function OrkBuildBaseStrategy:EvaluateSquadCap()
+
+	if	( build_manager:GetSupportCapCurrentMax() < build_manager:GetSupportCapTotalMax() and build_manager:GetSupportCapLeft() <= self.support_cap_threshold ) or
+		( build_manager:GetSquadCapCurrentMax() < build_manager:GetSquadCapTotalMax() and build_manager:GetSquadCapLeft() <= self.squad_cap_threshold ) then
+
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Building
+		build_type.name = "ork_waagh_banner"
+		self:TryBuild( build_type )
+	end
+end
+
+
+function OrkBuildBaseStrategy:UpdateTierLevel()
+
+	self.tierLevel = 1
+
+	local stats = cpu_manager.player_stats
+	for base in military_manager:GetBases() do
+		if base:HasAddOn( self.tier3_addon_id ) then
+
+			-- we still have the proper add-on
+			if cpu_manager.cpu_player:IsResearchComplete( self.tier4_research_name ) then
+				self.tierLevel = 4
+				return
+			else
+				self.tierLevel = 3
+				return
+			end
+		end
+	end
+
+	local pop = build_manager:GetSquadCapCurrentMax() - build_manager:GetSquadCapLeft()
+	if pop >= 50 then
+		self.tierLevel = 2
+	end	
+end
+
+
+function OrkBuildBaseStrategy:DevalueUnitByTier( unit_stats )
+
+	local devalue = 0
+
+	local tierLevel = self:GetTierLevel()
+
+	if tierLevel == 2 then
+		if unit_stats:GetSquadName() == "ork_squad_slugga" then
+			devalue = VALUE_PER_TIER
+		elseif unit_stats:GetSquadName() == "ork_squad_stormboy" then
+			devalue = VALUE_PER_TIER
+		end
+		
+	elseif tierLevel == 3 then
+		if unit_stats:GetSquadName() == "ork_squad_slugga" then
+			devalue = VALUE_PER_TIER * 2
+		elseif unit_stats:GetSquadName() == "ork_squad_stormboy" then
+			devalue = VALUE_PER_TIER * 2
+		end
+
+	elseif tierLevel == 4 then
+
+		if unit_stats:GetSquadName() == "ork_squad_slugga" then
+			devalue = VALUE_PER_TIER * 3
+		elseif unit_stats:GetSquadName() == "ork_squad_stormboy" then
+			devalue = VALUE_PER_TIER * 3
+		elseif unit_stats:GetSquadName() == "ork_squad_trukk" then
+			devalue = VALUE_PER_TIER
+		elseif unit_stats:GetSquadName() == "ork_squad_wartrak" then
+			devalue = VALUE_PER_TIER
+		elseif unit_stats:GetSquadName() == "ork_squad_killa_kan" then
+			devalue = VALUE_PER_TIER
+		elseif unit_stats:GetSquadName() == "ork_squad_tankbusta" then
+			devalue = VALUE_PER_TIER
+		end
+
+	end
+
+	return devalue
+end
+
+
+function OrkBuildBaseStrategy:DoBuildUnits()
+	
+	local tierLevel = self:GetTierLevel()
+	if tierLevel >= 3 then
+		if	build_manager:CanBuildSquad( self.squiggoth_id ) then
+			local build_type = CpuBuildType()
+			build_type.btype = CpuPrerequisites.BT_Squad
+			build_type.name = self.squiggoth_name
+			self:TryBuild( build_type )
+		end
+	end
+
+	BuildBaseStrategy.DoBuildUnits( self )
+end
+
+
+function OrkBuildBaseStrategy:DoSecondaryBuildings()
+
+	local tierLevel = self:GetTierLevel()
+	if tierLevel >=2 then
+
+		-- count how many structures we have	
+		local num_vehicle_buildings = 0
+		self.num_hq = 0
+	
+		for build_channel in build_manager:GetBuildChannelAIs() do
+	
+			if build_channel:GetBlueprintID() == self.vehicle_building_id then
+				num_vehicle_buildings = num_vehicle_buildings + 1
+			end
+		
+			if build_channel:GetBlueprintID() == self.hq_building_id then
+				self.num_hq = self.num_hq + 1
+			end
+		end
+
+		-- build secondary vehicle buildings
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 800 then
+
+			local bBuild = false
+
+			if tierLevel == 2 and num_vehicle_buildings < 2 then
+				bBuild = true
+			elseif num_vehicle_buildings < 3 then
+				bBuild = true
+			end
+
+			if bBuild == true then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.vehicle_building_name
+				self:TryBuild( build_type )
+			end
+		end
+
+		-- build secondary HQ
+		if resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition ) > 1000 then
+
+			if tierLevel >= 3 and self.num_hq < 2 then
+				local build_type = CpuBuildType()
+				build_type.btype = CpuPrerequisites.BT_Building
+				build_type.name = self.hq_building_name
+				self:TryBuild( build_type )
+			end
+		end
+	end
+end
+
+
+function OrkBuildBaseStrategy:DoResearch()
+
+	local tierLevel = self:GetTierLevel()
+
+	BuildBaseStrategy.UtilityFunctions.DoResearch(self,OrkBuildBaseStrategy.ResearchOrder,tierLevel)
+
+end
+
+function OrkBuildBaseStrategy:CalculateDetectorDemand()
+
+	-- don't build detector units if enemy has no stealth units
+	if (cpu_manager.cpu_player:FindFirstInfiltratedEnemy(Vector3f(0,0,0),1000,1) == nil) then
+		return
+	end
+	
+	-- build stealth detectors: mad dok and mek boy
+	local detector_name = "ork_squad_bad_dok"
+	local bpid = cpu_manager.stats:GetSquadID(detector_name)	
+	local s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(bpid)
+	
+	if (s_cnt < 4) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Squad
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+	
+	detector_name = "ork_squad_mek_boy"
+	bpid = cpu_manager.stats:GetSquadID(detector_name)	
+	s_cnt = cpu_manager.player_stats:GetNumSquadsByBPID(bpid)
+	
+	if (s_cnt < 1) then
+		local build_type = CpuBuildType()
+		build_type.btype = CpuPrerequisites.BT_Squad
+		build_type.name = detector_name
+		self:TryBuild( build_type )
+	end
+	
+end
+
+function OrkBuildBaseStrategy:BuildStructureAddons()
+
+	if( self:PlanExists( "Build AddOn Plan", self.post_addon_id ) == false ) then 
+		self.AddPlan( self, BuildAddOnPlan( self.post_addon_id ) )
+	end
+end

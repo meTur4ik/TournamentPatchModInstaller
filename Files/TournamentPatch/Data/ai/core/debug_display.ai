@@ -1,0 +1,1158 @@
+----------------------------------------
+-- File: 'debug_display.ai'
+-- Edited by Dark40k @ 14.10.2008
+
+
+--------------------------------------------------------------------------------------------------------------
+-- DEBUGGINGDISPLAY ------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+class 'DebuggingDisplay'
+
+function DebuggingDisplay:__init( )
+	
+	--draw color circles for debug purposes
+	--self.dcircle = false
+
+	self.debug_display_height = 0.04
+	self.debug_view = 0
+
+	--enable debug display according to self.debug_view
+	self.debug = false
+
+end
+
+--------------------------------------------------------------------------------------------------------------
+-- CORE INTERFACES -----------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+function DebuggingDisplay:DisplayStats()
+				
+	if (self.debug == false) then
+		return 
+	end
+	
+	dr_clear("aidebug"..cpu_manager.player_id)
+
+	if self.debug_view == 0 then
+		self:PrintSummary()
+--	elseif self.debug_view == 8 then
+--		self:PrintPlayerAssets()
+	elseif self.debug_view == 1 then
+		self:PrintStrategiesSummary()
+	elseif self.debug_view == 2 then
+		self:PrintTacticsSummary()
+--	elseif self.debug_view == 7 then
+--		self:PrintTerrainAnalyzerSummary()
+	elseif self.debug_view == 3 then
+		self:PrintDemands()
+	elseif self.debug_view == 4 then
+		self:PrintCount()
+	elseif self.debug_view == 5 then
+		self:PrintAvgEffectiveness()
+	elseif self.debug_view == 6 then
+		self:PrintEnemySquads()
+	end
+
+end
+
+function DebuggingDisplay:ToggleDebugViews()
+
+	self.debug_view = self.debug_view + 1
+
+	if self.debug_view > 6 then
+		self.debug_view = 0
+	end
+
+end
+
+function DebuggingDisplay:ScrollDown()
+
+	self.debug_display_height = self.debug_display_height - 0.12
+	self:DisplayStats()
+	
+end
+
+function DebuggingDisplay:ScrollUp()
+
+	self.debug_display_height = self.debug_display_height + 0.12
+	self:DisplayStats()
+	
+end
+
+--------------------------------------------------------------------------------------------------------------
+-- CORE OUTPUT DISPLAY -----------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+function DebuggingDisplay:Print( x, y, text )
+	
+	--the selected color of the text:
+	local colour = {255,255,192}
+	
+	dr_text2d( "aidebug"..cpu_manager.player_id, x, y, text, colour[1], colour[2], colour[3] )
+
+end
+
+
+function DebuggingDisplay:PrintTactics( x, y, z, squad_id )
+
+	local colour = {255,255,255}
+	
+	--loop through tactics
+	for squad_ai in military_manager:GetSquads() do
+	
+		local tactic = squad_ai:GetTactic()
+		if not tactic:IsComplete() and squad_ai:GetID() == squad_id then
+
+			local func, name = tactic:GetSubState()
+			local text = "Tactic: "..tactic:GetName().."\nPlayer ID: "..tostring(cpu_manager.player_id).."\nSquad ID: "..tostring(squad_id).."\nState: "..tactic:GetState().."\nSubState: "..name
+			
+			dr_text3d( x, y, z, text, colour[1], colour[2], colour[3] )
+		end
+	end
+	
+end
+
+function DebuggingDisplay:PrintSquadLockStatus( x, y, z, squad_id )
+	
+	local colour = {255,255,255}
+
+	if self:PrintLockStatus( x,y,z, squad_id, AIResource.AI_Squad ) then
+		return
+	end
+	
+	for squad_ai in military_manager:GetSquads() do
+		if squad_ai:GetID() == squad_id and squad_ai:IsLocked() then
+			dr_text3d( x, y, z, "squad locked by designer!", colour[1], colour[2], colour[3] )
+			return
+		end
+	end
+	
+	dr_text3d( x, y, z, "not locked \nPlayer ID: "..tostring(cpu_manager.player_id), colour[1], colour[2], colour[3] )
+	
+end
+
+function DebuggingDisplay:PrintBuildingLockStatus( x, y, z, building_id )
+
+	local colour = {255,255,255}
+	
+	if 	self:PrintLockStatus( x,y,z, building_id, AIResource.AI_Building ) or 
+		self:PrintLockStatus( x,y,z, building_id, AIResource.AI_StrategicPoint ) then
+		return
+	end
+	
+	for build_channel in build_manager:GetBuildChannelAIs() do
+		if build_channel:GetID() == building_id and build_channel:IsLocked() then
+			dr_text3d( x, y, z, "building locked by designer!", colour[1], colour[2], colour[3] )
+			return
+		end
+	end
+	
+	for strat in resource_manager:GetStrategicPointAIs() do
+		if strat:GetID() == building_id and strat:IsLocked() then
+			dr_text3d( x, y, z, "strategic point locked by designer!", colour[1], colour[2], colour[3] )
+			return
+		end
+	end
+	
+	dr_text3d( x, y, z, "not locked \nPlayer ID: "..tostring(cpu_manager.player_id), colour[1], colour[2], colour[3] )
+	
+end
+
+function DebuggingDisplay:PrintLockStatus( x, y, z, id, resource_type )
+
+	local colour = {255,255,255}
+	
+	--loop through strategies
+	for i in cpu_manager.strategies do
+		local strategy = cpu_manager.strategies[i]
+		for j in strategy.plans do
+			local plan = strategy.plans[j]
+			
+			if plan:HasResource( id, resource_type ) then
+				dr_text3d( x, y, z, 	"locked by: \nPlayer ID: "..tostring(cpu_manager.player_id)..
+												"\nStrategy: "..strategy:GetName()..
+												"\nPlan: "..plan:GetName()..
+												"\nState: "..plan:GetState()..
+												"\nNeeds: "..plan:GetNeeds()..
+												"\nWants: "..plan:GetWants()..
+												"\nResources: "..plan:GetDebugInfo(), 
+												colour[1], colour[2], colour[3] )
+				return true
+			end
+			
+		end
+	end
+	
+	return false
+	
+end
+
+--------------------------------------------------------------------------------------------------------------
+-- DATA GATHERING AND DISPLAY -------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------
+
+function DebuggingDisplay:PrintAvgEffectiveness()
+
+	local xval	= 0.05
+	local xval_prev = xval
+	
+	local yval	= self.debug_display_height
+	local xstep	= 0.03
+	local ystep	= 0.03
+
+	--display which player I'm currently debugging
+	self:Print( xval, yval - ystep*2, "Debugging Player "..cpu_manager.player_id.." (Effectiveness)" )
+	yval = yval + ystep*0.5
+	
+	local tab = 0.4
+	
+	local debug_table = {}
+	debug_table[UnitStatsAI.UC_HeavyInfantryMed]    = "HeavyInfantryMed"
+	debug_table[UnitStatsAI.UC_HeavyInfantryHigh]   = "HeavyInfantryHigh"
+	debug_table[UnitStatsAI.UC_LightInfantryLow]    = "LightInfantryLow"
+	debug_table[UnitStatsAI.UC_LightInfantryMed]    = "LightInfantryMed"
+	debug_table[UnitStatsAI.UC_LightInfantryHigh]   = "LightInfantryHigh"
+	debug_table[UnitStatsAI.UC_VehicleLow] 	     = "VehicleLow"
+	debug_table[UnitStatsAI.UC_VehicleMed] 	     = "VehicleMed"
+	debug_table[UnitStatsAI.UC_VehicleHigh]	     = "VehicleHigh"
+	debug_table[UnitStatsAI.UC_MonsterMed] 	     = "Monster Med"
+	debug_table[UnitStatsAI.UC_MonsterHigh] 	 = "Monster High"
+	debug_table[UnitStatsAI.UC_Commander] 	     = "Commander"
+	debug_table[UnitStatsAI.UC_BuildingLow] 	     = "BuildingLow"
+	debug_table[UnitStatsAI.UC_BuildingMed] 	     = "BuildingMed"
+	debug_table[UnitStatsAI.UC_BuildingHigh]	     = "BuildingHigh"
+
+	for i in cpu_manager.strategies do
+	
+		if cpu_manager.strategies[i]:GetName() == "BuildBaseStrategy" then
+	
+			xval = xval + tab
+			
+			self:Print( xval, yval, "Base" )
+			xval = xval + tab*0.2
+			self:Print( xval, yval, "Avg" )
+		
+			yval = yval + ystep
+			
+			--print out all the demands for all the squads
+			for unit_stats in cpu_manager.stats:GetUnitStats( cpu_manager.cpu_player:GetPlayerRace()) do
+		
+				for class = 0, UnitStatsAI.UC_Count - 1 do
+		
+					xval = xval_prev
+					yval = yval + ystep
+				
+
+				
+					self:Print( xval, yval, tostring(unit_stats:GetSquadName())..": "..tostring(debug_table[class]) )
+					xval = xval + tab
+										
+					self:Print( xval, yval, string.format( "%.2f", unit_stats:GetEffectivenessRating( class ) ) )
+				end
+				
+			end
+		end
+	end
+	
+end
+
+function DebuggingDisplay:PrintSquadStats( squad_ai )
+
+	local xval	= 0.05
+	local xval_prev = xval
+	
+	local yval	= self.debug_display_height
+	local xstep	= 0.03
+	local ystep	= 0.03
+
+	--display which player I'm currently debugging
+	self:Print( xval, yval - ystep*2, "Debugging Player "..cpu_manager.player_id.." (Build Demands)" )
+	yval = yval + ystep*0.5
+	
+	local tab = 0.1
+	
+	xval = xval + tab*2.5
+			
+	self:Print( xval, yval, "Com" )
+	xval = xval + tab
+			
+	self:Print( xval, yval, "Hurt" )
+	xval = xval + tab
+			
+	self:Print( xval, yval, "M1" )
+	xval = xval + tab
+			
+	self:Print( xval, yval, "M2" )
+	xval = xval + tab
+			
+	self:Print( xval, yval, "M3" )
+	xval = xval + tab
+					
+	self:Print( xval, yval, "Pos" )
+	xval = xval + tab
+	
+	yval = yval + ystep
+			
+	--for squad_ai in military_manager:GetSquads() do
+	
+		if squad_ai:IsValid() then
+		
+			xval = xval_prev
+			yval = yval + ystep
+		    
+			self:Print( xval, yval, squad_ai:GetSquadName() )
+			xval = xval + tab*2.5
+				
+			self:Print( xval, yval, tostring( squad_ai:IsInCombat() ) )
+			xval = xval + tab
+				
+			self:Print( xval, yval, tostring( squad_ai:WasRecentlyHurt() ) )
+			xval = xval + tab
+				
+			self:Print( xval, yval, tostring( squad_ai:IsInStateMove()) )
+			xval = xval + tab
+		
+			self:Print( xval, yval, tostring( squad_ai:IsInStateAttackMove()) )
+			xval = xval + tab
+			
+			local squad_id = squad_ai:GetID()
+			local squad_pos = squad_ai:GetPosition() 
+			
+			self:Print( xval, yval, tostring( vec2str(squad_pos) ) )
+			xval = xval + tab
+
+      end
+end
+		
+function DebuggingDisplay:PrintDemands()
+
+	local xval	= 0.05
+	local xval_prev = xval
+	local yval	= self.debug_display_height
+	local xstep	= 0.03
+	local ystep	= 0.03
+
+	--display which player I'm currently debugging
+	self:Print( xval, yval - ystep*2, "Debugging Player "..cpu_manager.player_id.." (Build Demands)" )
+	yval = yval + ystep * 0.5
+	
+	local tab = 0.1
+	
+	for i in cpu_manager.strategies do
+	
+		if (cpu_manager.strategies[i]:GetName() == "BuildBaseStrategy") then
+		
+			--RATINGS
+			xval = xval + tab*3.5
+			
+			self:Print( xval, yval, "Class" )
+			xval = xval + tab
+			
+			self:Print( xval, yval, "Effect" )
+			xval = xval + tab
+			
+			self:Print( xval, yval, "Squad" )
+			xval = xval + tab
+			
+			self:Print( xval, yval, "Owner" )
+			xval = xval + tab
+		
+			self:Print( xval, yval, "Pre-reqs" )
+		
+			yval = yval + ystep
+
+			-- print demands for each squad
+			for unit_stats in cpu_manager.stats:GetUnitStats( cpu_manager.cpu_player:GetPlayerRace() ) do
+		
+				xval = xval_prev
+				yval = yval + ystep
+
+				-- Name
+				self:Print( xval, yval, unit_stats:GetSquadName() )
+				xval = xval + tab * 3.5
+				
+				-- Class demand
+				local unit_class_demand = 0
+
+				local class_demand = cpu_manager.strategies[i]:GetClassInfluence( unit_stats:GetClass() ) 
+				if class_demand < 0 then
+					-- inverse scale for bigger units (we still want bigger units of class X)
+					unit_class_demand = ( 10 - unit_stats:GetClassRating() ) * class_demand
+				else
+					unit_class_demand = unit_stats:GetClassRating() * class_demand
+				end
+
+				self:Print( xval, yval, string.format( "%.0f", unit_class_demand ) )
+				xval = xval + tab
+				
+				-- Effect demand
+				local effectiveness_demand = 0
+				for class = 0, UnitStatsAI.UC_Count - 1 do
+					effectiveness_demand = effectiveness_demand + cpu_manager.strategies[i]:GetEffectivenessDemand( class ) * unit_stats:GetEffectivenessRating( class )
+				end
+		
+				effectiveness_demand = effectiveness_demand / UnitStatsAI.UC_Count
+				self:Print( xval, yval, string.format( "%.0f", effectiveness_demand ) )
+				xval = xval + tab
+
+				-- Squad demand
+				self:Print( xval, yval, string.format( "%.0f", cpu_manager.strategies[i]:GetSquadDemand( unit_stats:GetID() ) ) )
+				xval = xval + tab
+
+				-- Owner
+				-- Dark40k 10.2008 : replaced CpuPrerequisites by CpuPrerequisites2
+				local prereq = CpuPrerequisites2( cpu_manager.cpu_player, unit_stats:GetSquadName(), CpuPrerequisites.BT_Squad )
+				local ownership = 0
+				if prereq:UnfulfilledOwnership() then
+					ownership = cpu_manager.strategies[i].info.ownership_bias
+				end
+
+				self:Print( xval, yval, tostring( ownership ) )
+				xval = xval + tab
+
+				-- Pre-reqs
+				if prereq:CannotFulfillPrereqs() then
+					self:Print( xval, yval, string.format( "true (%d)", prereq:GetNumUnfulfilledPrerequisites() ) )
+				else
+					self:Print( xval, yval, string.format( "false (%d)", prereq:GetNumUnfulfilledPrerequisites() ) )
+				end
+			end
+			
+			break
+		end
+	end
+end
+
+function DebuggingDisplay:PrintSummary()
+
+	local xval	= 0.05
+	local yval	= self.debug_display_height
+	local xstep	= 0.03
+	local ystep	= 0.03
+
+	local tab = 0.065
+	
+	--display which player I'm currently debugging
+	self:Print( xval, yval - ystep*2, "Debugging Player "..cpu_manager.player_id )
+	
+	--display strategies
+	self:Print( xval, yval, "Currently Running Strategies:" )
+	yval = yval + ystep*0.5
+	xval = xval + xstep
+		
+	local debug_designer = true
+	
+	for i in cpu_manager.strategies do
+	
+		if debug_designer or cpu_manager.strategies[i]:GetName() ~= "DesignerStrategy" then
+		
+			yval = yval + ystep
+			self:Print( xval, yval, cpu_manager.strategies[i]:GetName()..": "..cpu_manager.strategies[i]:GetStatus())
+	
+			--print plans
+			yval = yval + ystep
+			xval = xval + xstep
+
+			for j in cpu_manager.strategies[i].plans do
+				yval = yval + ystep
+				self:Print( xval, yval, cpu_manager.strategies[i].plans[j]:GetName()..": "..cpu_manager.strategies[i].plans[j]:GetState())
+				
+				--print needs
+				xval = xval + xstep
+	
+				yval = yval + ystep
+				self:Print( xval, yval, "Needs: "..cpu_manager.strategies[i].plans[j]:GetNeeds() )
+	
+				yval = yval + ystep
+				self:Print( xval, yval, "Wants: "..cpu_manager.strategies[i].plans[j]:GetWants() )
+				
+				local debug_info = cpu_manager.strategies[i].plans[j]:GetDebugInfo()
+				
+				if debug_info ~= "" then
+					yval = yval + ystep
+					self:Print( xval, yval, "Resources: "..debug_info )
+				end
+				
+				xval = xval - xstep
+			end
+
+			yval = yval + ystep*0.5
+			xval = xval - xstep
+			
+		end
+		
+	end
+	
+	--next column
+	yval = self.debug_display_height
+	xval = 0.6
+	
+	xval_prev = xval
+	
+	local tab = 0.065
+--[[
+	--RATINGS
+	xval = xval + tab
+	
+	self:Print( xval, yval, "Light" )
+	xval = xval + tab
+	
+	self:Print( xval, yval, "Heavy" )
+	xval = xval + tab
+	
+	self:Print( xval, yval, "Vehicle" )
+	xval = xval + tab
+
+	self:Print( xval, yval, "Building" )
+
+	yval = yval + ystep
+	xval = xval_prev
+	
+	self:Print( xval, yval, "Rating:" )
+	xval = xval + tab
+	
+	self:Print( xval, yval, tostring(cpu_manager.player_stats:GetTotalClassRating( UnitStatsAI.UC_LightInfantry) ) )
+	xval = xval + tab
+	
+	self:Print( xval, yval, tostring(cpu_manager.player_stats:GetTotalClassRating( UnitStatsAI.UC_HeavyInfantry) ) )
+	xval = xval + tab
+
+	self:Print( xval, yval, tostring(cpu_manager.player_stats:GetTotalClassRating( UnitStatsAI.UC_Vehicle) ) )
+	xval = xval + tab
+
+	self:Print( xval, yval, tostring(cpu_manager.player_stats:GettotalClassRating( UnitStatsAI.UC_Building) ) )
+	
+	yval = yval + ystep
+	xval = xval_prev
+
+	self:Print( xval, yval, "Eff:" )
+	xval = xval + tab
+	
+	self:Print( xval, yval, tostring(cpu_manager.player_stats:GetTotalEffectivenessRating( UnitStatsAI.UC_LightInfantry) ) )
+	xval = xval + tab
+	
+	self:Print( xval, yval, tostring(cpu_manager.player_stats:GetTotalEffectivenessRating( UnitStatsAI.UC_HeavyInfantry) ) )
+	xval = xval + tab
+
+	self:Print( xval, yval, tostring(cpu_manager.player_stats:GetTotalEffectivenessRating( UnitStatsAI.UC_Vehicle) ) )
+	xval = xval + tab
+
+	self:Print( xval, yval, tostring(cpu_manager.player_stats:GetTotalEffectivenessRating( UnitStatsAI.UC_Building) ) )
+	]]
+	
+	--RATE AGAINST ENEMIES
+	xval = xval_prev
+	yval = yval + ystep*2
+	
+	self:Print( xval, yval, "Enemy:" )
+	xval = xval + tab
+	for enemy in cpu_manager.stats:GetPlayerStats() do
+		if enemy:GetPlayerTeam() ~= cpu_manager.cpu_player:GetPlayerTeam() then
+			self:Print( xval, yval, tostring(enemy:GetPlayerID()) )
+			xval = xval + tab
+		end
+	end
+
+	yval = yval + ystep
+	xval = xval_prev
+	
+	self:Print( xval, yval, "Prorate:" )
+	xval = xval + tab
+	
+	for enemy in cpu_manager.stats:GetPlayerStats() do
+		if enemy:GetPlayerTeam() ~= cpu_manager.cpu_player:GetPlayerTeam() then
+			self:Print( xval, yval, string.format( "%.1f", cpu_manager:RateAgainstPlayer( enemy )) )
+			xval = xval + tab
+		end
+	end
+	
+	--AI TRACE
+	xval = xval_prev
+	yval = yval + ystep*2
+	
+	self:Print( xval, yval, "Current AI trace:" )
+	yval = yval + ystep
+	
+	for i in tracing do
+		yval = yval + ystep
+		self:Print( xval, yval, tracing[i] )
+	end
+
+end
+
+function DebuggingDisplay:PrintCount()
+
+	local ystep	= 0.03
+	local	xval	= 0.05
+	local	yval	= self.debug_display_height + ystep*3
+	
+	--print out all the demands for all the squads
+	for unit_stats in cpu_manager.stats:GetUnitStats(cpu_manager.cpu_player:GetPlayerRace()) do
+
+		yval = yval + ystep
+		
+		self:Print( xval, yval, unit_stats:GetSquadName().."("..
+			tostring( build_manager:GetNumSquadsWithBPID( unit_stats:GetID() ) )..") "..
+			"canbuild: "..tostring(build_manager:CanBuildSquad( unit_stats:GetID())))
+		
+	end
+	
+end
+
+function DebuggingDisplay:PrintPlayerAssets()
+	local yval = self.debug_display_height
+	
+	yval = self:PrintPlayerSquads(yval)	
+	yval = self:PrintPlayerBases(yval + 0.06)	
+--	yval = self:PrintMilitaryManager(yval + 0.06)
+
+end
+
+function DebuggingDisplay:PrintPlayerSquads(yval)
+
+	local ystep	= 0.03
+	local xcol = {0.02,0.22,0.28,0.36,0.60,0.72,0.84,0.92,0.98,1.06,1.14}
+	
+--	local player_stats = self.stats:GetPlayerStats()
+	local player_stats = cpu_manager.cpu_player:GetPlayerStats()
+	
+	--display which player I'm currently debugging
+	self:Print( xcol[1], yval, "Debugging Player "..cpu_manager.player_id.."(Player Squads)")
+	yval = yval + ystep
+
+	if (player_stats == nil) then
+		self:Print(xval,yval,"ERROR: Player Stats is NIL")
+	end
+	
+	local num_squads = player_stats:GetNumSquads()
+	
+	--display columns
+	self:Print( xcol[1], yval, "Squad ("..tostring(num_squads).." total)(L=lock,A=avail):" )
+	self:Print( xcol[2], yval, "(size-lead)" )
+	self:Print( xcol[3], yval, "(hlth/morl%)" )
+	self:Print( xcol[4], yval, "IS(idle,geer,rang,r-frce,brok,hurt,inf,det)")
+	self:Print( xcol[5], yval, "DO(build/prog,capt,fight)")	
+	self:Print( xcol[6], yval, "MV(m-type,stance)")	
+	self:Print( xcol[7], yval, "<location>" )
+	self:Print( xcol[8], yval, "GOAL:" )
+	self:Print( xcol[9], yval, "name" )
+	self:Print( xcol[10], yval, "(type)" )
+	self:Print( xcol[11], yval, "<location>" )
+	yval = yval + ystep
+
+	for squad_ai in player_stats:GetSquads() do
+
+		yval = yval + ystep
+		
+		if (squad_ai:IsValid()) then
+
+			local pos
+			local tmpstr
+			
+			tmpstr = "(L)"
+			if (military_manager:IsSquadUnlocked(squad_ai:GetID())) then
+				tmpstr = "(A)"
+			end
+	
+			self:Print(xcol[1],yval,squad_ai:GetSquadName()..tmpstr)
+			self:Print(xcol[2],yval,"("..squad_ai:GetNumTroopers().."-"..tostring(squad_ai:HasLeader())..")")
+			self:Print(xcol[3],yval,"("..math.floor((squad_ai:GetHealthPercentage()*100)+0.5).."/"..math.floor((squad_ai:GetMoralePercentage()*100)+0.5)..")")
+			self:Print(xcol[4],yval,"I("..tostring(squad_ai:IsIdle())..","..tostring(squad_ai:IsEngineer())..","..tostring(squad_ai:IsRanged())..","..
+				tostring(squad_ai:IsReinforcing())..","..tostring(squad_ai:IsBroken())..","..tostring(squad_ai:WasRecentlyHurt())..","..
+				tostring(squad_ai:IsInfiltrating())..","..tostring(squad_ai:IsDetector())..")")
+
+			if (squad_ai:IsEngineer()) then
+				tmpstr = tostring(squad_ai:IsBuilding()).."/"..tostring(squad_ai:IsBuildProgressing())
+			else
+				tmpstr = "~/~"
+			end
+			self:Print(xcol[5],yval,"D("..tmpstr..","..tostring(squad_ai:IsCapturing())..","..tostring(squad_ai:IsInCombat())..")")
+
+			if (squad_ai:IsInStateMove()) then
+				-- pos = squad_ai:GetDestinationPosition()
+				tmpstr = "move"
+			elseif (squad_ai:IsInStateAttackMove()) then
+				-- pos = squad_ai:GetDestinationPosition()
+				tmpstr = "attkmv"
+			else
+				tmpstr = "false"
+			end
+			
+			local stance = squad_ai:GetStance()
+			local tmpstr2
+			if (stance == SquadAI.STANCE_Hold) then
+				tmpstr2 = "hold"
+			elseif (stance == SquadAI.STANCE_StandGround) then
+				tmpstr2 = "stand"
+			elseif (stance == SquadAI.STANCE_Burn) then
+				tmpstr2 = "burn"
+			elseif (stance == SquadAI.STANCE_CeaseFire) then
+				tmpstr2 = "cfire"
+			elseif (stance == SquadAI.STANCE_Attack) then
+				tmpstr2 = "attck"
+			else
+				tmpstr2 = "?"..tostring(stance)
+			end
+			
+			self:Print(xcol[6],yval,"M("..tmpstr..","..tmpstr2.."/"..squad_ai:GetMeleeStance()..")")
+			
+			pos = squad_ai:GetPosition()
+			self:Print(xcol[7],yval,"<"..math.floor(pos.x+0.5)..","..math.floor(pos.y+0.5)..","..math.floor(pos.z+0.5)..">")
+
+			self:Print(xcol[8],yval,"("..squad_ai:GetStateName()..")")
+--			self:Print(xcol[3],yval,"("..math.floor((squad_ai:GetHealthPercentage()*100)+0.5).."/"..math.floor(squad_ai:GetProRatedCost())..")")
+
+		else
+			self:Print(xcol[1],yval,squad_ai:GetSquadName().." NOT VALID")
+		end
+
+	end
+	
+	return yval
+	
+end
+
+function DebuggingDisplay:PrintPlayerBases(yval)
+
+	local ystep	= 0.03
+	local xcol = {0.05,0.22,0.30,0.56,0.72,0.82}
+	
+--	local player_stats = self.stats:GetPlayerStats()
+	local player_stats = cpu_manager.cpu_player:GetPlayerStats()
+	
+	--display which player I'm currently debugging
+	self:Print( xcol[1], yval, "Debugging Player "..cpu_manager.player_id.."(Player Bases)")
+	yval = yval + ystep
+
+	if (player_stats == nil) then
+		self:Print(xval,yval,"ERROR: Player Stats is NIL")
+	end
+		
+	--display columns
+	self:Print( xcol[1], yval, "Base (type):" )
+	self:Print( xcol[2], yval, "(threat)" )
+	self:Print( xcol[3], yval, "IS(ctrl-struct,list-post,strat-obj)")
+	self:Print( xcol[4], yval, "<location>(radius)" )
+	yval = yval + ystep
+
+	for base_ai in player_stats:GetBases() do
+
+		yval = yval + ystep
+		
+		if (base_ai:IsValid()) then
+
+			local pos
+			local tmpstr
+			
+			self:Print(xcol[1],yval,"("..tostring(base_ai:GetType())..")")
+			self:Print(xcol[2],yval,"("..base_ai:GetThreatRating()..")")
+			self:Print(xcol[3],yval,"I("..tostring(base_ai:IsControlStructure())..","..tostring(base_ai:IsListeningPost())..","..tostring(base_ai:IsStrategicObjective())..")")
+			
+			pos = base_ai:GetPosition()
+			self:Print(xcol[4],yval,"<"..math.floor(pos.x+0.5)..","..math.floor(pos.y+0.5)..","..math.floor(pos.z+0.5)..">("..math.floor(base_ai:GetRadius()+0.5) ..")")
+		else
+			self:Print(xcol[1],yval," NOT VALID")
+		end
+
+	end
+	
+	return yval
+end
+
+function DebuggingDisplay:PrintMilitaryManager(yval)
+
+	local ystep	= 0.03
+	local xcol = {0.05,0.22,0.28,0.36,0.60,0.72,0.82,0.90,0.98,1.06,1.14}
+		
+	--display which player I'm currently debugging
+	self:Print( xcol[1], yval, "Debugging Player "..cpu_manager.player_id.."(Military Manager)")
+	yval = yval + ystep
+	
+	--display columns
+	self:Print( xcol[1], yval, "Squad :" )
+	self:Print( xcol[2], yval, "(size-lead)" )
+	self:Print( xcol[3], yval, "(hlth/morl%)" )
+	self:Print( xcol[4], yval, "IS(idle,geer,rang,r-frce,brok,hurt,inf,det)")
+	self:Print( xcol[5], yval, "DO(build/prog,capt,fight)")	
+	self:Print( xcol[6], yval, "MV(m-type)")	
+	self:Print( xcol[7], yval, "<location>" )
+	yval = yval + ystep
+
+	for squad_ai in military_manager:GetSquads() do
+
+		yval = yval + ystep
+		
+		if (squad_ai:IsValid()) then
+
+			local pos
+			local tmpstr
+			
+			self:Print(xcol[1],yval,squad_ai:GetSquadName())
+			self:Print(xcol[2],yval,"("..squad_ai:GetNumTroopers().."-"..tostring(squad_ai:HasLeader())..")")
+			self:Print(xcol[3],yval,"("..math.floor((squad_ai:GetHealthPercentage()*100)+0.5).."/"..math.floor((squad_ai:GetMoralePercentage()*100)+0.5)..")")
+			self:Print(xcol[4],yval,"I("..tostring(squad_ai:IsIdle())..","..tostring(squad_ai:IsEngineer())..","..tostring(squad_ai:IsRanged())..","..
+				tostring(squad_ai:IsReinforcing())..","..tostring(squad_ai:IsBroken())..","..tostring(squad_ai:WasRecentlyHurt())..","..
+				tostring(squad_ai:IsInfiltrating())..","..tostring(squad_ai:IsDetector())..")")
+
+			if (squad_ai:IsEngineer()) then
+				tmpstr = tostring(squad_ai:IsBuilding()).."/"..tostring(squad_ai:IsBuildProgressing())
+			else
+				tmpstr = "~/~"
+			end
+			self:Print(xcol[5],yval,"D("..tmpstr..","..tostring(squad_ai:IsCapturing())..","..tostring(squad_ai:IsInCombat())..")")
+
+			if (squad_ai:IsInStateMove()) then
+				-- pos = squad_ai:GetDestinationPosition()
+				tmpstr = "move"
+			elseif (squad_ai:IsInStateAttackMove()) then
+				-- pos = squad_ai:GetDestinationPosition()
+				tmpstr = "attkmv"
+			else
+				tmpstr = "false"
+			end
+			self:Print(xcol[6],yval,"M("..tmpstr..")")
+			
+			pos = squad_ai:GetPosition()
+			self:Print(xcol[7],yval,vec2str(pos))
+
+		else
+			self:Print(xcol[1],yval,squad_ai:GetSquadName().." NOT VALID")
+		end
+
+	end
+
+	yval = yval + (ystep * 2)
+	
+	--display columns
+	self:Print( xcol[1], yval, "Unlocked Squad :" )
+	self:Print( xcol[2], yval, "(size-lead)" )
+	self:Print( xcol[3], yval, "(hlth/morl%)" )
+	self:Print( xcol[4], yval, "IS(idle,geer,rang,r-frce,brok,hurt,inf,det)")
+	self:Print( xcol[5], yval, "DO(build/prog,capt,fight)")	
+	self:Print( xcol[6], yval, "MV(m-type)")	
+	self:Print( xcol[7], yval, "<location>" )
+	yval = yval + ystep
+
+	for squad_ai in military_manager:GetUnlockedSquads() do
+
+		yval = yval + ystep
+		
+		if (squad_ai:IsValid()) then
+
+			local pos
+			local tmpstr
+			
+			self:Print(xcol[1],yval,squad_ai:GetSquadName())
+			self:Print(xcol[2],yval,"("..squad_ai:GetNumTroopers().."-"..tostring(squad_ai:HasLeader())..")")
+			self:Print(xcol[3],yval,"("..math.floor((squad_ai:GetHealthPercentage()*100)+0.5).."/"..math.floor((squad_ai:GetMoralePercentage()*100)+0.5)..")")
+			self:Print(xcol[4],yval,"I("..tostring(squad_ai:IsIdle())..","..tostring(squad_ai:IsEngineer())..","..tostring(squad_ai:IsRanged())..","..
+				tostring(squad_ai:IsReinforcing())..","..tostring(squad_ai:IsBroken())..","..tostring(squad_ai:WasRecentlyHurt())..","..
+				tostring(squad_ai:IsInfiltrating())..","..tostring(squad_ai:IsDetector())..")")
+
+			if (squad_ai:IsEngineer()) then
+				tmpstr = tostring(squad_ai:IsBuilding()).."/"..tostring(squad_ai:IsBuildProgressing())
+			else
+				tmpstr = "~/~"
+			end
+			self:Print(xcol[5],yval,"D("..tmpstr..","..tostring(squad_ai:IsCapturing())..","..tostring(squad_ai:IsInCombat())..")")
+
+			if (squad_ai:IsInStateMove()) then
+				-- pos = squad_ai:GetDestinationPosition()
+				tmpstr = "move"
+			elseif (squad_ai:IsInStateAttackMove()) then
+				-- pos = squad_ai:GetDestinationPosition()
+				tmpstr = "attkmv"
+			else
+				tmpstr = "false"
+			end
+			self:Print(xcol[6],yval,"M("..tmpstr..")")
+			
+			pos = squad_ai:GetPosition()
+			self:Print(xcol[7],yval,vec2str(pos))
+		else
+			self:Print(xcol[1],yval,squad_ai:GetSquadName().." NOT VALID")
+		end
+
+	end
+
+	return yval
+	
+end
+
+function DebuggingDisplay:PrintStrategiesSummary()
+
+	local xcol	= {0.02,0.3,0.4}
+	local xcolp	= {0.03,0.28,0.77}
+	local yval	= self.debug_display_height
+	local ystep	= 0.03
+
+	--display which player I'm currently debugging
+	self:Print( xcol[1], yval - ystep, "Debugging Player "..cpu_manager.player_id.."(Strategies Summary)" )
+	
+	self:Print( xcol[1],yval,"Strategy Name (Status)")
+	self:Print( xcol[2],yval,"PLAN (#):")
+	self:Print( xcol[3],yval,"DEBUG (info(val),*)")
+	yval = yval + ystep
+	self:Print( xcolp[1],yval,"plan_name(status/priority/complete)")
+	self:Print( xcolp[2],yval,"INFO(state name/needs/wants)")
+	self:Print( xcolp[3],yval,"DEBUG(rsrc(#),*)")
+	yval = yval + ystep
+	
+	--display strategies
+	for i in cpu_manager.strategies do
+		yval = yval + ystep
+		
+		local strategy = cpu_manager.strategies[i]
+		
+		self:Print(xcol[1],yval,strategy:GetName().."("..strategy:GetStatus()..")")
+		self:Print(xcol[2],yval,"P("..tostring(strategy:GetPlanCount())..")")
+--		self:Print(xcol[3],yval,"D("..tostring(strategy:GetDebugInfo())..")")
+
+		local tmpstr = ""
+		local plans = strategy:GetPlans()
+		
+		for p in plans do
+			yval = yval + ystep
+						
+			self:Print(xcolp[1],yval,plans[p]:GetName().."("..plans[p]:GetStatus().."/"..tostring(plans[p]:GetPriority()).."/"..tostring(plans[p]:IsComplete())..")")
+			self:Print(xcolp[2],yval,"I("..tostring(plans[p]:GetState()).."/"..tostring(plans[p]:GetNeeds()).."/"..tostring(plans[p]:GetWants())..")")
+			self:Print(xcolp[3],yval,"D("..plans[p]:GetDebugInfo()..")")
+			
+		end
+		
+		
+--[[		
+		if debug_designer or cpu_manager.strategies[i]:GetName() ~= "DesignerStrategy" then
+		
+			yval = yval + ystep
+			self:Print( xval, yval, cpu_manager.strategies[i]:GetName()..": "..cpu_manager.strategies[i]:GetStatus())
+	
+			--print plans
+			yval = yval + ystep
+			xval = xval + xstep
+	
+			for j in cpu_manager.strategies[i].plans do
+				yval = yval + ystep
+				self:Print( xval, yval, cpu_manager.strategies[i].plans[j]:GetName()..": "..cpu_manager.strategies[i].plans[j]:GetState())
+				
+				--print needs
+				xval = xval + xstep
+	
+				yval = yval + ystep
+				self:Print( xval, yval, "Needs: "..cpu_manager.strategies[i].plans[j]:GetNeeds() )
+	
+				yval = yval + ystep
+				self:Print( xval, yval, "Wants: "..cpu_manager.strategies[i].plans[j]:GetWants() )
+				
+				local debug_info = cpu_manager.strategies[i].plans[j]:GetDebugInfo()
+				
+				if debug_info ~= "" then
+					yval = yval + ystep
+					self:Print( xval, yval, "Resources: "..debug_info )
+				end
+				
+				xval = xval - xstep
+			end
+	
+			yval = yval + ystep*0.5
+			xval = xval - xstep
+			
+		end
+]]		
+	end
+	
+end
+
+
+function DebuggingDisplay:PrintTacticsSummary()
+
+	local xcol	= {0.02,0.3,0.4}
+	local xcolp	= {0.03,0.28,0.77}
+	local yval	= self.debug_display_height
+	local ystep	= 0.03
+
+
+	--display which player I'm currently debugging
+	self:Print( xcol[1], yval - ystep, "Debugging Player "..cpu_manager.player_id.."(Tactics Summary)" )
+	
+	self:Print( xcol[1],yval,"Tactic Name (state)")
+	self:Print( xcol[2],yval,"PLAN (#):")
+	self:Print( xcol[3],yval,"DEBUG (info(val),*)")
+	yval = yval + ystep
+	self:Print( xcolp[1],yval,"plan_name(status/priority/complete)")
+	self:Print( xcolp[2],yval,"INFO(state name/needs/wants)")
+	self:Print( xcolp[3],yval,"DEBUG(rsrc(#),*)")
+	yval = yval + ystep
+	
+	--display tactics
+	for squad_ai in military_manager:GetSquads() do
+
+		yval = yval + ystep
+		
+		if (squad_ai:IsValid()) then
+			local tactic = squad_ai:GetTactic()
+
+			local f1,n1 = tactic:GetSubState()
+			local f2,n2 = tactic:GetPrevSubState()
+			
+			self:Print(xcol[1],yval,tactic:GetName().."("..tactic:GetState()..")")
+			self:Print(xcol[2],yval,"(".. tostring(n1).."/"..tostring(n2)..")")
+		else
+			self:Print(xcol[1],yval,squad_ai:GetSquadName().." NOT VALID")
+		end
+	end
+		
+end
+
+function DebuggingDisplay:PrintTerrainAnalyzerSummary()
+
+	local xcol	= {0.02,0.3,0.4}
+	local xcolp	= {0.03,0.28,0.77}
+	local yval	= self.debug_display_height
+	local ystep	= 0.03
+
+	local terrain_analyzer = cpu_manager.terrain_analyzer
+	
+	--display which player I'm currently debugging
+	self:Print( xcol[1], yval - ystep, "Debugging Player "..cpu_manager.player_id.."(Terrain Analyzer Summary)" )
+	
+	self:Print( xcol[1],yval,"Threats ("..tostring(num_threats)..")")
+	yval = yval + ystep
+	
+	--display threat analysis info
+	self:Print(xcol[1],yval,"Console command: sd_draw_threat_map = true")
+	
+	-- display chokepoint marker info
+	for cp_marker in terrain_analyzer:GetChokepointMarkerIDs() do
+		yval = yval + ystep
+
+		self:Print(xcol[1],yval,"Chokepoint("..tostring(cp_marker)..") at "..
+			vec2str(terrain_analyzer:GetMarkerPositionByID(cp_marker))..
+			"("..tostring(terrain_analyzer:GetMarkerProximityByID(cp_marker))..")")
+	end
+	
+	yval = yval + ystep
+	local pos = Vector3f(0,0,0)
+	local cp_marker = terrain_analyzer:GetClosestChokepointID(pos)
+
+	if (cp_marker > 0) then
+		self:Print(xcol[1],yval,"Chokepoint"..vec2str(pos).."("..tostring(cp_marker)..") at "..
+			vec2str(terrain_analyzer:GetMarkerPositionByID(cp_marker))..
+			"("..tostring(terrain_analyzer:GetMarkerProximityByID(cp_marker))..")")
+	end	
+end
+
+function DebuggingDisplay:PrintEnemySquads(yval)
+
+	if (yval == nil) then
+		yval = 0.06
+	end
+
+	local ystep	= 0.03
+	local xcol = {0.02,0.22,0.28,0.36,0.60,0.72,0.84,0.92,0.98,1.06,1.14}
+		
+	--display which player I'm currently debugging
+	self:Print( xcol[1], yval, "Debugging Player "..cpu_manager.player_id.."(Enemy Squads)")
+	yval = yval + ystep
+
+	if (cpu_manager.stats:GetPlayerStats() == nil or cpu_manager.player_stats == nil) then
+		self:Print(xval,yval,"ERROR: Player Stats is NIL")
+	end
+	
+	local num_squads = cpu_manager.player_stats:GetNumSquads()
+	
+	--display columns
+	self:Print( xcol[1], yval, "Squad ("..tostring(num_squads).." total):" )
+	self:Print( xcol[2], yval, "(size-lead)" )
+	self:Print( xcol[3], yval, "(hlth/morl%)" )
+	self:Print( xcol[4], yval, "IS(idle,geer,rang,r-frce,brok,hurt,inf,det)")
+	self:Print( xcol[5], yval, "DO(build/prog,capt,fight)")	
+	self:Print( xcol[6], yval, "MV(m-type,stance)")	
+	self:Print( xcol[7], yval, "<location>" )
+	self:Print( xcol[8], yval, "GOAL:" )
+	self:Print( xcol[9], yval, "name" )
+	self:Print( xcol[10], yval, "(type)" )
+	self:Print( xcol[11], yval, "<location>" )
+	yval = yval + ystep
+
+
+	for enemy in cpu_manager.stats:GetPlayerStats() do
+		if cpu_manager.player_stats:IsEnemy( enemy ) then
+
+			yval = yval + ystep
+			self:Print(xcol[1],yval,"ENEMY("..tostring(enemy:GetPlayerID()).."/"..tostring(enemy:GetPlayerTeam())..","..enemy:GetPlayerRaceName()..")")
+			yval = yval + ystep
+		
+			for squad_ai in enemy:GetSquads() do
+			
+				yval = yval + ystep
+		
+				if (squad_ai:IsValid()) then
+
+					local pos
+					local tmpstr
+			
+					self:Print(xcol[1],yval,squad_ai:GetSquadName())
+					self:Print(xcol[2],yval,"("..squad_ai:GetNumTroopers().."-"..tostring(squad_ai:HasLeader())..")")
+					self:Print(xcol[3],yval,"("..math.floor((squad_ai:GetHealthPercentage()*100)+0.5).."/"..math.floor((squad_ai:GetMoralePercentage()*100)+0.5)..")")
+					self:Print(xcol[4],yval,"I("..tostring(squad_ai:IsIdle())..","..tostring(squad_ai:IsEngineer())..","..tostring(squad_ai:IsRanged())..","..
+						tostring(squad_ai:IsReinforcing())..","..tostring(squad_ai:IsBroken())..","..tostring(squad_ai:WasRecentlyHurt())..","..
+						tostring(squad_ai:IsInfiltrating())..","..tostring(squad_ai:IsDetector())..")")
+
+					if (squad_ai:IsEngineer()) then
+						tmpstr = tostring(squad_ai:IsBuilding()).."/"..tostring(squad_ai:IsBuildProgressing())
+					else
+						tmpstr = "~/~"
+					end
+					self:Print(xcol[5],yval,"D("..tmpstr..","..tostring(squad_ai:IsCapturing())..","..tostring(squad_ai:IsInCombat())..")")
+
+					if (squad_ai:IsInStateMove()) then
+						-- pos = squad_ai:GetDestinationPosition()
+						tmpstr = "move"
+					elseif (squad_ai:IsInStateAttackMove()) then
+						-- pos = squad_ai:GetDestinationPosition()
+						tmpstr = "attkmv"
+					else
+						tmpstr = "false"
+					end
+			
+					local stance = squad_ai:GetStance()
+					local tmpstr2
+					if (stance == SquadAI.STANCE_Hold) then
+						tmpstr2 = "hold"
+					elseif (stance == SquadAI.STANCE_StandGround) then
+						tmpstr2 = "stand"
+					elseif (stance == SquadAI.STANCE_Burn) then
+						tmpstr2 = "burn"
+					elseif (stance == SquadAI.STANCE_CeaseFire) then
+						tmpstr2 = "cfire"
+					elseif (stance == SquadAI.STANCE_Attack) then
+						tmpstr2 = "attck"
+					else
+						tmpstr2 = "?"..tostring(stance)
+					end
+
+--					self:Print(xcol[6],yval,"M("..tmpstr..","..tmpstr2.."/"..squad_ai:GetMeleeStance()..")")
+--					self:Print(xcol[6],yval,"M("..tostring(squad_ai:IsInfiltrating())..")")
+--					self:Print(xcol[6],yval,"M("..tostring(cpu_manager.terrain_analyzer:GetThreatAtPos( squad_ai:GetPosition(), 0, true ))..")")
+	
+					pos = squad_ai:GetPosition()
+					self:Print(xcol[7],yval,"<"..math.floor(pos.x+0.5)..","..math.floor(pos.y+0.5)..","..math.floor(pos.z+0.5)..">")
+
+					self:Print(xcol[8],yval,"("..squad_ai:GetStateName()..")")
+--			self:Print(xcol[3],yval,"("..math.floor((squad_ai:GetHealthPercentage()*100)+0.5).."/"..math.floor(squad_ai:GetProRatedCost())..")")
+
+				else
+					self:Print(xcol[1],yval,squad_ai:GetSquadName().." NOT VALID")
+				end
+			end		
+		end
+	end
+	
+--[[	
+]]
+	
+	return yval
+	
+end

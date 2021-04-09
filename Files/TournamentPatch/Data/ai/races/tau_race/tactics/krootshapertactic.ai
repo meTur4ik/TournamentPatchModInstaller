@@ -1,0 +1,26 @@
+----------------------------------------
+-- File: 'KrootShapertactic.ai'
+-- Edited by Thudmeizer @ 12.02.2008
+
+class 'KrootShaperTactic' (TauInfantryTactic)
+
+function KrootShaperTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("KrootShaper Tactic")
+end
+
+function KrootShaperTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update( self )) then
+		return
+	end
+	
+	-- Attach to squad
+	self:TryAttachSquad( true, false, 1000, 100, nil )
+end
+ 

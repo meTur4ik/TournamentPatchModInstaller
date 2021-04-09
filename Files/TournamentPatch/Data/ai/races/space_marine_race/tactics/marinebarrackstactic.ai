@@ -1,0 +1,16 @@
+----------------------------------------
+-- File: 'marinebarrackstactic.ai'
+-- Edited by Arkhan		@ 15.01.2007
+
+class 'MarineBarracksTactic' (BaseTactic)
+
+function MarineBarracksTactic:__init( base_ai ) super( base_ai )
+
+	self:SetName("Marine Barracks Tactic")
+
+	self.m_iArmouryID = cpu_manager.stats:GetBuildingID("space_marine_armoury")
+end
+
+function MarineBarracksTactic:CanDeepStrikeTroops()
+	return (cpu_manager.player_stats:GetNumBasesByBPID(self.m_iArmouryID, true) > 0)
+end

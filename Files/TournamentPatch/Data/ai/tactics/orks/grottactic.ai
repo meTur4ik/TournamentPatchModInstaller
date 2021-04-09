@@ -1,0 +1,36 @@
+class 'GrotTactic' (EngineerTactic)
+
+function GrotTactic:__init( squad_ai ) super( squad_ai )
+
+
+	self:SetName("Grot Tactic")
+
+end
+
+
+function GrotTactic:Update()
+
+	if not EngineerTactic.Update( self ) then
+		return false
+	end
+
+	if not self.squad_ai:IsReinforcing() and 
+		self.squad_ai:GetNumTroopers() < self.squad_ai:GetMaxTroopers() then
+		if self.squad_ai:CanReinforce( false, 0 ) then
+			self.squad_ai:DoReinforce( false, 0 )
+		end
+	end
+	
+	return true
+end
+
+
+function GrotTactic:IsAttacker()
+	return false
+end
+
+
+function GrotTactic:IsAffectedByMorale()
+	return false
+end
+

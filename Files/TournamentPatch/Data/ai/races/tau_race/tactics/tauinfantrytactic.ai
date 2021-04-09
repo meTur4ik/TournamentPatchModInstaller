@@ -1,0 +1,39 @@
+----------------------------------------
+-- File: 'tauinfantrytactic.ai'
+-- Edited by Thudmeizer		@ 23.10.2006
+
+class 'TauInfantryTactic' (InfantryTactic)
+
+function TauInfantryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Tau Infantry Tactic")
+	
+	-- Basic Tau infantry is able to enter transport vehicles
+	local sSquadName = squad_ai:GetSquadName()
+	if (sSquadName == "tau_stealth_team_squad" or
+		sSquadName == "tau_fire_warrior_squad" or
+		sSquadName == "tau_pathfinder_squad" or
+		sSquadName == "tau_broadside_battlesuit_squad" or
+		sSquadName == "tau_ethereal_squad" or
+		sSquadName == "tau_commander_squad") then
+		self.m_iTransportable = 1
+	end
+end
+
+function TauInfantryTactic:AddCommanders()
+	table.insert(self.commander, { "tau_commander_squad", true })
+	table.insert(self.commander, { "tau_ethereal_squad", false })
+	table.insert(self.commander, { "tau_kroot_shaper_squad", false })
+end
+
+function TauInfantryTactic:UpdateStance()
+
+	-- Check if I have setup time
+	if self.squad_ai:IsRanged() then
+		if self.squad_ai:GetStance() ~= SquadAI.STANCE_StandGround then
+			self.squad_ai:DoSetStance( SquadAI.STANCE_StandGround )
+		end
+	elseif self.squad_ai:GetStance() ~= SquadAI.STANCE_Hold then
+		self.squad_ai:DoSetStance( SquadAI.STANCE_Hold )
+	end
+end

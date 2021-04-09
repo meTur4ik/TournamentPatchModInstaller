@@ -1,0 +1,87 @@
+----------------------------------------
+-- File: 'sistersmissionaryservitortactic.ai'
+-- Edited by Thudmeizer @ 23.03.2008
+
+class 'SistersMissionaryTactic' (SistersInfantryTactic)
+
+SistersMissionary = {}
+
+function SistersMissionaryTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Sisters Missionary Tactic")
+end
+
+function SistersMissionaryTactic:IsAttacker()
+
+	-- Check for infiltrators
+	local bNeedSupportDetector = (cpu_manager:EnemyHasUnitInfiltrators() or cpu_manager:EnemyHasBaseInfiltrators())
+	return (cpu_manager:GetTierLevel() >= 2 or bNeedSupportDetector)
+end
+
+function SistersMissionaryTactic:IsDefender()
+
+	-- Check for infiltrators
+	local bNeedSupportDetector = (cpu_manager:EnemyHasUnitInfiltrators() or cpu_manager:EnemyHasBaseInfiltrators())
+	return (cpu_manager:GetTierLevel() >= 2 or bNeedSupportDetector)
+end
+
+function SistersMissionaryTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (SistersMissionary.medics_id == nil) then
+		SistersMissionary.medics_id = cpu_manager.stats:GetAbilityID( "sisters_battlefield_medics" )
+	end
+
+	if (SistersMissionary.touch_id == nil) then
+		SistersMissionary.touch_id = cpu_manager.stats:GetAbilityID( "sisters_act_of_faith_an_emperors_touch" )
+	end
+
+	if (SistersMissionary.retribution_id == nil) then
+		SistersMissionary.retribution_id = cpu_manager.stats:GetAbilityID( "sisters_act_of_faith_divine_retribution" )
+	end
+end
+
+function SistersMissionaryTactic:DoAbilities()
+
+	-- Heals attached/nearby allies squads (Faith cost: 10)
+	if (self.squad_ai:IsAttached() and self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.8) then
+	
+		-- Attached ranged squads do extra damage (Faith cost: 50)
+		if (self.squad_ai:CanDoAbility(SistersMissionary.medics_id)) then
+			self.squad_ai:DoSpecialAbility(SistersMissionary.medics_id) 
+		end
+	end
+
+	-- Attached ranged squads do extra damage (Faith cost: 50)
+	if (self.squad_ai:IsAttached() and self.squad_ai:IsAttacking() and self.squad_ai:CanDoAbility(SistersMissionary.touch_id)) then
+		self.squad_ai:DoSpecialAbility(SistersMissionary.touch_id) 
+	end
+	
+	-- Enemies take additional damage when they attack the attached squad (Faith cost: 70)
+	if (self.squad_ai:IsAttached() and self.squad_ai:IsUnderAttack() and self.squad_ai:CanDoAbility(SistersMissionary.retribution_id)) then
+		self.squad_ai:DoSpecialAbility(SistersMissionary.retribution_id) 
+	end
+end
+
+function SistersMissionaryTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+
+	if not InfantryTactic.Update( self ) then
+		return false
+	end
+
+	-- Try to attach to melee in tier 2+
+	if (cpu_manager:GetTierLevel() >= 2 or self.squad_ai:WasRecentlyHurt()) then
+	
+		if (self:TryAttachSquad(true, true, 50, 100, nil) ~= nil) then
+			return
+		end
+		
+		if (self:TryAttachSquad(false, true, 50, 100, nil) == nil) then
+			self:TryAttachSquadMelee()
+		end
+	end
+end

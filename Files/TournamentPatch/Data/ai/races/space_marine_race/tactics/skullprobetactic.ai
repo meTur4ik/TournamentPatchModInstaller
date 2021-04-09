@@ -1,0 +1,43 @@
+----------------------------------------
+-- File: 'skullprobetactic.ai'
+-- Edited by Thudmeizer   @ 14.10.2006
+
+class 'SkullProbeTactic' (SpaceMarineInfantryTactic)
+
+SkullProbe = {}
+
+function SkullProbeTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("SkullProbe Tactic")
+end
+
+function SkullProbeTactic:IsSupportDetector()
+	return true
+end
+
+-- Should only attack when attached
+function SkullProbeTactic:IsAttacker()
+	return false
+end
+
+-- Should only defend when attached
+function SkullProbeTactic:IsDefender()
+	return false
+end
+
+function SkullProbeTactic:Update()
+
+   if self:IsComplete() then
+      return
+   end
+   
+	--state machine
+	if not InfantryTactic.Update( self ) then
+		return
+	end
+
+   --attach to squad
+   self:TryAttachSquad( false, false, 1000, 150, nil )
+end
+
+

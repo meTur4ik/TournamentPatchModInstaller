@@ -1,0 +1,36 @@
+class 'DaemonPrinceTactic' (InfantryTactic)
+
+DaemonPrinceTactic.SpecialAbilities = 
+{
+	{ nil, "chaos_daemon_strength_daemon_prince", Ability.PredicateFilters.IsInCombat, nil },
+	{ nil, "chaos_fear_roar", Ability.PredicateFilters.IsInCombat, nil },
+--	{ nil, "chaos_warbanner_daemon_prince", Ability.PredicateFilters.IsInCombat, nil },
+}
+
+function DaemonPrinceTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Daemon Prince Tactic")
+
+	Tactic.UtilityFunctions.InitAbilitiesTable(DaemonPrinceTactic.SpecialAbilities)
+	
+end
+
+function DaemonPrinceTactic:IsAttacker()	
+	return true
+end
+
+
+function DaemonPrinceTactic:Update()
+
+	if not InfantryTactic.Update( self ) then
+		return false
+	end
+
+	return true
+end
+
+function DaemonPrinceTactic:DoAbilities()
+
+	Tactic.UtilityFunctions.DoAbilities(DaemonPrinceTactic.SpecialAbilities,self.squad_ai,Ability.DoAbility)
+	
+end

@@ -1,0 +1,14 @@
+----------------------------------------
+-- File: 'webwaygatetactic.ai'
+-- Edited by Arkhan		@ 24.10.2006
+
+class 'WebwayGateTactic' (BaseTactic)
+
+function WebwayGateTactic:__init( base_ai ) super( base_ai )
+
+	self:SetName("Webway Gate Tactic")
+	
+	-- Init abilities
+	table.insert(BaseTactic.SpecialAbilities, { nil, "eldar_shroud", Ability.PredicateFilters.IsNotInfiltrating, nil })
+	self:InitAbilities()
+end

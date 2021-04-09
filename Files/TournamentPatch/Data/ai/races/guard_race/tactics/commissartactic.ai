@@ -1,0 +1,64 @@
+----------------------------------------
+-- File: 'Commissartactic.ai'
+-- Edited by Thudmeizer @ 12.10.2005
+-- Edited by Arkhan 	@ 02.12.2005
+
+class 'CommissarTactic' (GuardInfantryTactic)
+
+Commissar = {}
+
+function CommissarTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Commissar Tactic")
+
+	-- Squad is able to occupy bunkers
+	self.m_bBunkerSquad = true
+	
+	-- Init execute delay time
+	Commissar.NextExecuteCheck = 0
+end
+
+function CommissarTactic:IsAttacker()
+	return self:IsCommanderAttacker()
+end
+
+function CommissarTactic:IsDefender()
+	return self:IsCommanderDefender()
+end
+
+function CommissarTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Commissar.execute_id == nil or Commissar.NextExecuteCheck == nil) then
+		Commissar.execute_id = cpu_manager.stats:GetAbilityID( "guard_commissar_execute" )
+		Commissar.NextExecuteCheck = g_iGMT
+	end
+end
+
+function CommissarTactic:DoAbilities()
+
+	-- TargetSelf: When attached to squad, executes one of his own soldiers to increase their fighting potential
+	if (self.squad_ai:IsAttached() and self.squad_ai:IsAttacking() and self.squad_ai:CanDoAbility(Commissar.execute_id) and
+		self.squad_ai:GetNumTroopers() > 6 and g_iGMT > Commissar.NextExecuteCheck) then
+		
+		-- Use execute ability
+		self.squad_ai:DoSpecialAbility(Commissar.execute_id) 
+		Commissar.NextExecuteCheck = g_iGMT + 20
+	end
+end
+
+function CommissarTactic:Update()
+
+	if (self:IsComplete()) then
+		return
+	end
+	
+	-- State machine
+	if (not InfantryTactic.Update(self)) then
+		return
+	end
+	
+	-- Attach to squad
+	self:TryAttachSquad(false, false, 1000, 60, nil)
+end
+ 

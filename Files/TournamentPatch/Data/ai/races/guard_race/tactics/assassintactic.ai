@@ -1,0 +1,29 @@
+----------------------------------------
+-- File: 'assassintactic.ai'
+-- Edited by Thudmeizer @ 26.10.2008
+
+class 'AssassinTactic' (GuardInfantryTactic)
+
+Assassin = {}
+
+function AssassinTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Assassin Tactic")
+
+	-- Squad is able to occupy bunkers
+	self.m_bBunkerSquad = true
+end
+
+function AssassinTactic:InitAbilities()
+
+	-- Init ability ID's
+	if (Assassin.assassinate_id == nil) then
+		Assassin.assassinate_id = cpu_manager.stats:GetAbilityID( "guard_assassin_assassinate" )
+	end
+end
+
+function AssassinTactic:DoAbilities()
+
+	-- Check if I can assassinate
+	Ability.DoAbility( self.squad_ai, Assassin.assassinate_id, Ability.Filters.IsInCombat )
+end

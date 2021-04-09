@@ -1,0 +1,65 @@
+----------------------------------------
+-- File: 'scouttactic.ai'
+-- Edited by Arkhan		@ 12.01.2006
+
+class 'ScoutTactic' (SpaceMarineInfantryTactic)
+
+function ScoutTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Scout Tactic")
+end
+
+function ScoutTactic:IsAttacker()
+	return (cpu_manager:GetTierLevel() >= 2)
+end
+
+function ScoutTactic:Upgrade()
+
+	-- If I am broken, don't upgrade!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+		return
+	end
+	
+	-- If there are no ressources available, don't upgrade!
+	local iRequisition = resource_manager:GetResourceAmount():Get(ResourceAmount.RT_Requisition)
+	if (iRequisition < 800 and not Tactic.Options.can_reinforce) then
+		return
+	end
+   
+	-- Check if sniper was researched
+	if (not cpu_manager.cpu_player:IsResearchComplete("marine_sniper_rifle")) then
+		return
+	end
+
+	-- Only upgrade if not reinforcing
+	if (not self.squad_ai:IsReinforcing() and cpu_manager:GetTierLevel() >= 2) then
+	
+		if (self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetNumTroopers() > 2) then
+			local class_type = cpu_manager:FindClosestEnemyPlayer():GetMajorityClassType()
+			self.squad_ai:DoBestUpgrade( class_type )
+		end
+	end
+end
+
+function ScoutTactic:Reinforce()
+
+	-- If I am broken, don't upgrade/reinforce!
+	if (self:IsAffectedByMorale() and self.squad_ai:IsBroken()) then
+	   return
+	end
+
+	if (not Tactic.Options.can_reinforce) then
+		return
+	end
+	
+	-- Check if sniper was researched
+	if (not cpu_manager.cpu_player:IsResearchComplete("marine_sniper_rifle")) then
+		return
+	end
+	
+	-- Reinforce scout squad
+	if (not self.squad_ai:IsReinforcing() and cpu_manager:GetTierLevel() >= 2 and self.squad_ai:CanReinforce(false, 0)) then
+		self.squad_ai:DoReinforce(false, 0)
+	end
+end
+

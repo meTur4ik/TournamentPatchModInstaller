@@ -1,0 +1,20 @@
+----------------------------------------
+-- File: 'necronvehicletactic.ai'
+-- Created by Thudmeizer @ 12.10.2006
+
+class 'NecronVehicleTactic' (VehicleTactic)
+
+function NecronVehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Necron Vehicle Tactic")
+end
+
+-- Check if the vehicle should dance away in melee
+function NecronVehicleTactic:CheckVehicleDance(sName)
+
+	if (sName == "necron_destroyer_squad" or
+		sName == "necron_heavy_destroyer_squad") then
+		return true
+	end
+	return false
+end

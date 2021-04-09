@@ -1,0 +1,30 @@
+----------------------------------------
+-- File: 'darkeldarraventactic.ai'
+-- Edited by Thudmeizer @ 23.10.2008
+
+class 'DarkEldarRavenTactic' (DarkEldarVehicleTactic)
+
+DarkEldarRaven = {}
+
+function DarkEldarRavenTactic:__init( squad_ai ) super( squad_ai )
+	
+	self:SetName("Dark Eldar Raven Tactic")
+end
+
+function DarkEldarRavenTactic:InitAbilities()
+
+	if (DarkEldarRaven.shortcircuit_id == nil) then
+		DarkEldarRaven.shortcircuit_id = cpu_manager.stats:GetAbilityID( "dark_eldar_short_circuit" )	
+	end
+end
+
+function DarkEldarRavenTactic:DoAbilities()
+
+	if (self.squad_ai:IsInCombat()) then
+
+		-- Send pulse which stuns enemy vehicle/building
+		Ability.DoAbilityTarget( self.squad_ai, DarkEldarRaven.shortcircuit_id, Ability.Filters.CloseVehicleEnemy, 1 ) 
+		Ability.DoAbilityTargetEntity( self.squad_ai, DarkEldarRaven.shortcircuit_id, Ability.EntityFilters.CloseBaseEntityEnemy, 1)
+
+	end
+end

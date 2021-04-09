@@ -1,0 +1,617 @@
+----------------------------------------
+-- File: 'captureplan.ai'
+-- Edited by Thudmeizer @ 03.02.2006
+-- Edited by LarkinVB   @ 14.09.2005
+-- Edited by Flenser    @ 16.06.2005
+-- Edited by Excedrin   @ 14.12.2005
+-- Edited by Arkhan     @ 15.01.2006
+
+class 'CapturePlan' (Plan)
+
+CapturePlan.Maximums = 
+{
+	points = INT_MAX,
+	objectives = INT_MAX
+}
+
+CapturePlan.OrderedStratPoints = {}
+CapturePlan.StratPoints = {}
+CapturePlan.LastStratUpdate = 0
+
+-- Arkhan 01.2007: Init ordered strategic point array
+function InitCapturingList()
+
+	-- Find closest enemy and distance from base to base
+	local oEnemy, iBaseToBaseDistance = cpu_manager:FindClosestEnemyPlayer()
+	if (oEnemy == nil) then
+		return
+	end		
+	local vEnemyPos = oEnemy:GetStartingPosition()
+	
+	-- Get start positions
+	local aAllyStartPositions = {}
+	local aEnemyStartPositions = {}
+	for oPlayer in cpu_manager.stats:GetPlayerStats() do
+
+		-- Check player
+		if (oPlayer:GetPlayerID() ~= cpu_manager.player_id and not oPlayer:IsPlayerDead()) then
+		
+			-- Check for allies and enemies
+			if (cpu_manager.player_stats:IsEnemy(oPlayer)) then
+				table.insert(aEnemyStartPositions, oPlayer:GetStartingPosition())
+			else
+				table.insert(aAllyStartPositions, oPlayer:GetStartingPosition())
+			end
+		end
+	end
+
+	-- Find best strategic point to capture
+	for oStrategicPoint in resource_manager:GetStrategicPointAIs() do
+		
+		-- Get position of strategic point
+		local vStratPos = oStrategicPoint:GetPosition()
+		
+		-- Get shortest pathing distance to my base
+		local iPathingDistanceToMyBase = cpu_manager:GetShortestPathingDistance(cpu_manager.start_pos, vStratPos, false)
+		
+		-- Get shortest pathing distance to closes enemy base
+		local iPathingDistanceToEnemyBase = 1000
+		for iLoop1 in aEnemyStartPositions do
+
+			-- Get pathing distance to enemy base
+			local iDistance = cpu_manager:GetShortestPathingDistance(aEnemyStartPositions[iLoop1], vStratPos, false)
+			if (iDistance < iPathingDistanceToEnemyBase) then
+				iPathingDistanceToEnemyBase = iDistance
+			end
+		end
+		
+		-- Get shortest pathing distance to closest ally
+		local iPathingDistanceToAllyBase = 1000
+		for iLoop1 in aAllyStartPositions do
+
+			-- Get pathing distance to enemy base
+			local iDistance = cpu_manager:GetShortestPathingDistance(aAllyStartPositions[iLoop1], vStratPos, false)
+			if (iDistance < iPathingDistanceToAllyBase) then
+				iPathingDistanceToAllyBase = iDistance
+			end
+		end
+				
+		-- Don't take criticals too close at the enemy base
+		if (not oStrategicPoint:IsStrategicObjective() or iPathingDistanceToMyBase < 2 * iPathingDistanceToEnemyBase) then
+
+			-- Create modified pathing distance
+			local iModifiedPathingDistance = iPathingDistanceToMyBase
+			if (iPathingDistanceToEnemyBase < iPathingDistanceToMyBase) then
+		
+				-- Posts closer to the enemy base than to my base get a malus
+				local iModifier = math.max((iPathingDistanceToMyBase - iPathingDistanceToEnemyBase) / 2, 20)
+				iModifiedPathingDistance = iPathingDistanceToMyBase + iModifier
+			
+			elseif (iPathingDistanceToEnemyBase < iBaseToBaseDistance) then
+		
+				-- Posts in enemy direction get a range bonus
+				local iModifier = math.max((iBaseToBaseDistance - iPathingDistanceToEnemyBase) / 2, 20)
+				iModifiedPathingDistance = iPathingDistanceToMyBase - iModifier
+			end
+			
+			-- Relic points get a malus
+			if (oStrategicPoint:IsRelic()) then
+				iModifiedPathingDistance = iModifiedPathingDistance + 15
+			end
+			
+			-- Store strategic point
+			table.insert(CapturePlan.OrderedStratPoints, { oStrategicPoint, iModifiedPathingDistance, iPathingDistanceToMyBase,
+														   iPathingDistanceToEnemyBase, iPathingDistanceToAllyBase })
+		end
+	end
+	
+	-- Sort strat points
+	if (table.getn(CapturePlan.OrderedStratPoints) > 1) then
+	
+		local SortFunction = function( oItem1, oItem2 )	
+			return oItem1[2] > oItem2[2]
+		end
+		table.sort(CapturePlan.OrderedStratPoints, SortFunction)
+	end
+end
+
+
+function CapturePlan:__init( base_location ) super( CpuPlayer.CT_Resourcing )
+
+	dbAssert( base_location ~= nil )
+	
+	--save a copy of the base to resource close to
+	self.base_location = Vector3f( base_location )
+	
+	--the flag I'm trying to capture
+	self.capturing_flag = nil
+	self.capturing_squad = nil
+	self.capturing_squad_hurt = 0
+	
+	Plan.SetName( self, "Capture Plan" )
+	Plan.SetState( self, "Capture Flag", CapturePlan.CaptureFlag )
+	Plan.SetNeeds( self, "Obtain ressources", CapturePlan.ObtainRessources )
+	
+	self.m_iThreatRange = 35
+	
+	self.m_iNextUpdate = 0
+end
+
+function CapturePlan:IsEqual( plan_name, plan_id )
+	return self:GetName() == plan_name
+end
+
+function CapturePlan:ObtainRessources()
+
+	-- Check last update
+	if (g_iGMT < self.m_iNextUpdate and g_iGMT > 3 * 60) then
+		return
+	end
+	self.m_iNextUpdate = g_iGMT + 10
+
+	-- Check if we have a strategic point to capture
+	if (not self:FindFreeStrategicPoint() and g_iGMT > 2 * 60) then
+		
+		-- Complete capture plan
+		aitrace("CapturePlan: No free strategic points to capture!")
+		self:FreeRessources(true)
+		return
+	end
+end
+
+function CapturePlan:FreeRessources(bEndPlan)
+
+	aitrace("CapturePlan: Free ressources...")
+
+	-- Free flag
+	if (self.capturing_flag ~= nil) then
+		self:UnlockResource(self.capturing_flag)
+		self.capturing_flag = nil
+		Plan.SetState(self, "Capture New Flag", CapturePlan.CaptureFlag)
+	end
+	
+	-- Free capturer
+	if (self.capturing_squad ~= nil) then
+		
+		-- Check if squad is valid
+		if (self.capturing_squad:IsValid()) then
+		
+			-- Retreat squad to closest base
+			local vBasePos = cpu_manager:FindClosestFriendlyBaseOrStrategicPoint(self.capturing_squad:GetPosition(), cpu_manager.start_pos, true, false)
+			if (vBasePos ~= nil) then
+				local oTactic = self.capturing_squad:GetTactic()
+				oTactic:SetState(Tactic.States.Retreat, "FreeResources")
+				oTactic:SetTarget(vBasePos, Tactic.Variant.Vector)
+			end
+		end
+		self:UnlockResource(self.capturing_squad)
+		self.capturing_squad = nil
+	end
+	self.capturing_squad_hurt = 0
+	
+	-- Check time
+	if (g_iGMT > 2 * 60 and bEndPlan) then
+		self:SetComplete(true)
+	else
+		Plan.SetNeeds( self, "Obtain ressources", CapturePlan.ObtainRessources )
+	end
+end
+
+function CapturePlan:FindFreeStrategicPoint()
+	
+	-- Check if we've already a flag to capture
+	if (self.capturing_flag ~= nil and self.capturing_squad ~= nil) then
+		return true
+	else
+		self:FreeRessources(false)
+	end
+	
+	aitrace("CapturePlan: Find free strategic point...")
+		
+	-- Check if it is time to stop a critical timer
+	local bEmergency = false
+	if (g_iGMT > cpu_manager.m_iCriticalTimer + 180 and cpu_manager.m_iCriticalTimer > 0 and cpu_manager.m_bTakeAndHoldMode) then
+		bEmergency = true
+	end
+	
+	-- Get available capturers
+	local aCapturers = cpu_manager:GetAvailableCapturers()
+	if (table.getn(aCapturers) < 1) then
+		return false
+	end
+
+	-- Check last update
+	if (g_iGMT > CapturePlan.LastStratUpdate) then
+	
+		-- Find best strategic point to capture
+		CapturePlan.StratPoints = {}
+		for iLoop1 in CapturePlan.OrderedStratPoints do
+		
+			-- Get strategic point
+			local oStrategicPoint = CapturePlan.OrderedStratPoints[iLoop1][1]
+			
+			-- Check strategic point
+			if (not oStrategicPoint:HasListeningPost() and not oStrategicPoint:IsBeingCaptured() and
+				not cpu_manager:IsFriendly(oStrategicPoint:Owner())) then
+				
+				-- Don't capture strats from allies or close to enemy base during harassing time
+				local bTakeStrat = true
+				if (g_iGMT < DefendChokePointPlan.HarassingTime * 60) then
+					
+					-- Check distance to enemy and allies
+					local iPathingDistanceToMyBase	= CapturePlan.OrderedStratPoints[iLoop1][3]
+					local iPathingDistanceToEnemy	= CapturePlan.OrderedStratPoints[iLoop1][4]
+					local iPathingDistanceToAlly	= CapturePlan.OrderedStratPoints[iLoop1][5]
+					if (iPathingDistanceToMyBase > iPathingDistanceToEnemy * 2 or
+						iPathingDistanceToMyBase > iPathingDistanceToAlly or oStrategicPoint:IsStrategicObjective()) then
+						bTakeStrat = false
+					end
+				else
+
+					-- Check distance to allies
+					local iPathingDistanceToMyBase	= CapturePlan.OrderedStratPoints[iLoop1][3]
+					local iPathingDistanceToAlly	= CapturePlan.OrderedStratPoints[iLoop1][5]
+					if (iPathingDistanceToMyBase > 2 * iPathingDistanceToAlly) then
+						bTakeStrat = false
+					end
+				end
+									
+				-- Add strat to current capturing list
+				if (bTakeStrat) then
+					table.insert(CapturePlan.StratPoints, oStrategicPoint)
+				end
+			end
+		end
+		CapturePlan.LastStratUpdate = g_iGMT
+	end
+	
+	-- Get closest strat point without threat
+	local iStratCount = table.getn(CapturePlan.StratPoints)
+	for iLoop1 = iStratCount, 1, -1 do
+	
+		-- Check only unlocked strategic points
+		local oStrategicPoint = CapturePlan.StratPoints[iLoop1]
+		if (not oStrategicPoint:IsLocked()) then
+	
+			-- Get position
+			local vStratPos = oStrategicPoint:GetPosition()
+			
+			-- Check threat
+			if (not cpu_manager:CloseEnemyUnits(vStratPos, self.m_iThreatRange) or
+				not cpu_manager.terrain_analyzer:HasThreat(vStratPos, self.m_iThreatRange)) then
+			
+				-- Check capturer paths
+				for iLoop2 in aCapturers do
+				
+					-- Check path to strategic point
+					if (distance_sqr(aCapturers[iLoop2][3], vStratPos) < sqr(self.m_iThreatRange) or
+						not cpu_manager:HasThreatOnPath(aCapturers[iLoop2][3], vStratPos, 30)) then
+						self.capturing_squad = aCapturers[iLoop2][1]
+						table.remove(aCapturers, iLoop2)
+						break
+					end
+				end
+				if (self.capturing_squad == nil and oStrategicPoint:IsStrategicObjective() and bEmergency) then
+					self.capturing_squad = aCapturers[1][1]
+					table.remove(aCapturers, 1)
+				end
+			end
+	
+			-- Try to capture if no threat or we've an emergency and the strat point is a critical
+			if (self.capturing_squad ~= nil) then
+
+				-- Set capturing flag
+				self.capturing_flag = oStrategicPoint
+				table.remove(CapturePlan.StratPoints, iLoop1)
+				break
+			end
+		end
+		table.remove(CapturePlan.StratPoints, iLoop1)
+	end
+
+	-- Check if we found a flag to capture
+	if (self.capturing_flag ~= nil and self.capturing_squad ~= nil) then
+		Plan.LockResource(self, self.capturing_flag)
+		Plan.LockResource(self, self.capturing_squad)
+		self:CaptureFlag()
+		return true
+	end
+	self.capturing_flag = nil
+	self.capturing_squad = nil
+	return false
+end
+
+function CapturePlan:FightBack()
+
+	aitrace("CapturePlan: Fight back...")
+
+	-- Check if we've a flag and a capturer
+	if (self.capturing_flag == nil or self.capturing_squad == nil) then
+		Plan.SetState(self, "Capture New Flag", CapturePlan.CaptureFlag)
+		return
+	end
+
+	-- If no more danger, reset
+	if (not self.capturing_squad:WasRecentlyHurt()) then
+		Plan.SetState(self, "Capture Flag Again", CapturePlan.CaptureFlag)
+		return
+	end
+
+	-- Check owner
+	local owner = self.capturing_flag:Owner()
+	if (cpu_manager:IsFriendly(owner) and owner ~= cpu_manager.player_id) then
+		aitrace("CapturePlan: Flag already captured by an ally!")
+		self:UnlockResource(self.capturing_flag)
+		self.capturing_flag = nil
+		Plan.SetState(self, "Capture New Flag", CapturePlan.CaptureFlag)
+		return
+	end
+	
+    -- Figure out military threat
+    local vPos = self.capturing_squad:GetPosition()
+    local iEnemyStrength = cpu_manager:GetArmyStrengthAtPos(vPos, self.m_iThreatRange, true)
+	
+	-- If current threat is too strong, then retreat
+	local iSquadPower = self.capturing_squad:GetTactic():GetUnitStrength()
+	if ((iSquadPower < iEnemyStrength and iEnemyStrength > 100) or 3 * iSquadPower < 2 * iEnemyStrength) then
+	   	aitrace("CapturePlan: Abort capturing! Too dangerous!")
+	   	aitrace("CapturePlan: SquadStrength = "..tostring(iSquadPower).." Threat = "..tostring(iEnemyStrength))
+		self:FreeRessources(true)
+		self.m_iNextUpdate = g_iGMT + 10
+		return
+	end
+	
+    -- Check for stealth troops
+	if (self:CheckStealthThreat(vPos)) then
+   		aitrace("CapturePlan: Abort capturing! Can't attack stealth troops!")
+		self:FreeRessources(true)
+		self.m_iNextUpdate = g_iGMT + 10
+		return
+    end
+		
+	-- Set Hold state
+	local oTactic = self.capturing_squad:GetTactic()
+	oTactic:SetState(Tactic.States.Hold)
+	oTactic:SetTarget(self.capturing_flag:GetEntity():GetPosition(), Tactic.Variant.Vector)
+	
+	-- Check if we should reinforce basic troopers
+	if (self.capturing_squad:IsInCombat()) then
+
+		local iRequisition = resource_manager:GetResourceAmount():Get( ResourceAmount.RT_Requisition )
+
+	   	-- Reinforce basic trooper while fighting for SP at gamestart
+		if (iRequisition > 200 and g_iGMT < DefendChokePointPlan.HarassingTime * 60) then
+
+	   		if (not self.capturing_squad:IsReinforcing()) then
+		  
+		  		if (self.capturing_squad:CanReinforce( false, 0 )) then
+		  			aitrace("CapturePlan: Reinforce Squad")
+			 		self.capturing_squad:DoReinforce( false, 0 )
+		  		end
+			end
+		end
+	end
+end
+
+function CapturePlan:CheckStealthThreat(vPos)
+
+	-- No problem for hunters
+	if (self.capturing_squad:IsDetector() and self.capturing_squad:GetTactic():IsAttacker()) then
+		return false
+	end
+
+	-- Check for stealth troops
+	if (cpu_manager.cpu_player:FindFirstInfiltratedEnemy(vPos, self.m_iThreatRange, 1) == nil) then
+		return false
+	end
+	return true
+end
+
+function CapturePlan:CapturingFlag()
+
+	aitrace("CapturePlan: Capturing flag...")
+	
+	-- Check if we've a flag and a capturer
+	if (self.capturing_flag == nil or self.capturing_squad == nil) then
+		return
+	end
+	
+	-- Check if an ally is capturing or our capturing is finished
+	local iOwner = self.capturing_flag:Owner()
+	local bOwnedByMe = (cpu_manager:IsFriendly(iOwner) and iOwner == cpu_manager.player_id)
+	local bOwnedByAlly = (cpu_manager:IsFriendly(iOwner) and iOwner ~= cpu_manager.player_id)
+	if (bOwnedByAlly or (bOwnedByMe and self.capturing_flag:FinishedCapturing())) then
+		aitrace("CapturePlan: Flag captured by an ally!")
+		self:FreeRessources(true)
+		return
+	end	
+	
+	-- Check if we can capture if we can't fight
+	local bAttacker = self.capturing_squad:GetTactic():IsAttacker()
+	local bOwnedByEnemy = (not cpu_manager:IsFriendly(iOwner) and iOwner ~= 0)
+	if (bOwnedByEnemy) then
+	
+		-- Check for infiltrated enemies
+		if (self:CheckStealthThreat(self.capturing_flag:GetPosition())) then
+			aitrace("CapturePlan: Flag is being captured by an infiltrated enemy and we can't detect them!")
+			self:FreeRessources(true)
+			return
+		end
+	
+		-- Check if we can't attack or the enemy has built a fortified post
+		if (not bAttacker) then
+		
+			-- Check if enemy is capturing
+			local bIsBeingCapturedByEnemy = (self.capturing_flag:IsBeingCaptured() and not self.capturing_squad:IsCapturing())
+			if (bIsBeingCapturedByEnemy) then
+				aitrace("CapturePlan: Flag is being captured by an enemy and we can't attack!")
+				self:FreeRessources(true)
+				return
+			end
+			
+			-- Check if enemy has built a post
+			local bHasPost = self.capturing_flag:HasListeningPost()
+			if (bHasPost or cpu_manager.cpu_player:FindFirstBaseEnemy(self.capturing_flag:GetPosition(), 1, 1) ~= nil) then
+				aitrace("CapturePlan: Enemy has built a post and we can't attack!")
+				self:FreeRessources(true)
+				return
+			end
+			
+		elseif (self.capturing_flag:HasListeningPost() and self.capturing_flag:HasWeapons()) then
+	
+			-- Enemy has built a fortified listening post
+			aitrace("CapturePlan: Enemy has built a fortified post! Abort capturing!")
+			self:FreeRessources(true)
+			return		
+		end
+	end
+		
+	-- If at any time I'm in danger, fight back or quit out
+	if (self.capturing_squad:WasRecentlyHurt()) then
+	
+		-- After harassing time only fight back if the capturing squad is close to the capture point
+		local vPos = self.capturing_squad:GetPosition()
+		local vFlagPos = self.capturing_flag:GetPosition()
+		if (g_iGMT > DefendChokePointPlan.HarassingTime * 60 and distance_sqr(vPos, vFlagPos) > sqr(35)) then
+			aitrace("CapturePlan: Abort capturing! Too dangerous!")
+			self:FreeRessources(true)
+			self.m_iNextUpdate = g_iGMT + 10
+			return
+		end
+		
+		-- Update hurt counter
+		self.capturing_squad_hurt = self.capturing_squad_hurt + 1
+		     
+		-- Figure out military threat
+		local iEnemyStrength, iAlliedStrength = cpu_manager:GetArmyStrengthAtPos(vPos, self.m_iThreatRange, true)
+		
+		-- If current threat is too dangerous then retreat
+		if ((iAlliedStrength < iEnemyStrength and iEnemyStrength > 100) or 3 * iAlliedStrength < 2 * iEnemyStrength or
+		   (iEnemyStrength == 0 and self.capturing_squad_hurt > 3) or not bAttacker) then
+			aitrace("CapturePlan: Abort capturing! Too dangerous!")
+			aitrace("CapturePlan: Power = "..tostring(iAlliedStrength).." Threat = "..tostring(iEnemyStrength))
+			self:FreeRessources(true)
+			self.m_iNextUpdate = g_iGMT + 10
+			return
+		end
+		
+		-- Check for stealth troops
+		if (self:CheckStealthThreat(vPos)) then
+			aitrace("CapturePlan: Abort capturing! Can't attack stealth troops!")
+			self:FreeRessources(true)
+			self.m_iNextUpdate = g_iGMT + 10
+			return
+		end
+		
+		-- Fight back!
+		Plan.SetState(self, "Fighting back!", CapturePlan.FightBack)
+		local oTactic = self.capturing_squad:GetTactic()
+		oTactic:SetState(Tactic.States.Hold)
+		oTactic:SetTarget(self.capturing_flag:GetEntity():GetPosition(), Tactic.Variant.Vector)
+		return
+	end
+	
+	-- Check if we are capturing
+	if (self.capturing_squad:IsCapturing()) then
+		return
+	end
+	
+	-- Get info
+	local vFlagPos = self.capturing_flag:GetPosition()
+	local vSquadPos = self.capturing_squad:GetPosition()
+	local oTactic = self.capturing_squad:GetTactic()
+	local bIsInCombat = self.capturing_squad:IsInCombat()
+
+	-- Check if we should capture the flag directly or just walk there in attack mode
+    if (g_iGMT < 60) then
+    
+    	-- At gamestart squads should start immediatly (Larkin edit: 13.01.2008)
+        self.capturing_squad:DoDefault(self.capturing_flag:GetEntity())
+        
+    elseif ((distance_sqr(vFlagPos, vSquadPos) > sqr(35) or bIsInCombat) and bAttacker) then
+    
+        -- Attack move to target flag
+        if (oTactic:GetState() ~= Tactic.States.Attack or distance_sqr(oTactic:GetTarget(), vFlagPos) > 1) then
+            oTactic:SetState(Tactic.States.Attack)
+            oTactic:SetTarget(vFlagPos, Tactic.Variant.Vector)
+        end
+    else
+    
+        -- Capture flag
+        if (oTactic:GetState() ~= Tactic.States.Hold or distance_sqr(oTactic:GetTarget(), vFlagPos) > 1) then
+            oTactic:SetState(Tactic.States.Hold)
+            oTactic:SetTarget(vFlagPos, Tactic.Variant.Vector)
+        else
+            self.capturing_squad:DoDefault(self.capturing_flag:GetEntity())
+        end
+    end
+end
+
+function CapturePlan:CaptureFlag()
+
+	-- Check if we've a flag and a capturer
+	if (self.capturing_flag == nil or self.capturing_squad == nil) then
+		Plan.SetNeeds( self, "Obtain ressources", CapturePlan.ObtainRessources )
+		return
+	end
+	
+	-- Get info
+	local vFlagPos = self.capturing_flag:GetPosition()
+	local vSquadPos = self.capturing_squad:GetPosition()
+	local oTactic = self.capturing_squad:GetTactic()
+	local bAttacker = oTactic:IsAttacker()
+	local bIsInCombat = self.capturing_squad:IsInCombat()
+	
+	-- Check if we should capture the flag directly or just walk there in attack mode
+	if ((distance_sqr(vFlagPos, vSquadPos) > sqr(35) or bIsInCombat) and bAttacker) then
+	
+		-- Attack move to target flag
+		oTactic:SetState(Tactic.States.Attack)
+		oTactic:SetTarget(vFlagPos, Tactic.Variant.Vector)
+	else
+	
+		-- Capture flag
+		oTactic:SetState(Tactic.States.Hold)
+		oTactic:SetTarget(vFlagPos, Tactic.Variant.Vector)
+	end
+	
+	-- Set plan states
+	self:OnEvent(Plan.Events.OnPlanStart)
+	Plan.SetState(self, "Capturing flag", CapturePlan.CapturingFlag)
+	Plan.SetNeeds( self, "No needs", Plan.NeedsFulfilled )
+end
+
+function CapturePlan:Update()
+   
+	if (self:IsComplete()) then
+		return
+	end
+	
+	aitrace("CapturePlan: Update...", true)
+	
+	-- Check if we lost our capturer
+	if (self.capturing_squad ~= nil and not self.capturing_squad:IsValid()) then
+		self:UnlockResource(self.capturing_squad)
+		self.capturing_squad = nil
+		self.capturing_squad_hurt = 0
+		Plan.SetState(self, "Capture Flag", CapturePlan.CaptureFlag)
+		
+	elseif (self.capturing_squad ~= nil and DefendStrategy.bDefending and cpu_manager:GetArmyStrength() < 2000) then
+		
+		-- Check if our capturer is needed for defense 
+		if (self.capturing_squad:GetTactic():GetUnitStrength() > 250 and
+			self.capturing_squad:IsCapturing() and
+			self.capturing_flag ~= nil and 
+			self.capturing_flag:Owner() == cpu_manager.player_id and
+			self.capturing_flag:GetCaptureProgress() < 0.8) then
+				
+			cpu_manager:DoMove(self.capturing_squad, self.capturing_squad:GetPosition(), true, "Interrupt capturing!")
+			self:UnlockResource(self.capturing_squad)
+			self.capturing_squad = nil
+			self.capturing_squad_hurt = 0
+			Plan.SetState(self, "Capture Flag", CapturePlan.CaptureFlag)
+		end
+	end
+	
+	Plan.Update(self)
+end

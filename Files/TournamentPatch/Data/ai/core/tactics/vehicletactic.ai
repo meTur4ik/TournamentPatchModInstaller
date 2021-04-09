@@ -1,0 +1,691 @@
+----------------------------------------
+-- File: 'vehicletactic.ai'
+-- Edited by LarkinVB   @ 10.09.2005
+-- Edited by Arkhan		@ 31.01.2006
+
+class 'VehicleTactic' (Tactic)
+
+function VehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.AssignStateFunction( self, Tactic.States.Hold, VehicleTactic.BeginHoldState )
+	Tactic.AssignStateFunction( self, Tactic.States.Retreat, VehicleTactic.BeginRetreatState )
+	Tactic.AssignStateFunction( self, Tactic.States.Attack, VehicleTactic.BeginAttackState )
+	
+	self:SetName("Vehicle Tactic")
+	
+	self.m_eType = Tactic.Types.Vehicle
+	
+	self.hurt_level = 0.6
+
+	-- Check if vehicle should dance away in CC
+	self.can_dance = self:CheckVehicleDance(self.squad_ai:GetSquadName())
+	
+	-- Init transport data
+	self.m_iTransportVehicle = 0
+	self.m_iTransportSlots = 0
+	self.m_iUsedTransportSlots = 0
+	self.m_iLoadedTroopStrength = 0
+	self.m_iUnloadTries = 0
+	
+	self.m_bNeedRepair = false
+end
+
+function VehicleTactic:GetUnitStrength()
+	return self.m_iUnitStrength + self.m_iLoadedTroopStrength
+end
+
+function VehicleTactic:NeedRepair()
+	return self.m_bNeedRepair
+end
+
+-- Arkhan 01.2006: Virtual method to check if the vehicle should dance away in melee
+function VehicleTactic:CheckVehicleDance(sName)
+	return false
+end
+
+function VehicleTactic:IsTransportVehicle()
+	return self.m_iTransportVehicle
+end
+
+function VehicleTactic:ReadyToTransport()
+	return (self.m_iUsedTransportSlots < self.m_iTransportSlots and not self.squad_ai:WasRecentlyHurt() and
+			self.squad_ai:GetHealthPercentage() > 0.4 and not self.squad_ai:IsInCombat() and not self.m_bNeedRepair and
+			not cpu_manager.terrain_analyzer:HasThreat(self.squad_ai:GetPosition(), 70))
+end
+
+function VehicleTactic:LoadSquad(oSquad, iSquadStrength)
+
+	-- Update transport data
+	self.m_iLoadedTroopStrength = self.m_iLoadedTroopStrength + iSquadStrength
+	self.m_iUsedTransportSlots = self.m_iUsedTransportSlots + 1
+	self.m_iUnloadTries = 2
+	
+	-- Load squad
+	cpu_manager:DoMove(self.squad_ai, oSquad:GetPosition(), false, "Load troops")
+	for oEntity in self.squad_ai:GetEntities() do
+		oSquad:DoDefault(oEntity)
+		break
+	end
+	self.m_iMoveDelay = g_iGMT - 3
+end
+
+function VehicleTactic:UnloadTroops(iDistance)
+
+	-- Check if vehicle has loaded troops
+	if (self.m_iUnloadTries <= 0 or not self.squad_ai:CanUnload()) then
+		return false
+	end
+	
+	-- Check if we should unload the troops
+	if (self.squad_ai:WasRecentlyHurt() or self.squad_ai:GetHealthPercentage() < 0.4 or self.m_bNeedRepair or
+		self.squad_ai:IsInCombat() or (self.squad_ai:IsLocked() and iDistance < sqr(35))) then
+	
+		-- Unload all troops
+		self.squad_ai:DoStop()
+		self.squad_ai:DoUnload()
+		self.m_iUsedTransportSlots = 0
+		self.m_iLoadedTroopStrength = 0
+		self.m_iUnloadTries = self.m_iUnloadTries - 1
+		return true
+	end
+	return false
+end
+
+function VehicleTactic:BeginHoldState()
+
+	-- Check if we're busy
+	if (self:IsInSubState() or self:UrgentCapturing()) then
+		return
+	end
+	
+	-- Check if our capturing was interrupted
+	if (self.squad_ai:IsCapturing()) then
+		
+		if (self.squad_ai:WasRecentlyHurt()) then
+			cpu_manager:DoMove(self.squad_ai, self.squad_ai:GetPosition(), true, "Interrupt capturing!")
+		end
+		return
+	end
+	
+	-- Check if we're doing a gather move at the moment
+	if (self:CheckGatherMove()) then
+		return
+	end
+
+	-- Try to jump
+	if (self:JumpAttack()) then
+		self.m_iMoveDelay = 0
+		self.hurt_level = math.max(self.squad_ai:GetHealthPercentage() / 2, 0.3)
+		return
+	end
+	
+	-- Try to disown flags
+	if (self:TryDisownFlags()) then
+		self.m_iMoveDelay = g_iGMT
+		Tactic.SetSubState( self, self.HoldState, "Holding" )
+		return
+	end
+	
+	-- Check move delay
+	local vSquadPos = self.squad_ai:GetPosition()
+	local iDistance = distance_sqr(self.target, vSquadPos)	
+	if (g_iGMT < self.m_iMoveDelay + 5 and self:IsMoving() and (iDistance > sqr(60) or self.squad_ai:IsInStateAttackMove())) then
+		Tactic.SetSubState( self, self.HoldState, "Holding" )
+		return
+	end
+	
+	-- Check for deepstrike buildings
+	if (self:EnterDeepStrikeBuilding()) then
+		self.m_iMoveDelay = g_iGMT
+		Tactic.SetSubState( self, self.HoldState, "Holding" )
+		return
+	end
+
+	-- Try to unload troops
+	if (self:UnloadTroops(iDistance)) then
+		self.m_iMoveDelay = g_iGMT - 3
+		Tactic.SetSubState(self, self.HoldState, "Holding")
+		return
+	end
+		
+	-- Check distance
+	if (iDistance > sqr(60)) then
+	
+		-- If we get near the target area, then make a basic move if we're not in combat or attacking
+		cpu_manager:DoMove(self.squad_ai, self.target, false, "HoldState")
+
+	elseif (not self.squad_ai:IsAttacking() and not self.squad_ai:IsInStateAttackMove()) then
+	
+		-- Check targets for melee squads
+		if (not self.squad_ai:IsRanged()) then
+			
+			-- Get closest enemy unit
+			local oUnit = self:GetClosestUnitForMelee(50)
+			if (oUnit ~= nil and (not oUnit:IsInfiltrating() or oUnit:IsAttacking() or self.squad_ai:IsDetector())) then
+				cpu_manager:DoMove(self.squad_ai, oUnit:GetPosition(), true, "HoldState")
+				self.m_iMoveDelay = g_iGMT + 5
+			else
+			
+				-- Get closest enemy building
+				local oBuilding = self:GetClosestBuildingForMelee(50)
+				if (oBuilding ~= nil) then
+				
+					-- Don't move too close to building
+					if (distance_sqr(oBuilding:GetPosition(), vSquadPos) > sqr(15)) then
+						cpu_manager:DoMove(self.squad_ai, oBuilding:GetPosition(), true, "HoldState")
+						self.m_iMoveDelay = g_iGMT + 5
+					end
+					
+				elseif (iDistance > sqr(25) or self.squad_ai:WasRecentlyHurt()) then
+				
+					-- Move to target if we're hurt or not close enough
+					cpu_manager:DoMove(self.squad_ai, self.target, true, "HoldState")
+					self.m_iMoveDelay = g_iGMT
+				else
+					self.squad_ai:DoStop()
+					self.m_iMoveDelay = g_iGMT
+				end
+			end
+		else
+		
+			-- If we are close to the target area, then make an attack move
+			if (iDistance < sqr(25) and not self.squad_ai:WasRecentlyHurt() and
+				not cpu_manager.terrain_analyzer:HasThreat(self.target, 35)) then
+				self.squad_ai:DoStop()
+				self.m_iMoveDelay = g_iGMT
+				Tactic.SetSubState(self, self.HoldState, "Holding")
+				return
+			end
+			cpu_manager:DoMove(self.squad_ai, self.target, true, "HoldState")
+			self.m_iMoveDelay = g_iGMT
+		end
+	end
+
+	-- Set holding sub-state
+	Tactic.SetSubState(self, self.HoldState, "Holding")
+end
+
+function VehicleTactic:HoldState()
+
+	-- Try to jump
+	if (not self.squad_ai:IsCapturing() and self:JumpAttack()) then
+		self.m_iMoveDelay = 0
+		self.hurt_level = math.max(self.squad_ai:GetHealthPercentage() / 2, 0.3)
+		return
+	end
+	
+	-- Try to disown flags
+	if (self:TryDisownFlags()) then
+		self.m_iMoveDelay = g_iGMT
+		return
+	end
+	
+	-- If I'm idle, restart
+	if (self.squad_ai:IsIdle() or not self:IsMoving() or self.squad_ai:WasRecentlyHurt()) then
+		Tactic.SetState(self, self:GetState())
+	end
+end
+
+function VehicleTactic:BeginRetreatState()
+
+	-- Check if we're busy
+	if (self:IsInSubState() or self:UrgentCapturing()) then
+		return
+	end
+	
+	-- Check if our capturing was interrupted
+	if (self.squad_ai:IsCapturing()) then
+		
+		if (self.squad_ai:WasRecentlyHurt()) then
+			cpu_manager:DoMove(self.squad_ai, self.squad_ai:GetPosition(), true, "Interrupt capturing!")
+		end
+		return
+	end
+	
+	-- Try to jump if under attack
+	if (self.squad_ai:IsUnderAttack()) then
+		
+		-- Move to disengage
+		if (self:MoveToDisengage()) then
+			self.m_iMoveDelay = g_iGMT
+			return
+		end
+	end
+	
+	-- Check move delay
+	if (g_iGMT < self.m_iMoveDelay + 5 and (self:IsMoving() or self.m_bNeedRepair)) then
+		Tactic.SetSubState( self, VehicleTactic.HoldState, "Holding" )
+		return
+	end
+	
+	-- Check for deepstrike buildings
+	if (self:EnterDeepStrikeBuilding()) then
+		self.m_iMoveDelay = g_iGMT
+		Tactic.SetSubState( self, self.HoldState, "Holding" )
+		return
+	end
+	
+	-- Try to unload troops
+	local vSquadPos = self.squad_ai:GetPosition()
+	local iDistance = distance_sqr(self.target, vSquadPos)
+	if (self:UnloadTroops(iDistance)) then
+		self.m_iMoveDelay = g_iGMT - 3
+		Tactic.SetSubState(self, self.HoldState, "Holding")
+		return
+	end
+	
+	-- Check for damaged vehicles close to start point
+	if (self.m_bNeedRepair and iDistance < sqr(50) and not self.squad_ai:WasRecentlyHurt() and
+		distance_sqr(self.target, cpu_manager.start_pos) < 1) then
+		
+		if ((self.squad_ai:IsInStateAttackMove() or self.squad_ai:IsInStateMove()) and not self:IsMoving()) then
+			self.squad_ai:DoStop()
+			self.m_iMoveDelay = g_iGMT + 15	
+		end
+		Tactic.SetSubState( self, VehicleTactic.HoldState, "Holding" )
+		return
+	end
+	
+	-- Try to jump
+	if (self:JumpAttack()) then
+		self.m_iMoveDelay = 0
+		self.hurt_level = math.max(self.squad_ai:GetHealthPercentage() / 2, 0.3)
+		return
+	end
+	
+	-- Check distance
+	if (iDistance > sqr(50) or not self:IsDefender()) then
+	
+		-- If we are too far away from the retreat position, then make a basic move
+		cpu_manager:DoMove(self.squad_ai, self.target, false, "RetreatState Vehicle")
+		
+	elseif (iDistance > sqr(25) or self.squad_ai:WasRecentlyHurt()) then
+	
+		-- If we are in range of the retreat position, then make an attack move
+		cpu_manager:DoMove(self.squad_ai, self.target, true, "RetreatState Vehicle")
+	else
+		self.squad_ai:DoStop()
+	end
+	self.m_iMoveDelay = g_iGMT
+
+	-- Set holding sub-state
+	Tactic.SetSubState( self, VehicleTactic.HoldState, "Holding" )
+end
+
+function VehicleTactic:BeginAttackState()
+	
+	-- Check if we're busy
+	if (self:IsInSubState() or self:UrgentCapturing()) then
+		return
+	end
+	
+	-- Check if our capturing was interrupted
+	if (self.squad_ai:IsCapturing()) then
+		
+		local iMaxCapturingSquadCost = cpu_manager:GetArmyStrength() / 5
+		if (self.squad_ai:WasRecentlyHurt() or self:GetUnitStrength() > iMaxCapturingSquadCost) then
+			cpu_manager:DoMove(self.squad_ai, self.squad_ai:GetPosition(), true, "Interrupt capturing!")
+		end
+		return
+	end
+	
+	-- Check if we're doing a gather move at the moment
+	if (self:CheckGatherMove()) then
+		return
+	end
+
+	-- Try to jump
+	if (self:JumpAttack()) then
+		self.m_iMoveDelay = 0
+		self.hurt_level = math.max(self.squad_ai:GetHealthPercentage() / 2, 0.3)
+		return
+	end
+	
+	-- Try to disown flags
+	if (self:TryDisownFlags()) then
+		self.m_iMoveDelay = g_iGMT
+		Tactic.SetSubState( self, self.AttackingState, "Attacking" )
+		return
+	end
+	
+	-- Check move delay
+	if (g_iGMT < self.m_iMoveDelay + 5 and self:IsMoving()) then
+		Tactic.SetSubState( self, self.AttackingState, "Attacking" )
+		return
+	end
+	
+	-- Check for deepstrike buildings
+	if (self:EnterDeepStrikeBuilding()) then
+		self.m_iMoveDelay = g_iGMT
+		Tactic.SetSubState(self, self.AttackingState, "Attacking")
+		return
+	end
+	
+	-- Try to unload troops
+	local vSquadPos = self.squad_ai:GetPosition()
+	local iDistance = distance_sqr(self.target, vSquadPos)
+	if (self:UnloadTroops(iDistance)) then
+		self.m_iMoveDelay = g_iGMT - 3
+		Tactic.SetSubState(self, self.AttackingState, "Attacking")
+		return
+	end
+	
+	-- Only make an attack move if not in combat
+	if (not self.squad_ai:IsAttacking() and not self.squad_ai:IsInStateAttackMove()) then
+	
+		-- Check distance
+		if (iDistance > sqr(60)) then
+		
+			-- If we are too far away from the target, then make a simple attack move
+			cpu_manager:DoMove(self.squad_ai, self.target, true, "AttackState")
+		else
+
+			-- Check targets for melee squads
+			if (not self.squad_ai:IsRanged()) then
+			
+				-- Get closest enemy unit
+				local oUnit = self:GetClosestUnitForMelee(50)
+				if (oUnit ~= nil and (not oUnit:IsInfiltrating() or oUnit:IsAttacking() or self.squad_ai:IsDetector())) then
+					cpu_manager:DoMove(self.squad_ai, oUnit:GetPosition(), true, "AttackState")
+					self.m_iMoveDelay = g_iGMT + 5
+				else
+				
+					-- Get closest enemy building
+					local oBuilding = self:GetClosestBuildingForMelee(50)
+					if (oBuilding ~= nil) then
+					
+						-- Don't move too close to building
+						if (distance_sqr(oBuilding:GetPosition(), vSquadPos) > sqr(15)) then
+							cpu_manager:DoMove(self.squad_ai, oBuilding:GetPosition(), true, "AttackState")
+							self.m_iMoveDelay = g_iGMT + 5
+						end
+						
+					elseif (iDistance > sqr(25) or self.squad_ai:WasRecentlyHurt()) then
+					
+						-- Move to target if we're hurt or not close enough
+						cpu_manager:DoMove(self.squad_ai, self.target, true, "AttackState")
+						self.m_iMoveDelay = g_iGMT
+					else
+						self.squad_ai:DoStop()
+						self.m_iMoveDelay = g_iGMT + 5
+					end
+				end
+			else
+		
+				-- If we are close to the target area, then make an attack move
+				if (iDistance < sqr(25) and not self.squad_ai:WasRecentlyHurt() and
+					not cpu_manager.terrain_analyzer:HasThreat(self.target, 35)) then
+					self.squad_ai:DoStop()
+					self.m_iMoveDelay = g_iGMT
+					Tactic.SetSubState(self, self.HoldState, "Attacking")
+					return
+				end
+				cpu_manager:DoMove(self.squad_ai, self.target, true, "AttackState")
+				self.m_iMoveDelay = g_iGMT + 5
+			end
+		end
+	end
+
+	-- Set attacking sub-state
+	Tactic.SetSubState(self, self.AttackingState, "Attacking")
+end
+
+function VehicleTactic:AttackingState()
+
+	-- Try to jump
+	if (not self.squad_ai:IsCapturing() and self:JumpAttack()) then
+		self.m_iMoveDelay = 0
+		self.hurt_level = math.max(self.squad_ai:GetHealthPercentage() / 2, 0.3)
+		return
+	end
+	
+	-- Try to disown flags
+	if (self:TryDisownFlags()) then
+		self.m_iMoveDelay = g_iGMT
+		return
+	end
+
+	-- If I'm idle, restart
+	if (self.squad_ai:IsIdle() or not self:IsMoving() or self.squad_ai:WasRecentlyHurt()) then
+		Tactic.SetState( self, self:GetState() )
+	end
+end
+
+function VehicleTactic:DoAbilities()
+   
+end
+
+--jump capable vehicles will retreat once if hurt badly
+function VehicleTactic:Retreat()
+
+   --retreat from battle if badly hurt and while not already moving 
+   if self.squad_ai:IsRanged() and self.squad_ai:CanJump() and 
+	  self.squad_ai:GetHealthPercentage() < self.hurt_level and
+	  self.squad_ai:WasRecentlyHurt() and not self.squad_ai:IsInStateMove() then 
+	 	 
+	  if not self:MoveToDisengage() then
+	  	
+		 self.squad_ai:DoMoveToClosestSafePoint( self.safe_point, self.tolerance )
+	  end
+	 
+	  -- retreat twice
+	  self.hurt_level = 0.3	
+   end
+end
+
+
+function VehicleTactic:DoDance()
+
+	if (self.stateID == Tactic.StateID.DoDance and not self:CheckForDance()) then
+	
+		-- Go back in the fray - reset my state
+		if (self.m_eSubStateID == self.stateID) then
+			self.m_eSubStateID = Tactic.StateID.NoState
+		end
+		self.stateID = Tactic.StateID.NoState
+		Tactic.SetState( self, self:GetState() )
+		self.tolerance = self.tolerance_default
+	end
+end
+
+function VehicleTactic:CheckForDance()
+
+   if self.can_dance and not self.squad_ai:IsBroken() then
+
+	  local squad_pos = self.squad_ai:GetPosition()
+	  enemy_squad = Ability.Filters.CloseEnemy( squad_pos, 7, 1 )
+	  if enemy_squad ~= nil and not enemy_squad:IsBroken() then
+
+		 local stance = enemy_squad:GetMeleeStance()
+		 if stance == SquadAI.MSTANCE_Assault then
+ 
+	        -- In standard dancing mode, there's a 50% chance that dancing fails
+	        if (self.m_iDancing == 0 and CpuManager.AISettings.iDancing == 1 and math.random(1, 2) == 2) then
+	           self.m_iDancing = g_iGMT
+	           return false
+	        end
+  
+			local first_call = self.stateID == Tactic.StateID.NoState
+
+			--no valid destination
+			if not self:MoveToDisengage() then
+			   
+			   if not first_call then
+				  self.tolerance = self.tolerance + 10
+			   else
+				  self.tolerance = self.tolerance_default
+			   end
+			   
+			   self.squad_ai:DoMoveToClosestSafePoint( self.safe_point, self.tolerance )
+			end
+			
+			--we start to dance
+			if self:GetSubState() ~= self.DoDance then
+			   			   
+			   Tactic.SetSubState( self, self.DoDance, "DoDance" )
+			   self.squad_ai:DoSetStance( SquadAI.STANCE_StandGround )
+		 
+			   self.stateID = Tactic.StateID.DoDance	 	
+			end
+					
+			self.m_eSubStateID = self.stateID
+			return true
+		 end		 
+	  end
+   end
+
+   -- No dancing
+   self.m_iDancing = 0
+   return false
+end
+
+function VehicleTactic:SyncSubState()
+
+	-- Check if we are in sub state
+	local in_state = self:IsInSubState()
+	if (self.stateID == Tactic.StateID.NoState and not in_state) then
+		return
+	end
+
+	-- Since other function may override the substate we have to sync state flags
+	local state_func, state_name = self:GetSubState() 
+	if (self.stateID == Tactic.StateID.IsBroken and state_func ~= self.BrokenMorale) or
+	   (self.stateID == Tactic.StateID.DoDance and state_func ~= self.DoDance) or
+	   (self.stateID == Tactic.StateID.AvoidDeath and state_func ~= self.AvoidDeath) then
+		   
+		self.stateID = Tactic.StateID.NoState
+		self.m_eSubStateID = Tactic.StateID.NoState
+	end
+	
+	-- Sync InSubState with state flag
+	if (in_state and self.stateID == Tactic.StateID.NoState) or
+	   (not in_state and self.stateID ~= Tactic.StateID.NoState) then
+	
+		if (in_state) then
+			self.m_eSubStateID = Tactic.StateID.NoState
+		else
+			self.stateID = Tactic.StateID.NoState
+		end
+	end
+end
+
+function VehicleTactic:Upgrade()
+
+	-- Check if we have free ressources
+	if (not Tactic.Options.can_reinforce) then
+		return
+	end
+
+	-- Check situation
+	if (self.squad_ai:HasUpgradableTrooper() and self.squad_ai:GetHealthPercentage() > 0.5 and not self.squad_ai:WasRecentlyHurt()) then
+	
+   		-- Figure out my closest enemy's favourite class
+		local class_type = cpu_manager:FindClosestEnemyPlayer():GetMajorityClassType()
+	  
+		-- Upgrade
+		self.squad_ai:DoBestUpgrade( class_type )
+	end
+end
+
+function VehicleTactic:Reinforce()
+
+	-- Don't reinforce if we can't reinforce or need repair
+	if (self.squad_ai:GetMaxTroopers() == 1 or self.m_bNeedRepair) then
+		return	
+	end
+
+	-- Don't reinforce if we have no free resources
+	if (not Tactic.Options.can_reinforce) then
+		return	
+	end
+
+	-- Don't reinforce if there's only one squad member left which is severly damaged
+	if (self.squad_ai:GetNumTroopers() == 1 and self.squad_ai:GetHealthPercentage() < 0.5) then
+		return
+	end
+	
+	-- Always try to reinforce, as long as I have money
+	if (not self.squad_ai:IsReinforcing()) then
+			
+		if (self.squad_ai:CanReinforce( true, 0 )) then
+			self.squad_ai:DoReinforce( true, 0 )
+		elseif (self.squad_ai:CanReinforce( false, 0 )) then
+			self.squad_ai:DoReinforce( false, 0 )
+		end
+	end
+end
+
+function VehicleTactic:Update()
+
+	-- State machine
+	if (not Tactic.Update(self)) then
+		return false
+	end
+	
+	-- Check if vehicle can be repaired
+	if (self.squad_ai:CanBeRepaired() and self.squad_ai:GetNumTroopers() == 1 and not self.squad_ai:IsReinforcing()) then
+	
+		-- Set repair states
+		if (self.squad_ai:IsRanged() and self.squad_ai:GetHealthPercentage() < 0.2) then
+			self.m_bNeedRepair = true
+		elseif (not self.squad_ai:IsRanged() and not self.squad_ai:WasRecentlyHurt() and self.squad_ai:GetHealthPercentage() < 0.4) then
+			self.m_bNeedRepair = true
+		end
+	end
+	
+	-- Check if vehicle needs repair
+	if (self.m_bNeedRepair) then
+			
+		-- Check if vehicle is repaired
+		aitrace("Current repair target = "..tostring(self.target.x)..", "..tostring(self.target.z))
+		if (self.squad_ai:GetHealthPercentage() > 0.99) then
+	        self.m_bNeedRepair = false
+	        self.hurt_level = 0.6
+	    end
+	end
+	
+	if (self.squad_ai:CanJump()) then
+		self.tolerance_default = self.squad_ai:GetJumpDistance()
+	else
+		self.tolerance_default = 100
+	end
+	
+	self:Upgrade()
+	
+	self:Reinforce()
+	
+	self:SyncSubState()
+	
+	-- Check if ranged vehicle under attack wants to retreat a short distance
+	self:Retreat()
+	
+	if (self.stateID == Tactic.StateID.NoState) then
+	
+		-- Check dance mode
+		if (CpuManager.AISettings.iDancing == 2) then
+			self:CheckForDance()
+			if (self.stateID == Tactic.StateID.NoState) then
+				self:CheckForStealthTroops()
+			end
+		elseif (CpuManager.AISettings.iDancing == 1 and g_iGMT > self.m_iDancing + 10) then
+			self:CheckForDance()
+			if (self.stateID == Tactic.StateID.NoState) then
+				self:CheckForStealthTroops()
+			end
+		end
+	end
+	
+	-- Special moves
+	self:CloseOnEnemy()
+	
+	-- Do abilities
+	self:InitAbilities()
+	self:DoAbilities()
+	
+	-- Don't update stance if in special substate !
+	if (self.stateID == Tactic.StateID.NoState) then
+		self:UpdateStance()
+	end
+	
+	return true
+end

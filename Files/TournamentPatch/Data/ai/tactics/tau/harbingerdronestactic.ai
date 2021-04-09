@@ -1,0 +1,76 @@
+class 'HarbingerDronesTactic' (VehicleTactic)
+
+function HarbingerDronesTactic:__init( squad_ai ) super( squad_ai )
+
+	Tactic.AssignStateFunction( self, Tactic.States.Idle, HarbingerDronesTactic.BeginIdleState )
+	Tactic.AssignStateFunction( self, Tactic.States.Hold, HarbingerDronesTactic.BeginHoldState )
+	Tactic.AssignStateFunction( self, Tactic.States.Retreat, HarbingerDronesTactic.BeginRetreatState )
+	Tactic.AssignStateFunction( self, Tactic.States.Attack, HarbingerDronesTactic.BeginAttackState )
+	
+	self:SetName("Harbinger Drones Tactic")
+	
+	self:SetState(Tactic.States.Idle)	
+end
+
+function HarbingerDronesTactic:AlwaysAttack()
+	return true
+end
+
+function HarbingerDronesTactic:BeginIdleState()
+	HarbingerDronesTactic.DoAttack(self)
+end
+
+function HarbingerDronesTactic:BeginHoldState()
+	HarbingerDronesTactic.DoAttack(self)
+end
+
+function HarbingerDronesTactic:BeginAttackState()
+	HarbingerDronesTactic.DoAttack(self)
+end
+
+function HarbingerDronesTactic:BeginRetreatState()
+	HarbingerDronesTactic.DoAttack(self)
+end
+
+function HarbingerDronesTactic:DoAttack()
+	local proximity_distance = 50
+	
+	if (self.target ~= nil and  self.variant_type == Tactic.Variant.Vector) then
+		if (cpu_manager.cpu_player:FindFirstEnemy( self.target, proximity_distance,1) == nil and 
+			cpu_manager.cpu_player:FindFirstBaseEnemy( self.target, proximity_distance,1) == nil) then
+			self.target = nil
+			self.variant_type = Tactic.Variant.Invalid
+		end
+	else
+		self.target = nil
+		self.variant_type = Tactic.Variant.Invalid
+	end
+
+	if( self.target == nil ) then
+		local pos = self.squad_ai:GetPosition()
+		local enemy_ai
+		
+		enemy_ai = cpu_manager.cpu_player:FindFirstEnemy( pos, proximity_distance,1);
+
+		if (enemy_ai == nil) then
+			enemy_ai = cpu_manager.cpu_player:FindFirstBaseEnemy( pos, proximity_distance, 1 );
+		end
+		
+		if (enemy_ai ~= nil) then
+			self.variant_type = Tactic.Variant.Vector
+			self.target = enemy_ai:GetPosition()
+		else
+			return
+		end
+	end
+
+	if( self.variant_type == Tactic.Variant.Vector ) then
+		self.squad_ai:DoAttackMove( self.target )
+	elseif (self.variant_type == Tactic.Variant.SquadAI ) then
+		self.squad_ai:DoAttackMove( self.target:GetPosition() )	
+	elseif (self.variant_type == Tactic.Variant.BaseAI ) then
+		self.squad_ai:DoAttackMove( self.target:GetPosition() )	
+	end
+
+	Tactic.SetSubState( self, VehicleTactic.AttackingState, "Attacking" )	
+end

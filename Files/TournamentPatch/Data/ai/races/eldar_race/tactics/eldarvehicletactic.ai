@@ -1,0 +1,24 @@
+----------------------------------------
+-- File: 'eldarvehicletactic.ai'
+-- Created by Arkhan		@ 31.01.2006
+-- Edited by Thudmeizer         @ 29.03.2007
+
+class 'EldarVehicleTactic' (VehicleTactic)
+
+function EldarVehicleTactic:__init( squad_ai ) super( squad_ai )
+
+	self:SetName("Eldar Vehicle Tactic")
+end
+
+-- Check if the vehicle should dance away in melee
+function EldarVehicleTactic:CheckVehicleDance(sName)
+
+	if (sName == "eldar_squad_grav_platform" or
+		sName == "eldar_squad_grav_platform_brightlance" or
+		sName == "eldar_squad_falcon_grav_tank" or
+		sName == "eldar_squad_vypers" or
+		sName == "eldar_squad_fire_prism") then
+		return true
+	end
+	return false
+end
