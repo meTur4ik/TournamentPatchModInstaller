@@ -26,7 +26,7 @@
     </InstallUISequence>
 
     <InstallExecuteSequence>
-      
+
     </InstallExecuteSequence>
 
 
@@ -46,6 +46,135 @@
 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="TOURNAMENTPATCH" Name="TournamentPatch">
+        <Directory Id="TP_DATA" Name="Data">
+          <Directory Id="AI" Name="ai">
+            <Directory Id="CORE" Name="core">
+              <Directory Id="CORE_PLANS" Name="plans"/>
+              <Directory Id="CORE_STRATEGIES" Name="strategies"/>
+              <Directory Id="CORE_TACTICS" Name="tactics"/>
+            </Directory>
+            <Directory Id="DOC" Name="doc"/>
+            <Directory Id="MAPDB" Name="mapdb"/>
+            <Directory Id="METAMAP" Name="metamap"/>
+            <Directory Id="PLANS" Name="plans"/>
+            <Directory Id="RACES" Name="races">
+              <Directory Id="AI_CHAOS" Name="chaos_marine_race">
+                <Directory Id="AI_CHAOS_INFO" Name="info"/>
+                <Directory Id="AI_CHAOS_STRATEGIES" Name="strategies"/>
+                <Directory Id="AI_CHAOS_TACTICS" Name="tactics"/>
+              </Directory>
+              <Directory Id="AI_DE" Name="dark_eldar_race">
+                <Directory Id="AI_DE_INFO" Name="info"/>
+                <Directory Id="AI_DE_STRATEGIES" Name="strategies"/>
+                <Directory Id="AI_DE_TACTICS" Name="tactics"/>
+              </Directory>
+              <Directory Id="AI_ELDAR" Name="dark_eldar_race">
+                <Directory Id="AI_ELDAR_INFO" Name="info"/>
+                <Directory Id="AI_ELDAR_STRATEGIES" Name="strategies"/>
+                <Directory Id="AI_ELDAR_TACTICS" Name="tactics"/>
+              </Directory>
+              <Directory Id="AI_GUARD" Name="guard_race">
+                <Directory Id="AI_GUARD_INFO" Name="info"/>
+                <Directory Id="AI_GUARD_STRATEGIES" Name="strategies"/>
+                <Directory Id="AI_GUARD_TACTICS" Name="tactics"/>
+              </Directory>
+              <Directory Id="AI_NECRON" Name="necron_race">
+                <Directory Id="AI_NECRON_INFO" Name="info"/>
+                <Directory Id="AI_NECRON_STRATEGIES" Name="strategies"/>
+                <Directory Id="AI_NECRON_TACTICS" Name="tactics"/>
+              </Directory>
+              <Directory Id="AI_NPC" Name="npc_race">
+                <Directory Id="AI_NPC_INFO" Name="info"/>
+              </Directory>
+              <Directory Id="AI_ORK" Name="ork_race">
+                <Directory Id="AI_ORK_INFO" Name="info"/>
+                <Directory Id="AI_ORK_STRATEGIES" Name="strategies"/>
+                <Directory Id="AI_ORK_TACTICS" Name="tactics"/>
+              </Directory>
+              <Directory Id="AI_SISTERS" Name="sisters_race">
+                <Directory Id="AI_SISTERS_INFO" Name="info"/>
+                <Directory Id="AI_SISTERS_STRATEGIES" Name="strategies"/>
+                <Directory Id="AI_SISTERS_TACTICS" Name="tactics"/>
+              </Directory>
+              <Directory Id="AI_SM" Name="space_marine_race">
+                <Directory Id="AI_SM_INFO" Name="info"/>
+                <Directory Id="AI_SM_STRATEGIES" Name="strategies"/>
+                <Directory Id="AI_SM_TACTICS" Name="tactics"/>
+              </Directory>
+              <Directory Id="AI_TAU" Name="tau_race">
+                <Directory Id="AI_TAU_INFO" Name="info"/>
+                <Directory Id="AI_TAU_STRATEGIES" Name="strategies"/>
+                <Directory Id="AI_TAU_TACTICS" Name="tactics"/>
+              </Directory>
+            </Directory>
+            <Directory Id="STRATEGIES" Name="strategies">
+              <Directory Id="ADVANCED" Name="advanced"/>
+              <Directory Id="EASY" Name="easy"/>
+              <Directory Id="HARD" Name="hard"/>
+              <Directory Id="STANDARD" Name="standard"/>
+            </Directory>
+            <Directory Id="TACTICS" Name="tactics">
+              <Directory Id="TACTICS_CHAOS" Name="chaosmarines"/>
+              <Directory Id="TACTICS_DE" Name="darkeldar"/>
+              <Directory Id="TACTICS_ELDAR" Name="eldar"/>
+              <Directory Id="TACTICS_GUARD" Name="guard"/>
+              <Directory Id="TACTICS_NECRON" Name="necron"/>
+              <Directory Id="TACTICS_ORK" Name="orks"/>
+              <Directory Id="TACTICS_SISTERS" Name="sistersofbattle"/>
+              <Directory Id="TACTICS_TAU" Name="tau"/>
+            </Directory>
+          </Directory>
+          <Directory Id="ART" Name="art">
+            <Directory Id="EBPS">
+              <Directory Id="ART_RACES" Name="races">
+                <Directory Id="ART_CHAOS">
+                  <Directory Id="ART_CHAOS_TEXTURE" Name="texture_share"/>
+                  <Directory Id="ART_CHAOS_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="ART_ELDAR" Name="eldar">
+                  <Directory Id="ART_ELDAR_STRUCTURES" Name="structures"/>
+                  <Directory Id="ART_ELDAR_TEXTURE" Name="texture_share"/>
+                  <Directory Id="ART_ELDAR_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="ART_NECRON" Name="necrons">
+                  <Directory Id="ART_NECRON_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="ART_ORK">
+                  <Directory Id="ART_ORK_TEXTURE" Name="texture_share"/>
+                  <Directory Id="ART_ORK_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="ART_SM">
+                  <Directory Id="ART_SM_TEXTURE" Name="texture_share"/>
+                  <Directory Id="ART_SM_TROOPS" Name="troops"/>
+                </Directory>
+              </Directory>
+            </Directory>
+          </Directory>
+          <Directory Id="ATTRIB" Name="attrib">
+
+          </Directory>
+          <Directory Id="DEFPROFILE" Name="defprofile">
+
+          </Directory>
+          <Directory Id="SCAR" Name="scar">
+
+          </Directory>
+          <Directory Id="SCENARIOS" Name="scenarios">
+
+          </Directory>
+          <Directory Id="SOUND" Name="sound">
+
+          </Directory>
+        </Directory>
+
+
+        <Directory Id="TP_LOCALE" Name="Locale">
+
+        </Directory>
+      </Directory>
+
+
       <Directory Id="ENGINE" Name="Engine">
         <Directory Id="DATA" Name="Data"/>
       </Directory>
