@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" Name="TournamentPatchModInstaller" Language="1033" Version="1.6.4" Manufacturer="Tournament Patch" UpgradeCode="664efaf7-ab73-44f9-9ac1-0b98202a9ae8">
+  <Product Id="dafcc5c4-88a8-4749-a3ac-3fb6a8289a33" Name="TournamentPatchModInstaller" Language="1033" Version="1.6.4" Manufacturer="Tournament Patch" UpgradeCode="664efaf7-ab73-44f9-9ac1-0b98202a9ae8">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
-    <UIRef Id="WixUI_InstallDir"/>
+    <UIRef Id="WixUI_FeatureTree"/>
     <Property Id="WIXUI_INSTALLDIR" Value="TARGETDIR" />
     <WixVariable Id="WixUILicenseRtf" Value="Visuals\License.rtf" />
 
@@ -20,33 +20,69 @@
 
     <CustomAction Id="SetTargetDir" Property="TARGETDIR" Value="[DOWROOTFOLDER]"/>
 
-      <Feature Id="ProductFeature" Title="TournamentPatchModInstaller" Level="1">
-      <ComponentGroupRef Id="ProductComponents" />
-    </Feature>
 
     <InstallUISequence>
       <Custom Action="SetTargetDir" Before="CostFinalize"/>
     </InstallUISequence>
+
     <InstallExecuteSequence>
       
     </InstallExecuteSequence>
+
+
+    <Feature Id="TpMod" Title="TournamentPatch Mod" Level="1">
+      <ComponentGroupRef Id="TpModComponents" />
+    </Feature>
+
+    <Feature Id="CameraFix" Title="Camera Fix" Display="collapse">
+      <ComponentGroupRef Id="CameraFix"/>
+    </Feature>
+
+    <Feature Id="QwertyHotkeys" Title="Set QWERTY hotkeys by default" Display="collapse">
+      <ComponentGroupRef Id="QwertyHotkeys"/>
+    </Feature>
+
   </Product>
 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ENGINE" Name="Engine">
+        <Directory Id="DATA" Name="Data"/>
+      </Directory>
+
+      <Directory Id="PROFILES" Name="Profiles">
+        <Directory Id="PROFILE1" Name="Profile1">
+          <Directory Id="TOURNAMENTPATCH_PROFILE" Name="tournamentpatch"/>
+        </Directory>
+      </Directory>
     </Directory>
   </Fragment>
 
 
   <Fragment>
-    <Variable Name="TPFOLDER" Value="..\..\Files"/>
-    <ComponentGroup Id="ProductComponents" Directory="TARGETDIR">
-      
+    <ComponentGroup Id="TpModComponents" Directory="TARGETDIR">
 
       <!-- TODO: Remove the comments around this Component element and the ComponentRef below in order to add resources to this installer. -->
-      <Component Id="ProductComponent" Guid="DA24A905-94E4-4AEF-91D3-21E3E6EE0447">
+      <Component Id="ProductComponent" Guid="702c1d53-5003-4b0b-84a5-67ee117289c3">
         <File Id="TournamentPatch.module" Name="TournamentPatch.module" Source="..\..\Files\TournamentPatch.module"></File>
         <!-- TODO: Insert files, registry keys, and other resources here. -->
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+
+
+  <Fragment>
+    <ComponentGroup Id="CameraFix" Directory="DATA">
+      <Component Id="CameraFix" Guid="675abc99-ed94-4cfe-9152-928353b0cd2d">
+        <File Id="CameraHigh.lua" Source="..\..\Files\CameraFix\camera_high.lua"></File>
+        <File Id="CameraEd.lua" Source="..\..\Files\CameraFix\camera_ed.lua"></File>
+        <File Id="CameraLow.lua" Source="..\..\Files\CameraFix\camera_low.lua"></File>
+      </Component>
+    </ComponentGroup>
+
+    <ComponentGroup Id="QwertyHotkeys" Directory="TOURNAMENTPATCH_PROFILE">
+      <Component Id="QwertyHotkeys" Guid="800663d1-0137-48b9-8731-e020d8153044">
+        <File Id="KeyDefaults.lua" Source="..\..\Files\QwertyHotkeys\KEYDEFAULTS.LUA"></File>
       </Component>
     </ComponentGroup>
   </Fragment>
