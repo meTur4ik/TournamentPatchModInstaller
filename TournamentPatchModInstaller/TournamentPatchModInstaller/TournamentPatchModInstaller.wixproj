@@ -6,7 +6,7 @@
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>2bcde43d-95aa-424f-9669-fbfb075ff978</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>TournamentPatchModInstaller</OutputName>
+    <OutputName>TournamentPatchMod</OutputName>
     <OutputType>Package</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">

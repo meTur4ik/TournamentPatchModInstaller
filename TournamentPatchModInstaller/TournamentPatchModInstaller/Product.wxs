@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="dafcc5c4-88a8-4749-a3ac-3fb6a8289a33" Name="TournamentPatchModInstaller" Language="1033" Version="1.6.4" Manufacturer="Tournament Patch" UpgradeCode="664efaf7-ab73-44f9-9ac1-0b98202a9ae8">
+  <Product Id="dafcc5c4-88a8-4749-a3ac-3fb6a8289a33" Name="TournamentPatchMod" Language="1033" Version="1.6.4" Manufacturer="Tournament Patch" UpgradeCode="664efaf7-ab73-44f9-9ac1-0b98202a9ae8">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
     <MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -46,131 +46,303 @@
 
   <Fragment>
     <Directory Id="TARGETDIR" Name="SourceDir">
-      <Directory Id="TOURNAMENTPATCH" Name="TournamentPatch">
+      <Directory Id="TP" Name="TournamentPatch">
         <Directory Id="TP_DATA" Name="Data">
-          <Directory Id="AI" Name="ai">
-            <Directory Id="CORE" Name="core">
-              <Directory Id="CORE_PLANS" Name="plans"/>
-              <Directory Id="CORE_STRATEGIES" Name="strategies"/>
-              <Directory Id="CORE_TACTICS" Name="tactics"/>
+          <Directory Id="TP_DATA_AI" Name="ai">
+            <Directory Id="TP_DATA_AI_CORE" Name="core">
+              <Directory Id="TP_DATA_AI_CORE_PLANS" Name="plans"/>
+              <Directory Id="TP_DATA_AI_CORE_STRATEGIES" Name="strategies"/>
+              <Directory Id="TP_DATA_AI_CORE_TACTICS" Name="tactics"/>
             </Directory>
-            <Directory Id="DOC" Name="doc"/>
-            <Directory Id="MAPDB" Name="mapdb"/>
-            <Directory Id="METAMAP" Name="metamap"/>
-            <Directory Id="PLANS" Name="plans"/>
-            <Directory Id="RACES" Name="races">
-              <Directory Id="AI_CHAOS" Name="chaos_marine_race">
-                <Directory Id="AI_CHAOS_INFO" Name="info"/>
-                <Directory Id="AI_CHAOS_STRATEGIES" Name="strategies"/>
-                <Directory Id="AI_CHAOS_TACTICS" Name="tactics"/>
+            <Directory Id="TP_DATA_AI_DOC" Name="doc"/>
+            <Directory Id="TP_DATA_AI_MAPDB" Name="mapdb"/>
+            <Directory Id="TP_DATA_AI_METAMAP" Name="metamap"/>
+            <Directory Id="TP_DATA_AI_PLANS" Name="plans"/>
+            <Directory Id="TP_DATA_AI_RACES" Name="races">
+              <Directory Id="TP_DATA_AI_RACES_CHAOS" Name="chaos_marine_race">
+                <Directory Id="TP_DATA_AI_RACES_CHAOS_INFO" Name="info"/>
+                <Directory Id="TP_DATA_AI_RACES_CHAOS_STRATEGIES" Name="strategies"/>
+                <Directory Id="TP_DATA_AI_RACES_CHAOS_TACTICS" Name="tactics"/>
               </Directory>
-              <Directory Id="AI_DE" Name="dark_eldar_race">
-                <Directory Id="AI_DE_INFO" Name="info"/>
-                <Directory Id="AI_DE_STRATEGIES" Name="strategies"/>
-                <Directory Id="AI_DE_TACTICS" Name="tactics"/>
+              <Directory Id="TP_DATA_AI_RACES_DE" Name="dark_eldar_race">
+                <Directory Id="TP_DATA_AI_RACES_DE_INFO" Name="info"/>
+                <Directory Id="TP_DATA_AI_RACES_DE_STRATEGIES" Name="strategies"/>
+                <Directory Id="TP_DATA_AI_RACES_DE_TACTICS" Name="tactics"/>
               </Directory>
-              <Directory Id="AI_ELDAR" Name="dark_eldar_race">
-                <Directory Id="AI_ELDAR_INFO" Name="info"/>
-                <Directory Id="AI_ELDAR_STRATEGIES" Name="strategies"/>
-                <Directory Id="AI_ELDAR_TACTICS" Name="tactics"/>
+              <Directory Id="TP_DATA_AI_RACES_ELDAR" Name="dark_eldar_race">
+                <Directory Id="TP_DATA_AI_RACES_ELDAR_INFO" Name="info"/>
+                <Directory Id="TP_DATA_AI_RACES_ELDAR_STRATEGIES" Name="strategies"/>
+                <Directory Id="TP_DATA_AI_RACES_ELDAR_TACTICS" Name="tactics"/>
               </Directory>
-              <Directory Id="AI_GUARD" Name="guard_race">
-                <Directory Id="AI_GUARD_INFO" Name="info"/>
-                <Directory Id="AI_GUARD_STRATEGIES" Name="strategies"/>
-                <Directory Id="AI_GUARD_TACTICS" Name="tactics"/>
+              <Directory Id="TP_DATA_AI_RACES_GUARD" Name="guard_race">
+                <Directory Id="TP_DATA_AI_RACES_GUARD_INFO" Name="info"/>
+                <Directory Id="TP_DATA_AI_RACES_GUARD_STRATEGIES" Name="strategies"/>
+                <Directory Id="TP_DATA_AI_RACES_GUARD_TACTICS" Name="tactics"/>
               </Directory>
-              <Directory Id="AI_NECRON" Name="necron_race">
-                <Directory Id="AI_NECRON_INFO" Name="info"/>
-                <Directory Id="AI_NECRON_STRATEGIES" Name="strategies"/>
-                <Directory Id="AI_NECRON_TACTICS" Name="tactics"/>
+              <Directory Id="TP_DATA_AI_RACES_NECRON" Name="necron_race">
+                <Directory Id="TP_DATA_AI_RACES_NECRON_INFO" Name="info"/>
+                <Directory Id="TP_DATA_AI_RACES_NECRON_STRATEGIES" Name="strategies"/>
+                <Directory Id="TP_DATA_AI_RACES_NECRON_TACTICS" Name="tactics"/>
               </Directory>
-              <Directory Id="AI_NPC" Name="npc_race">
-                <Directory Id="AI_NPC_INFO" Name="info"/>
+              <Directory Id="TP_DATA_AI_RACES_NPC" Name="npc_race">
+                <Directory Id="TP_DATA_AI_RACES_NPC_INFO" Name="info"/>
               </Directory>
-              <Directory Id="AI_ORK" Name="ork_race">
-                <Directory Id="AI_ORK_INFO" Name="info"/>
-                <Directory Id="AI_ORK_STRATEGIES" Name="strategies"/>
-                <Directory Id="AI_ORK_TACTICS" Name="tactics"/>
+              <Directory Id="TP_DATA_AI_RACES_ORK" Name="ork_race">
+                <Directory Id="TP_DATA_AI_RACES_ORK_INFO" Name="info"/>
+                <Directory Id="TP_DATA_AI_RACES_ORK_STRATEGIES" Name="strategies"/>
+                <Directory Id="TP_DATA_AI_RACES_ORK_TACTICS" Name="tactics"/>
               </Directory>
-              <Directory Id="AI_SISTERS" Name="sisters_race">
-                <Directory Id="AI_SISTERS_INFO" Name="info"/>
-                <Directory Id="AI_SISTERS_STRATEGIES" Name="strategies"/>
-                <Directory Id="AI_SISTERS_TACTICS" Name="tactics"/>
+              <Directory Id="TP_DATA_AI_RACES_SISTERS" Name="sisters_race">
+                <Directory Id="TP_DATA_AI_RACES_SISTERS_INFO" Name="info"/>
+                <Directory Id="TP_DATA_AI_RACES_SISTERS_STRATEGIES" Name="strategies"/>
+                <Directory Id="TP_DATA_AI_RACES_SISTERS_TACTICS" Name="tactics"/>
               </Directory>
-              <Directory Id="AI_SM" Name="space_marine_race">
-                <Directory Id="AI_SM_INFO" Name="info"/>
-                <Directory Id="AI_SM_STRATEGIES" Name="strategies"/>
-                <Directory Id="AI_SM_TACTICS" Name="tactics"/>
+              <Directory Id="TP_DATA_AI_RACES_SM" Name="space_marine_race">
+                <Directory Id="TP_DATA_AI_RACES_SM_INFO" Name="info"/>
+                <Directory Id="TP_DATA_AI_RACES_SM_STRATEGIES" Name="strategies"/>
+                <Directory Id="TP_DATA_AI_RACES_SM_TACTICS" Name="tactics"/>
               </Directory>
-              <Directory Id="AI_TAU" Name="tau_race">
-                <Directory Id="AI_TAU_INFO" Name="info"/>
-                <Directory Id="AI_TAU_STRATEGIES" Name="strategies"/>
-                <Directory Id="AI_TAU_TACTICS" Name="tactics"/>
-              </Directory>
-            </Directory>
-            <Directory Id="STRATEGIES" Name="strategies">
-              <Directory Id="ADVANCED" Name="advanced"/>
-              <Directory Id="EASY" Name="easy"/>
-              <Directory Id="HARD" Name="hard"/>
-              <Directory Id="STANDARD" Name="standard"/>
-            </Directory>
-            <Directory Id="TACTICS" Name="tactics">
-              <Directory Id="TACTICS_CHAOS" Name="chaosmarines"/>
-              <Directory Id="TACTICS_DE" Name="darkeldar"/>
-              <Directory Id="TACTICS_ELDAR" Name="eldar"/>
-              <Directory Id="TACTICS_GUARD" Name="guard"/>
-              <Directory Id="TACTICS_NECRON" Name="necron"/>
-              <Directory Id="TACTICS_ORK" Name="orks"/>
-              <Directory Id="TACTICS_SISTERS" Name="sistersofbattle"/>
-              <Directory Id="TACTICS_TAU" Name="tau"/>
-            </Directory>
-          </Directory>
-          <Directory Id="ART" Name="art">
-            <Directory Id="EBPS">
-              <Directory Id="ART_RACES" Name="races">
-                <Directory Id="ART_CHAOS">
-                  <Directory Id="ART_CHAOS_TEXTURE" Name="texture_share"/>
-                  <Directory Id="ART_CHAOS_TROOPS" Name="troops"/>
-                </Directory>
-                <Directory Id="ART_ELDAR" Name="eldar">
-                  <Directory Id="ART_ELDAR_STRUCTURES" Name="structures"/>
-                  <Directory Id="ART_ELDAR_TEXTURE" Name="texture_share"/>
-                  <Directory Id="ART_ELDAR_TROOPS" Name="troops"/>
-                </Directory>
-                <Directory Id="ART_NECRON" Name="necrons">
-                  <Directory Id="ART_NECRON_TROOPS" Name="troops"/>
-                </Directory>
-                <Directory Id="ART_ORK">
-                  <Directory Id="ART_ORK_TEXTURE" Name="texture_share"/>
-                  <Directory Id="ART_ORK_TROOPS" Name="troops"/>
-                </Directory>
-                <Directory Id="ART_SM">
-                  <Directory Id="ART_SM_TEXTURE" Name="texture_share"/>
-                  <Directory Id="ART_SM_TROOPS" Name="troops"/>
-                </Directory>
+              <Directory Id="TP_DATA_AI_RACES_TAU" Name="tau_race">
+                <Directory Id="TP_DATA_AI_RACES_TAU_INFO" Name="info"/>
+                <Directory Id="TP_DATA_AI_RACES_TAU_STRATEGIES" Name="strategies"/>
+                <Directory Id="TP_DATA_AI_RACES_TAU_TACTICS" Name="tactics"/>
               </Directory>
             </Directory>
+            <Directory Id="TP_DATA_AI_STRATEGIES" Name="strategies">
+              <Directory Id="TP_DATA_AI_STRATEGIES_ADVANCED" Name="advanced"/>
+              <Directory Id="TP_DATA_AI_STRATEGIES_EASY" Name="easy"/>
+              <Directory Id="TP_DATA_AI_STRATEGIES_HARD" Name="hard"/>
+              <Directory Id="TP_DATA_AI_STRATEGIES_STANDARD" Name="standard"/>
+            </Directory>
+            <Directory Id="TP_DATA_AI_TACTICS" Name="tactics">
+              <Directory Id="TP_DATA_AI_TACTICS_CHAOS" Name="chaosmarines"/>
+              <Directory Id="TP_DATA_AI_TACTICS_DE" Name="darkeldar"/>
+              <Directory Id="TP_DATA_AI_TACTICS_ELDAR" Name="eldar"/>
+              <Directory Id="TP_DATA_AI_TACTICS_GUARD" Name="guard"/>
+              <Directory Id="TP_DATA_AI_TACTICS_NECRON" Name="necron"/>
+              <Directory Id="TP_DATA_AI_TACTICS_ORK" Name="orks"/>
+              <Directory Id="TP_DATA_AI_TACTICS_SISTERS" Name="sistersofbattle"/>
+              <Directory Id="TP_DATA_AI_TACTICS_TAU" Name="tau"/>
+            </Directory>
           </Directory>
-          <Directory Id="ATTRIB" Name="attrib">
-
+          <Directory Id="TP_DATA_ART" Name="art">
+            <Directory Id="TP_DATA_ART_EBPS">
+              <Directory Id="TP_DATA_ART_EBPS_RACES" Name="races">
+                <Directory Id="TP_DATA_ART_EBPS_RACES_CHAOS">
+                  <Directory Id="TP_DATA_ART_EBPS_RACES_CHAOS_TEXTURE" Name="texture_share"/>
+                  <Directory Id="TP_DATA_ART_EBPS_RACES_CHAOS_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ART_EBPS_RACES_ELDAR" Name="eldar">
+                  <Directory Id="TP_DATA_ART_EBPS_RACES_ELDAR_STRUCTURES" Name="structures"/>
+                  <Directory Id="TP_DATA_ART_EBPS_RACES_ELDAR_TEXTURE" Name="texture_share"/>
+                  <Directory Id="TP_DATA_ART_EBPS_RACES_ELDAR_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ART_EBPS_RACES_NECRON" Name="necrons">
+                  <Directory Id="TP_DATA_ART_EBPS_RACES_NECRON_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ART_EBPS_RACES_ORK">
+                  <Directory Id="TP_DATA_ART_EBPS_RACES_ORK_TEXTURE" Name="texture_share"/>
+                  <Directory Id="TP_DATA_ART_EBPS_RACES_ORK_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ART_EBPS_RACES_SM">
+                  <Directory Id="TP_DATA_ART_EBPS_RACES_SM_TEXTURE" Name="texture_share"/>
+                  <Directory Id="TP_DATA_ART_EBPS_RACES_SM_TROOPS" Name="troops"/>
+                </Directory>
+              </Directory>
+            </Directory>
+            <Directory Id="TP_DATA_ART_UI" Name="ui">
+              <Directory Id="TP_DATA_ART_UI_INGAME" Name="ingame">
+                <Directory Id="TP_DATA_ART_UI_INGAME_NECRON" Name="nexron_icons"/>
+                <Directory Id="TP_DATA_ART_UI_INGAME_SISTERS" Name="sisters_icons"/>
+                <Directory Id="TP_DATA_ART_UI_INGAME_SM" Name="space_marines_icons"/>
+                <Directory Id="TP_DATA_ART_UI_INGAME_TAU" Name="tau_icons"/>
+              </Directory>
+              <Directory Id="TP_DATA_ART_UI_INGAMEDISABLED" Name="ingame_disabled">
+                <Directory Id="TP_DATA_ART_UI_INGAMEDISABLED_NECRON" Name="necron_icons"/>
+                <Directory Id="TP_DATA_ART_UI_INGAMEDISABLED_SISTERS" Name="sisters_icons"/>
+                <Directory Id="TP_DATA_ART_UI_INGAMEDISABLED_SM" Name="space_marine_icons"/>
+                <Directory Id="TP_DATA_ART_UI_INGAMEDISABLED_TAU" Name="tau_icons"/>
+              </Directory>
+              <Directory Id="TP_DATA_ART_UI_SCREENS" Name="screens"/>
+              <Directory Id="TP_DATA_ART_UI_TEXTURES" Name="textures"/>
+            </Directory>
           </Directory>
-          <Directory Id="DEFPROFILE" Name="defprofile">
-
+          <Directory Id="TP_DATA_ATTRIB" Name="attrib">
+            <Directory Id="TP_DATA_ATTRIB_ABILITIES" Name="abilities"/>
+            <Directory Id="TP_DATA_ATTRIB_ADDONS" Name="addons"/>
+            <Directory Id="TP_DATA_ATTRIB_EBPS" Name="ebps">
+              <Directory Id="TP_DATA_ATTRIB_EBPS_ENVIRONMENT" Name="environment">
+                <Directory Id="TP_DATA_ATTRIB_EBPS_ENVIRONMENT_GAMEPLAY" Name="gameplay"/>
+              </Directory>
+              <Directory Id="TP_DATA_ATTRIB_EBPS_GAME" Name="game">
+                <Directory Id="TP_DATA_ATTRIB_EBPS_GAME_PROJECTILES" Name="projectiles"/>
+              </Directory>
+              <Directory Id="TP_DATA_ATTRIB_EBPS_RACES" Name="races">
+                <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_CHAOS" Name="chaos">
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_CHAOS_STRUCTURES" Name="structures"/>
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_CHAOS_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_DE" Name="dark_eldar">
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_DE_STRUCTURES" Name="structures"/>
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_DE_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ATTRIB_EBPS_ELDAR" Name="eldar">
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_ELDAR_CHAOS_STRUCTURES" Name="structures"/>
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_ELDAR_CHAOS_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_GUARD" Name="guard">
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_GUARD_STRUCTURES" Name="structures"/>
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_GUARD_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_NECRON" Name="necrons">
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_NECRON_STRUCTURES" Name="structures"/>
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_NECRON_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ATTRIB_EBPS_ORK" Name="orks">
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_ORK_STRUCTURES" Name="structures"/>
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_ORK_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_SISTERS" Name="sisters">
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_SISTERS_STRUCTURES" Name="structures"/>
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_SISTERS_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_SM" Name="space_marines">
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_SM_STRUCTURES" Name="structures"/>
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_SM_TROOPS" Name="troops"/>
+                </Directory>
+                <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_TAU" Name="tau">
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_TAU_STRUCTURES" Name="structures"/>
+                  <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_TAU_TROOPS" Name="troops">
+                    <Directory Id="TP_DATA_ATTRIB_EBPS_RACES_TAU_TROOPS_CLONES" Name="tau_troop_clones"/>
+                  </Directory>
+                </Directory>
+              </Directory>
+            </Directory>
+            <Directory Id="TP_DATA_ATTRIB_RACEBPS" Name="racebps"/>
+            <Directory Id="TP_DATA_ATTRIB_RESEARCH" Name="research"/>
+            <Directory Id="TP_DATA_ATTRIB_SBPS" Name="sbps">
+              <Directory Id="TP_DATA_ATTRIB_SBPS_RACES">
+                <Directory Id="TP_DATA_ATTRIB_SBPS_RACES_CHAOS" Name="chaos"/>
+                <Directory Id="TP_DATA_ATTRIB_SBPS_RACES_DE" Name="dark_eldar"/>
+                <Directory Id="TP_DATA_ATTRIB_SBPS_RACES_ELDAR" Name="eldar"/>
+                <Directory Id="TP_DATA_ATTRIB_SBPS_RACES_GUARD" Name="guard"/>
+                <Directory Id="TP_DATA_ATTRIB_SBPS_RACES_NECRON" Name="necrons"/>
+                <Directory Id="TP_DATA_ATTRIB_SBPS_RACES_ORK" Name="orks"/>
+                <Directory Id="TP_DATA_ATTRIB_SBPS_RACES_SISTERS" Name="sisters"/>
+                <Directory Id="TP_DATA_ATTRIB_SBPS_RACES_SM" Name="space_marines"/>
+                <Directory Id="TP_DATA_ATTRIB_SBPS_RACES_TAU" Name="tau"/>
+              </Directory>
+            </Directory>
+            <Directory Id="TP_DATA_TYPE_ARMOUR" Name="type_armour"/>
+            <Directory Id="TP_DATA_WEAPON" Name="weapon"/>
           </Directory>
-          <Directory Id="SCAR" Name="scar">
-
+          <Directory Id="TP_DATA_DEFPROFILE" Name="defprofile"/>
+          <Directory Id="TP_DATA_SCAR" Name="scar">
+            <Directory Id="TP_DATA_SCAR_WINCONDITIONS" Name="winconditions"/>
           </Directory>
-          <Directory Id="SCENARIOS" Name="scenarios">
-
+          <Directory Id="TP_DATA_SCENARIOS" Name="scenarios">
+            <Directory Id="TP_DATA_SCENARIOS_LOADING" Name="loading"/>
+            <Directory Id="TP_DATA_SCENARIOS_MP" Name="mp"/>
           </Directory>
-          <Directory Id="SOUND" Name="sound">
-
+          <Directory Id="TP_DATA_SOUND" Name="sound">
+            <Directory Id="TP_DATA_SOUND_SPEECH" Name="speech">
+              <Directory Id="TP_DATA_SOUND_SPEECH_RACES" Name="races">
+                <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON" Name="necron">
+                  <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER" Name="deceiver">
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_ABILITY" Name="ability">
+                      <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_ABILITY_PROTECTION" Name="faction_protection_ability"/>
+                      <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_ABILITY_TARGET" Name="faction_target_ability"/>
+                    </Directory>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_ATTACK" Name="attack"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_CAPTURE" Name="capture"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_COMBAT" Name="combat"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_DAMAGE" Name="damage"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_DEEPSTRIKE" Name="deepstrike"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_DIE" Name="die"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_JUMP" Name="jump"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_MOVE" Name="move"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_SELECTION" Name="selection"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_SPCAPTURE" Name="strategic_point_capture"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_DECEIVER_UNITCOMPLETE" Name="unit_complete"/>
+                  </Directory>
+                  <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD" Name="lord">
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_ABILITY" Name="ability">
+                      <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_ABILITY_PROTECTION" Name="faction_protection_ability"/>
+                      <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_ABILITY_TARGET" Name="faction_target_ability"/>
+                    </Directory>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_ATTACK" Name="attack"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_DEEPSTRIKE" Name="deepstrike"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_JUMP" Name="jump"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_LOADTRANSPORT" Name="loadtransport"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_MORALE" Name="morale"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_MORALERESTORED" Name="morale_restored"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_MOVE" Name="move"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_SELECTION" Name="selection"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_UNDERFIRE" Name="under_fire"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_UNITCOMPLETE" Name="unit_complete"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORD_UNLOADTRANSPORT" Name="unloadtransport"/>
+                  </Directory>
+                  <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER" Name="lord_destroyer">
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_ABILITY" Name="ability">
+                      <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_ABILITY_PROTECTION" Name="faction_protection_ability"/>
+                      <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_ABILITY_TARGET" Name="faction_target_ability"/>
+                    </Directory>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_ATTACK" Name="attack"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_JUMP" Name="jump"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_LOADTRANSPORT" Name="loadtransport"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_MORALE" Name="morale"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_MORALERESTORED" Name="morale_restored"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_MOVE" Name="move"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_SELECTION" Name="selection"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_UNDERFIRE" Name="under_fire"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_UNITCOMPLETE" Name="unit_complete"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_LORDDESTROYER_UNLOADTRANSPORT" Name="unloadtransport"/>
+                  </Directory>
+                  <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER" Name="nightbringer">
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_ABILITY" Name="ability">
+                      <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_ABILITY_PROTECTION" Name="faction_protection_ability"/>
+                      <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_ABILITY_TARGET" Name="faction_target_ability"/>
+                    </Directory>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_ATTACK" Name="attack"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_CAPTURE" Name="capture"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_COMBAT" Name="combat"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_DAMAGE" Name="damage"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_DEEPSTRIKE" Name="deepstrike"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_DIE" Name="die"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_JUMP" Name="jump"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_MOVE" Name="move"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_SELECTION" Name="selection"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_SPCAPTURE" Name="strategic_point_capture"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_NIGHTBRINGER_UNITCOMPLETE" Name="unit_complete"/>
+                  </Directory>
+                  <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH" Name="pariah">
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_ATTACK" Name="attack"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_CHARGE" Name="charge"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_COMBAT" Name="combat"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_DAMAGE" Name="damage"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_DIE" Name="die"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_JUMP" Name="jump"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_LOADTRANSPORT" Name="loadtransport"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_MORALE" Name="morale"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_MORALERESTORED" Name="morale_restored"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_MOVE" Name="move"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_SELECTION" Name="selection"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_UNITCOMPLETE" Name="unit_complete"/>
+                    <Directory Id="TP_DATA_SOUND_SPEECH_RACES_NECRON_PARIAH_UNLOADTRANSPORT" Name="unloadtransport"/>
+                  </Directory>
+                </Directory>
+              </Directory>
+            </Directory>
           </Directory>
         </Directory>
-
-
         <Directory Id="TP_LOCALE" Name="Locale">
-
+          <Directory Id="TP_LOCALE_ENGLISH" Name="English"/>
+          <Directory Id="TP_LOCALE_FRENCH" Name="French"/>
+          <Directory Id="TP_LOCALE_GERMAN" Name="German"/>
+          <Directory Id="TP_LOCALE_ITALIAN" Name="Italian"/>
+          <Directory Id="TP_LOCALE_POLISH" Name="Polish"/>
+          <Directory Id="TP_LOCALE_RUSSIAN" Name="Russian"/>
+          <Directory Id="TP_LOCALE_SPANISH" Name="Spanish"/>
         </Directory>
       </Directory>
 
