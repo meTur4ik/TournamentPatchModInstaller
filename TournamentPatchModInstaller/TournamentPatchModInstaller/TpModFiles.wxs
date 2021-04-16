@@ -5,8 +5,88 @@
       <Component Id="TournamentPatch.module" Directory="TARGETDIR" Guid="702c1d53-5003-4b0b-84a5-67ee117289c3">
         <File Id="TournamentPatch.module" Name="TournamentPatch.module" Source="..\..\Files\TournamentPatch.module"/>
       </Component>
-      <Component Id="TPData.sga" Directory="TP" Guid="c5a09b03-41a3-4607-889f-194bc70200da">
+      
+      <Component Id="TP_CONTENT" Directory="TP" Guid="c5a09b03-41a3-4607-889f-194bc70200da">
         <File Id="TPData.sga" Name="TPData.sga" Source="..\..\Files\TournamentPatch\TPData.sga"/>
+      </Component>
+      
+      <Component Id="TP_DATA_CONTENT" Directory="TP_DATA" Guid="bd54546b-bd8c-45e4-a04a-2f370d60a3af">
+        <File Id="_default.rat" Name="_default.rat" Source="..\..\Files\TournamentPatch\Data\_default.rat"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_CONTENT" Directory="TP_DATA_AI" Guid="e9a54c74-29db-4102-b3da-f5e2de21d8a4">
+        <File Id="aicontrolpanel.exe" Name="aicontrolpanel.exe" Source="..\..\Files\TournamentPatch\Data\ai\aicontrolpanel.exe"/>
+        <File Id="tp_data_ai_cpu_manager.ai" Name="cpu_manager.ai" Source="..\..\Files\TournamentPatch\Data\ai\cpu_manager.ai"/>
+        <File Id="tp_data_ai_debug_display.ai" Name="debug_display.ai" Source="..\..\Files\TournamentPatch\Data\ai\debug_display.ai"/>
+        <File Id="default.ai" Name="default.ai" Source="..\..\Files\TournamentPatch\Data\ai\default.ai"/>
+        <File Id="unitstats.ai" Name="unitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\unitstats.ai"/>
+        <File Id="tp_data_ai_utility.ai" Name="utility.ai" Source="..\..\Files\TournamentPatch\Data\ai\utility.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_CORE_CONTENT" Directory="TP_DATA_AI_CORE" Guid="a4527d71-4d20-4dc8-b749-da6515eb0fb3">
+        <File Id="aiconfig.ai" Name="aiconfig.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\aiconfig.ai"/>
+        <File Id="aidefaultconfig.ai" Name="aidefaultconfig.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\aidefaultconfig.ai"/>
+        <File Id="tp_data_ai_core_cpu_manager.ai" Name="cpu_manager.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\cpu_manager.ai"/>
+        <File Id="cpuprerequisites2.ai" Name="cpuprerequisites2.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\cpuprerequisites2.ai"/>
+        <File Id="tp_data_ai_core_debug_display.ai" Name="debug_display.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\debug_display.ai"/>
+        <File Id="tp_data_ai_core_utility.ai" Name="utility.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\utility.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_CORE_PLANS_CONTENT" Directory="TP_DATA_AI_CORE_PLANS" Guid="1f339adf-67f7-4caa-bebf-70a41fa8a775">
+        <File Id="attackplan.ai" Name="attackplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\attackplan.ai"/>
+        <File Id="buildaddonplan.ai" Name="buildaddonplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildaddonplan.ai"/>
+        <File Id="buildbuildingplan.ai" Name="buildbuildingplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildbuildingplan.ai"/>
+        <File Id="buildnotifiedaddonplan.ai" Name="buildnotifiedaddonplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildnotifiedaddonplan.ai"/>
+        <File Id="buildplan.ai" Name="buildplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildplan.ai"/>
+        <File Id="buildresearchplan.ai" Name="buildresearchplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildresearchplan.ai"/>
+        <File Id="buildunitplan.ai" Name="buildunitplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildunitplan.ai"/>
+        <File Id="captureplan.ai" Name="captureplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\captureplan.ai"/>
+        <File Id="defendchokepointplan.ai" Name="defendchokepointplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\defendchokepointplan.ai"/>
+        <File Id="defendplan.ai" Name="defendplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\defendplan.ai"/>
+        <File Id="plan.ai" Name="plan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\plan.ai"/>
+        <File Id="resourceplan.ai" Name="resourceplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\resourceplan.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_CORE_STRATEGIES_CONTENT" Directory="TP_DATA_AI_CORE_STRATEGIES" Guid="7b603c84-5797-4cf3-8cf5-5820134a6d84">
+        <File Id="attackstrategy.ai" Name="attackstrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\strategies\attackstrategy.ai"/>
+        <File Id="buildbasestrategy.ai" Name="buildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\strategies\buildbasestrategy.ai"/>
+        <File Id="buildorderstrategy.ai" Name="buildorderstrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\strategies\buildorderstrategy.ai"/>
+        <File Id="defendstrategy.ai" Name="defendstrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\strategies\defendstrategy.ai"/>
+        <File Id="designerstrategy.ai" Name="designerstrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\strategies\designerstrategy.ai"/>
+        <File Id="designerstrategyinfo.ai" Name="designerstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\strategies\designerstrategyinfo.ai"/>
+        <File Id="playerinfo.ai" Name="playerinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\strategies\playerinfo.ai"/>
+        <File Id="strategy.ai" Name="strategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\strategies\strategy.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_CORE_TACTICS_CONTENT" Directory="TP_DATA_AI_CORE_TACTICS" Guid="39cfc10c-04cc-4b4c-bac3-3ad7d8fe7e59">
+        <File Id="ability.ai" Name="ability.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\ability.ai"/>
+        <File Id="basetactic.ai" Name="basetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\basetactic.ai"/>
+        <File Id="defaulttactic.ai" Name="defaulttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\defaulttactic.ai"/>
+        <File Id="engineertactic.ai" Name="engineertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\engineertactic.ai"/>
+        <File Id="infantrytactic.ai" Name="infantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\infantrytactic.ai"/>
+        <File Id="tactic.ai" Name="tactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\tactic.ai"/>
+        <File Id="vehicletactic.ai" Name="vehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\vehicletactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_DOC_CONTENT" Directory="TP_DATA_AI_DOC" Guid="1ca14b9c-4655-4682-a075-621685dfc8fb">
+        <File Id="conversion3.0.txt" Name="3.0_conversion.txt" Source="..\..\Files\TournamentPatch\Data\ai\doc\3.0_conversion.txt"/>
+        <File Id="conversion3.1.txt" Name="3.1_conversion.txt" Source="..\..\Files\TournamentPatch\Data\ai\doc\3.1_conversion.txt"/>
+        <File Id="conversion3.2.txt" Name="3.2_conversion.txt" Source="..\..\Files\TournamentPatch\Data\ai\doc\3.2_conversion.txt"/>
+        <File Id="advanceaiguide.txt" Name="advanceaiguide.txt" Source="..\..\Files\TournamentPatch\Data\ai\doc\advanceaiguide.txt"/>
+        <File Id="advanceaiguide_for_v2.3.txt" Name="advanceaiguide_for_v2.3.txt" Source="..\..\Files\TournamentPatch\Data\ai\doc\advanceaiguide_for_v2.3.txt"/>
+        <File Id="ai_changelogs.txt" Name="ai_changelogs.txt" Source="..\..\Files\TournamentPatch\Data\ai\doc\ai_changelogs.txt"/>
+        <File Id="dow_ai_tweaks_suggestions_with_reply.doc" Name="dow ai tweaks  suggestions with reply.doc" Source="..\..\Files\TournamentPatch\Data\ai\doc\dow ai tweaks  suggestions with reply.doc"/>
+        <File Id="dowai.txt" Name="dowai.txt" Source="..\..\Files\TournamentPatch\Data\ai\doc\dowai.txt"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_MAPDB_CONTENT" Directory="TP_DATA_AI_MAPDB" Guid="f1f7404c-a464-4854-9d6a-559a7b86b83e">
+        <File Id="mapdb.ai" Name="mapdb.ai" Source="..\..\Files\TournamentPatch\Data\ai\mapdb\mapdb.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_METAMAP_CONTENT" Directory="TP_DATA_AI_METAMAP" Guid="9943ef21-1ed3-4cf1-81ad-b13b1fe613f7">
+        <File Id="settings0.ai" Name="settings0.ai" Source="..\..\Files\TournamentPatch\Data\ai\metamap\settings0.ai"/>
+        <File Id="settings1.ai" Name="settings1.ai" Source="..\..\Files\TournamentPatch\Data\ai\metamap\settings1.ai"/>
+        <File Id="settings2.ai" Name="settings2.ai" Source="..\..\Files\TournamentPatch\Data\ai\metamap\settings2.ai"/>
       </Component>
     </ComponentGroup>
   </Fragment>
