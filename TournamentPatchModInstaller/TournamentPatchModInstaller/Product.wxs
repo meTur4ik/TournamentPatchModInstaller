@@ -69,9 +69,10 @@
                 <Directory Id="TP_DATA_AI_RACES_DE_STRATEGIES" Name="strategies"/>
                 <Directory Id="TP_DATA_AI_RACES_DE_TACTICS" Name="tactics"/>
               </Directory>
-              <Directory Id="TP_DATA_AI_RACES_ELDAR" Name="dark_eldar_race">
+              <Directory Id="TP_DATA_AI_RACES_ELDAR" Name="eldar_race">
                 <Directory Id="TP_DATA_AI_RACES_ELDAR_INFO" Name="info"/>
                 <Directory Id="TP_DATA_AI_RACES_ELDAR_STRATEGIES" Name="strategies"/>
+                <!--here-->
                 <Directory Id="TP_DATA_AI_RACES_ELDAR_TACTICS" Name="tactics"/>
               </Directory>
               <Directory Id="TP_DATA_AI_RACES_GUARD" Name="guard_race">

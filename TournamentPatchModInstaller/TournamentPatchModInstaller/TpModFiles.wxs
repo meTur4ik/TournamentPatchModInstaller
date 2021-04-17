@@ -33,18 +33,18 @@
       </Component>
 
       <Component Id="TP_DATA_AI_CORE_PLANS_CONTENT" Directory="TP_DATA_AI_CORE_PLANS" Guid="1f339adf-67f7-4caa-bebf-70a41fa8a775">
-        <File Id="attackplan.ai" Name="attackplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\attackplan.ai"/>
-        <File Id="buildaddonplan.ai" Name="buildaddonplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildaddonplan.ai"/>
-        <File Id="buildbuildingplan.ai" Name="buildbuildingplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildbuildingplan.ai"/>
-        <File Id="buildnotifiedaddonplan.ai" Name="buildnotifiedaddonplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildnotifiedaddonplan.ai"/>
-        <File Id="buildplan.ai" Name="buildplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildplan.ai"/>
-        <File Id="buildresearchplan.ai" Name="buildresearchplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildresearchplan.ai"/>
-        <File Id="buildunitplan.ai" Name="buildunitplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildunitplan.ai"/>
-        <File Id="captureplan.ai" Name="captureplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\captureplan.ai"/>
-        <File Id="defendchokepointplan.ai" Name="defendchokepointplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\defendchokepointplan.ai"/>
-        <File Id="defendplan.ai" Name="defendplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\defendplan.ai"/>
-        <File Id="plan.ai" Name="plan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\plan.ai"/>
-        <File Id="resourceplan.ai" Name="resourceplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\resourceplan.ai"/>
+        <File Id="tp_data_ai_core_plans_attackplan.ai" Name="attackplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\attackplan.ai"/>
+        <File Id="tp_data_ai_core_plans_buildaddonplan.ai" Name="buildaddonplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildaddonplan.ai"/>
+        <File Id="tp_data_ai_core_plans_buildbuildingplan.ai" Name="buildbuildingplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildbuildingplan.ai"/>
+        <File Id="tp_data_ai_core_plans_buildnotifiedaddonplan.ai" Name="buildnotifiedaddonplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildnotifiedaddonplan.ai"/>
+        <File Id="tp_data_ai_core_plans_buildplan.ai" Name="buildplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildplan.ai"/>
+        <File Id="tp_data_ai_core_plans_buildresearchplan.ai" Name="buildresearchplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildresearchplan.ai"/>
+        <File Id="tp_data_ai_core_plans_buildunitplan.ai" Name="buildunitplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\buildunitplan.ai"/>
+        <File Id="tp_data_ai_core_plans_captureplan.ai" Name="captureplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\captureplan.ai"/>
+        <File Id="tp_data_ai_core_plans_defendchokepointplan.ai" Name="defendchokepointplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\defendchokepointplan.ai"/>
+        <File Id="tp_data_ai_core_plans_defendplan.ai" Name="defendplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\defendplan.ai"/>
+        <File Id="tp_data_ai_core_plans_plan.ai" Name="plan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\plan.ai"/>
+        <File Id="tp_data_ai_core_plans_resourceplan.ai" Name="resourceplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\plans\resourceplan.ai"/>
       </Component>
 
       <Component Id="TP_DATA_AI_CORE_STRATEGIES_CONTENT" Directory="TP_DATA_AI_CORE_STRATEGIES" Guid="7b603c84-5797-4cf3-8cf5-5820134a6d84">
@@ -87,6 +87,100 @@
         <File Id="settings0.ai" Name="settings0.ai" Source="..\..\Files\TournamentPatch\Data\ai\metamap\settings0.ai"/>
         <File Id="settings1.ai" Name="settings1.ai" Source="..\..\Files\TournamentPatch\Data\ai\metamap\settings1.ai"/>
         <File Id="settings2.ai" Name="settings2.ai" Source="..\..\Files\TournamentPatch\Data\ai\metamap\settings2.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_PLANS_CONTENT" Directory="TP_DATA_AI_PLANS" Guid="3814a58b-9d7c-4505-9791-b2a73d95132d">
+        <File Id="tp_data_ai_plans_attackplan.ai" Name="attackplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\attackplan.ai"/>
+        <File Id="tp_data_ai_plans_buildaddonplan.ai" Name="buildaddonplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\buildaddonplan.ai"/>
+        <File Id="tp_data_ai_plans_buildbuildingplan.ai" Name="buildbuildingplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\buildbuildingplan.ai"/>
+        <File Id="tp_data_ai_plans_buildplan.ai" Name="buildplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\buildplan.ai"/>
+        <File Id="tp_data_ai_plans_buildresearchplan.ai" Name="buildresearchplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\buildresearchplan.ai"/>
+        <File Id="tp_data_ai_plans_buildunitplan.ai" Name="buildunitplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\buildunitplan.ai"/>
+        <File Id="tp_data_ai_plans_captureplan.ai" Name="captureplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\captureplan.ai"/>
+        <File Id="tp_data_ai_plans_defendchokepointplan.ai" Name="defendchokepointplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\defendchokepointplan.ai"/>
+        <File Id="tp_data_ai_plans_defendplan.ai" Name="defendplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\defendplan.ai"/>
+        <File Id="tp_data_ai_plans_plan.ai" Name="plan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\plan.ai"/>
+        <File Id="tp_data_ai_plans_resourceplan.ai" Name="resourceplan.ai" Source="..\..\Files\TournamentPatch\Data\ai\plans\resourceplan.ai"/>
+      </Component>
+      
+      <Component Id="TP_DATA_AI_RACES_CONTENT" Directory="TP_DATA_AI_RACES" Guid="4e72bce1-2150-4902-9105-5bdb4c067e1b">
+        <File Id="null_race.ai" Name="null_race.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\null_race.ai"/>
+        <File Id="raceloader.ai" Name="raceloader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\raceloader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_CHAOS_CONTENT" Directory="TP_DATA_AI_RACES_CHAOS" Guid="27962ef4-c32f-4dd5-afd0-48557bfaf8db">
+        <File Id="tp_data_ai_races_chaos_loader.ai" Name="loader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\loader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_CHAOS_INFO_CONTENT" Directory="TP_DATA_AI_RACES_CHAOS_INFO" Guid="c26af21b-205d-4453-9250-55ae5b18486e">
+        <File Id="tp_data_ai_races_chaos_info_chaosunitstats.ai" Name="chaosunitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\info\chaosunitstats.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_CHAOS_STRATEGIES_CONTENT" Directory="TP_DATA_AI_RACES_CHAOS_STRATEGIES" Guid="dcd5ce23-0f4c-49d7-897e-5f233f6158d2">
+        <File Id="chaosbuildbasestrategy.ai" Name="chaosbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\strategies\chaosbuildbasestrategy.ai"/>
+        <File Id="chaosstrategyinfo.ai" Name="chaosstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\strategies\chaosstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_CHAOS_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_CHAOS_TACTICS" Guid="d26f17a0-7cac-42fe-b917-7292256e9f7f">
+        <File Id="bloodthirstertactic.ai" Name="bloodthirstertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\bloodthirstertactic.ai"/>
+        <File Id="chaoslordtactic.ai" Name="chaoslordtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaoslordtactic.ai"/>
+        <File Id="chaosmarineinfantrytactic.ai" Name="chaosmarineinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaosmarineinfantrytactic.ai"/>
+        <File Id="chaosmarinevehicletactic.ai" Name="chaosmarinevehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaosmarinevehicletactic.ai"/>
+        <File Id="chaosrhinotactic.ai" Name="chaosrhinotactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaosrhinotactic.ai"/>
+        <File Id="cultisttactic.ai" Name="cultisttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\cultisttactic.ai"/>
+        <File Id="daemonprincetactic.ai" Name="daemonprincetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\daemonprincetactic.ai"/>
+        <File Id="greatersacrificialcircletactic.ai" Name="greatersacrificialcircletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\greatersacrificialcircletactic.ai"/>
+        <File Id="helltalontactic.ai" Name="helltalontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\helltalontactic.ai"/>
+        <File Id="marinesquadtactic.ai" Name="marinesquadtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\marinesquadtactic.ai"/>
+        <File Id="raptorsquadtactic.ai" Name="raptorsquadtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\raptorsquadtactic.ai"/>
+        <File Id="sacrificialcircletactic.ai" Name="sacrificialcircletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\sacrificialcircletactic.ai"/>
+        <File Id="slavetactic.ai" Name="slavetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\slavetactic.ai"/>
+        <File Id="sorcerertactic.ai" Name="sorcerertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\sorcerertactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_DE_CONTENT" Directory="TP_DATA_AI_RACES_DE" Guid="ba70141d-6752-4be5-a6af-ca4c54aa8915">
+        <File Id="tp_data_ai_races_de_loader.ai" Name="loader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\loader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_DE_INFO_CONTENT" Directory="TP_DATA_AI_RACES_DE_INFO" Guid="de9f0764-aea8-4cc0-9c17-5a0c8e731947">
+        <File Id="darkeldarunitstats.ai" Name="darkeldarunitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\info\darkeldarunitstats.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_DE_STRATEGIES_CONTENT" Directory="TP_DATA_AI_RACES_DE_STRATEGIES" Guid="0b1b2b42-212a-4866-9994-bd78be854a82">
+        <File Id="darkeldarbuildbasestrategy.ai" Name="darkeldarbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\strategies\darkeldarbuildbasestrategy.ai"/>
+        <File Id="darkeldarstrategyinfo.ai" Name="darkeldarstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\strategies\darkeldarstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_DE_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_DE_TACTICS" Guid="768ea2ad-38c5-48da-b564-39c2e2eeb5d8">
+        <File Id="darkeldararchontactic.ai" Name="darkeldararchontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldararchontactic.ai"/>
+        <File Id="darkeldardaisofdestructiontactic.ai" Name="darkeldardaisofdestructiontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldardaisofdestructiontactic.ai"/>
+        <File Id="darkeldarhaemonculustactic.ai" Name="darkeldarhaemonculustactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarhaemonculustactic.ai"/>
+        <File Id="darkeldarhelliontactic.ai" Name="darkeldarhelliontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarhelliontactic.ai"/>
+        <File Id="darkeldarhqtactic.ai" Name="darkeldarhqtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarhqtactic.ai"/>
+        <File Id="darkeldarinfantrytactic.ai" Name="darkeldarinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarinfantrytactic.ai"/>
+        <File Id="darkeldarmandraketactic.ai" Name="darkeldarmandraketactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarmandraketactic.ai"/>
+        <File Id="darkeldarraidertactic.ai" Name="darkeldarraidertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarraidertactic.ai"/>
+        <File Id="darkeldarravagertactic.ai" Name="darkeldarravagertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarravagertactic.ai"/>
+        <File Id="darkeldarraventactic.ai" Name="darkeldarraventactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarraventactic.ai"/>
+        <File Id="darkeldarslavecaraveltactic.ai" Name="darkeldarslavecaraveltactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarslavecaraveltactic.ai"/>
+        <File Id="darkeldarslavetactic.ai" Name="darkeldarslavetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarslavetactic.ai"/>
+        <File Id="darkeldartalostactic.ai" Name="darkeldartalostactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldartalostactic.ai"/>
+        <File Id="darkeldarvehicletactic.ai" Name="darkeldarvehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarvehicletactic.ai"/>
+        <File Id="darkeldarwarpbeasttactic.ai" Name="darkeldarwarpbeasttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarwarpbeasttactic.ai"/>
+        <File Id="darkeldarwychtactic.ai" Name="darkeldarwychtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarwychtactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_ELDAR_CONTENT" Directory="TP_DATA_AI_RACES_ELDAR" Guid="530e914f-4cc0-42c7-8bf0-d2f8ed7e2de9">
+        <File Id="tp_data_ai_races_eldar_loader.ai" Name="loader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\loader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_ELDAR_INFO_CONTENT" Directory="TP_DATA_AI_RACES_ELDAR_INFO" Guid="142c2717-15bd-484d-b278-05935daaef81">
+        <File Id="eldarunitstats.ai" Name="eldarunitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\info\eldarunitstats.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_ELDAR_STRATEGIES_CONTENT" Directory="TP_DATA_AI_RACES_ELDAR_STRATEGIES" Guid="fc7dcf0e-e1ea-4ee4-9829-76ab51a677ec">
+        <File Id="eldarbuildbasestrategy.ai" Name="eldarbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\strategies\eldarbuildbasestrategy.ai"/>
+        <File Id="eldarstrategyinfo.ai" Name="eldarstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\strategies\eldarstrategyinfo.ai"/>
       </Component>
     </ComponentGroup>
   </Fragment>
