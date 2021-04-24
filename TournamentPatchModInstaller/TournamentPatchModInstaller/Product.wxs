@@ -72,7 +72,6 @@
               <Directory Id="TP_DATA_AI_RACES_ELDAR" Name="eldar_race">
                 <Directory Id="TP_DATA_AI_RACES_ELDAR_INFO" Name="info"/>
                 <Directory Id="TP_DATA_AI_RACES_ELDAR_STRATEGIES" Name="strategies"/>
-                <!--here-->
                 <Directory Id="TP_DATA_AI_RACES_ELDAR_TACTICS" Name="tactics"/>
               </Directory>
               <Directory Id="TP_DATA_AI_RACES_GUARD" Name="guard_race">
@@ -127,9 +126,9 @@
             </Directory>
           </Directory>
           <Directory Id="TP_DATA_ART" Name="art">
-            <Directory Id="TP_DATA_ART_EBPS">
+            <Directory Id="TP_DATA_ART_EBPS" Name="ebps">
               <Directory Id="TP_DATA_ART_EBPS_RACES" Name="races">
-                <Directory Id="TP_DATA_ART_EBPS_RACES_CHAOS">
+                <Directory Id="TP_DATA_ART_EBPS_RACES_CHAOS" Name="chaos">
                   <Directory Id="TP_DATA_ART_EBPS_RACES_CHAOS_TEXTURE" Name="texture_share"/>
                   <Directory Id="TP_DATA_ART_EBPS_RACES_CHAOS_TROOPS" Name="troops"/>
                 </Directory>
@@ -141,11 +140,11 @@
                 <Directory Id="TP_DATA_ART_EBPS_RACES_NECRON" Name="necrons">
                   <Directory Id="TP_DATA_ART_EBPS_RACES_NECRON_TROOPS" Name="troops"/>
                 </Directory>
-                <Directory Id="TP_DATA_ART_EBPS_RACES_ORK">
+                <Directory Id="TP_DATA_ART_EBPS_RACES_ORK" Name="orks">
                   <Directory Id="TP_DATA_ART_EBPS_RACES_ORK_TEXTURE" Name="texture_share"/>
                   <Directory Id="TP_DATA_ART_EBPS_RACES_ORK_TROOPS" Name="troops"/>
                 </Directory>
-                <Directory Id="TP_DATA_ART_EBPS_RACES_SM">
+                <Directory Id="TP_DATA_ART_EBPS_RACES_SM" Name="space_marines">
                   <Directory Id="TP_DATA_ART_EBPS_RACES_SM_TEXTURE" Name="texture_share"/>
                   <Directory Id="TP_DATA_ART_EBPS_RACES_SM_TROOPS" Name="troops"/>
                 </Directory>
@@ -153,7 +152,7 @@
             </Directory>
             <Directory Id="TP_DATA_ART_UI" Name="ui">
               <Directory Id="TP_DATA_ART_UI_INGAME" Name="ingame">
-                <Directory Id="TP_DATA_ART_UI_INGAME_NECRON" Name="nexron_icons"/>
+                <Directory Id="TP_DATA_ART_UI_INGAME_NECRON" Name="necron_icons"/>
                 <Directory Id="TP_DATA_ART_UI_INGAME_SISTERS" Name="sisters_icons"/>
                 <Directory Id="TP_DATA_ART_UI_INGAME_SM" Name="space_marines_icons"/>
                 <Directory Id="TP_DATA_ART_UI_INGAME_TAU" Name="tau_icons"/>
@@ -169,6 +168,7 @@
             </Directory>
           </Directory>
           <Directory Id="TP_DATA_ATTRIB" Name="attrib">
+            <!-- here -->
             <Directory Id="TP_DATA_ATTRIB_ABILITIES" Name="abilities"/>
             <Directory Id="TP_DATA_ATTRIB_ADDONS" Name="addons"/>
             <Directory Id="TP_DATA_ATTRIB_EBPS" Name="ebps">

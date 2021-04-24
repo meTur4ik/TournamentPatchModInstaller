@@ -59,13 +59,13 @@
       </Component>
 
       <Component Id="TP_DATA_AI_CORE_TACTICS_CONTENT" Directory="TP_DATA_AI_CORE_TACTICS" Guid="39cfc10c-04cc-4b4c-bac3-3ad7d8fe7e59">
-        <File Id="ability.ai" Name="ability.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\ability.ai"/>
-        <File Id="basetactic.ai" Name="basetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\basetactic.ai"/>
-        <File Id="defaulttactic.ai" Name="defaulttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\defaulttactic.ai"/>
-        <File Id="engineertactic.ai" Name="engineertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\engineertactic.ai"/>
-        <File Id="infantrytactic.ai" Name="infantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\infantrytactic.ai"/>
-        <File Id="tactic.ai" Name="tactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\tactic.ai"/>
-        <File Id="vehicletactic.ai" Name="vehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\vehicletactic.ai"/>
+        <File Id="tp_data_ai_core_tactics_ability.ai" Name="ability.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\ability.ai"/>
+        <File Id="tp_data_ai_core_tactics_basetactic.ai" Name="basetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\basetactic.ai"/>
+        <File Id="tp_data_ai_core_tactics_defaulttactic.ai" Name="defaulttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\defaulttactic.ai"/>
+        <File Id="tp_data_ai_core_tactics_engineertactic.ai" Name="engineertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\engineertactic.ai"/>
+        <File Id="tp_data_ai_core_tactics_infantrytactic.ai" Name="infantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\infantrytactic.ai"/>
+        <File Id="tp_data_ai_core_tactics_tactic.ai" Name="tactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\tactic.ai"/>
+        <File Id="tp_data_ai_core_tactics_vehicletactic.ai" Name="vehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\core\tactics\vehicletactic.ai"/>
       </Component>
 
       <Component Id="TP_DATA_AI_DOC_CONTENT" Directory="TP_DATA_AI_DOC" Guid="1ca14b9c-4655-4682-a075-621685dfc8fb">
@@ -122,20 +122,20 @@
       </Component>
 
       <Component Id="TP_DATA_AI_RACES_CHAOS_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_CHAOS_TACTICS" Guid="d26f17a0-7cac-42fe-b917-7292256e9f7f">
-        <File Id="bloodthirstertactic.ai" Name="bloodthirstertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\bloodthirstertactic.ai"/>
-        <File Id="chaoslordtactic.ai" Name="chaoslordtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaoslordtactic.ai"/>
-        <File Id="chaosmarineinfantrytactic.ai" Name="chaosmarineinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaosmarineinfantrytactic.ai"/>
-        <File Id="chaosmarinevehicletactic.ai" Name="chaosmarinevehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaosmarinevehicletactic.ai"/>
-        <File Id="chaosrhinotactic.ai" Name="chaosrhinotactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaosrhinotactic.ai"/>
-        <File Id="cultisttactic.ai" Name="cultisttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\cultisttactic.ai"/>
-        <File Id="daemonprincetactic.ai" Name="daemonprincetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\daemonprincetactic.ai"/>
-        <File Id="greatersacrificialcircletactic.ai" Name="greatersacrificialcircletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\greatersacrificialcircletactic.ai"/>
-        <File Id="helltalontactic.ai" Name="helltalontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\helltalontactic.ai"/>
-        <File Id="marinesquadtactic.ai" Name="marinesquadtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\marinesquadtactic.ai"/>
-        <File Id="raptorsquadtactic.ai" Name="raptorsquadtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\raptorsquadtactic.ai"/>
-        <File Id="sacrificialcircletactic.ai" Name="sacrificialcircletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\sacrificialcircletactic.ai"/>
-        <File Id="slavetactic.ai" Name="slavetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\slavetactic.ai"/>
-        <File Id="sorcerertactic.ai" Name="sorcerertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\sorcerertactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_bloodthirstertactic.ai" Name="bloodthirstertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\bloodthirstertactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_chaoslordtactic.ai" Name="chaoslordtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaoslordtactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_chaosmarineinfantrytactic.ai" Name="chaosmarineinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaosmarineinfantrytactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_chaosmarinevehicletactic.ai" Name="chaosmarinevehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaosmarinevehicletactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_chaosrhinotactic.ai" Name="chaosrhinotactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\chaosrhinotactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_cultisttactic.ai" Name="cultisttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\cultisttactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_daemonprincetactic.ai" Name="daemonprincetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\daemonprincetactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_greatersacrificialcircletactic.ai" Name="greatersacrificialcircletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\greatersacrificialcircletactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_helltalontactic.ai" Name="helltalontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\helltalontactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_marinesquadtactic.ai" Name="marinesquadtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\marinesquadtactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_raptorsquadtactic.ai" Name="raptorsquadtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\raptorsquadtactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_sacrificialcircletactic.ai" Name="sacrificialcircletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\sacrificialcircletactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_slavetactic.ai" Name="slavetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\slavetactic.ai"/>
+        <File Id="tp_data_ai_races_chaos_tactics_sorcerertactic.ai" Name="sorcerertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\chaos_marine_race\tactics\sorcerertactic.ai"/>
       </Component>
 
       <Component Id="TP_DATA_AI_RACES_DE_CONTENT" Directory="TP_DATA_AI_RACES_DE" Guid="ba70141d-6752-4be5-a6af-ca4c54aa8915">
@@ -152,22 +152,22 @@
       </Component>
 
       <Component Id="TP_DATA_AI_RACES_DE_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_DE_TACTICS" Guid="768ea2ad-38c5-48da-b564-39c2e2eeb5d8">
-        <File Id="darkeldararchontactic.ai" Name="darkeldararchontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldararchontactic.ai"/>
-        <File Id="darkeldardaisofdestructiontactic.ai" Name="darkeldardaisofdestructiontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldardaisofdestructiontactic.ai"/>
-        <File Id="darkeldarhaemonculustactic.ai" Name="darkeldarhaemonculustactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarhaemonculustactic.ai"/>
-        <File Id="darkeldarhelliontactic.ai" Name="darkeldarhelliontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarhelliontactic.ai"/>
-        <File Id="darkeldarhqtactic.ai" Name="darkeldarhqtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarhqtactic.ai"/>
-        <File Id="darkeldarinfantrytactic.ai" Name="darkeldarinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarinfantrytactic.ai"/>
-        <File Id="darkeldarmandraketactic.ai" Name="darkeldarmandraketactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarmandraketactic.ai"/>
-        <File Id="darkeldarraidertactic.ai" Name="darkeldarraidertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarraidertactic.ai"/>
-        <File Id="darkeldarravagertactic.ai" Name="darkeldarravagertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarravagertactic.ai"/>
-        <File Id="darkeldarraventactic.ai" Name="darkeldarraventactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarraventactic.ai"/>
-        <File Id="darkeldarslavecaraveltactic.ai" Name="darkeldarslavecaraveltactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarslavecaraveltactic.ai"/>
-        <File Id="darkeldarslavetactic.ai" Name="darkeldarslavetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarslavetactic.ai"/>
-        <File Id="darkeldartalostactic.ai" Name="darkeldartalostactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldartalostactic.ai"/>
-        <File Id="darkeldarvehicletactic.ai" Name="darkeldarvehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarvehicletactic.ai"/>
-        <File Id="darkeldarwarpbeasttactic.ai" Name="darkeldarwarpbeasttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarwarpbeasttactic.ai"/>
-        <File Id="darkeldarwychtactic.ai" Name="darkeldarwychtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarwychtactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldararchontactic.ai" Name="darkeldararchontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldararchontactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldardaisofdestructiontactic.ai" Name="darkeldardaisofdestructiontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldardaisofdestructiontactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarhaemonculustactic.ai" Name="darkeldarhaemonculustactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarhaemonculustactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarhelliontactic.ai" Name="darkeldarhelliontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarhelliontactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarhqtactic.ai" Name="darkeldarhqtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarhqtactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarinfantrytactic.ai" Name="darkeldarinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarinfantrytactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarmandraketactic.ai" Name="darkeldarmandraketactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarmandraketactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarraidertactic.ai" Name="darkeldarraidertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarraidertactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarravagertactic.ai" Name="darkeldarravagertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarravagertactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarraventactic.ai" Name="darkeldarraventactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarraventactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarslavecaraveltactic.ai" Name="darkeldarslavecaraveltactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarslavecaraveltactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarslavetactic.ai" Name="darkeldarslavetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarslavetactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldartalostactic.ai" Name="darkeldartalostactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldartalostactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarvehicletactic.ai" Name="darkeldarvehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarvehicletactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarwarpbeasttactic.ai" Name="darkeldarwarpbeasttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarwarpbeasttactic.ai"/>
+        <File Id="tp_data_ai_races_de_tactics_darkeldarwychtactic.ai" Name="darkeldarwychtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\dark_eldar_race\tactics\darkeldarwychtactic.ai"/>
       </Component>
 
       <Component Id="TP_DATA_AI_RACES_ELDAR_CONTENT" Directory="TP_DATA_AI_RACES_ELDAR" Guid="530e914f-4cc0-42c7-8bf0-d2f8ed7e2de9">
@@ -181,6 +181,690 @@
       <Component Id="TP_DATA_AI_RACES_ELDAR_STRATEGIES_CONTENT" Directory="TP_DATA_AI_RACES_ELDAR_STRATEGIES" Guid="fc7dcf0e-e1ea-4ee4-9829-76ab51a677ec">
         <File Id="eldarbuildbasestrategy.ai" Name="eldarbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\strategies\eldarbuildbasestrategy.ai"/>
         <File Id="eldarstrategyinfo.ai" Name="eldarstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\strategies\eldarstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_ELDAR_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_ELDAR_TACTICS" Guid="3aa29bd3-a575-4b85-b979-5dc3908893cc">
+        <File Id="bansheetactic.ai" Name="bansheetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\tactics\bansheetactic.ai"/>
+        <File Id="bonesingertactic.ai" Name="bonesingertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\tactics\bonesingertactic.ai"/>
+        <File Id="eldarinfantrytactic.ai" Name="eldarinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\tactics\eldarinfantrytactic.ai"/>
+        <File Id="eldarvehicletactic.ai" Name="eldarvehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\tactics\eldarvehicletactic.ai"/>
+        <File Id="falcontactic.ai" Name="falcontactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\tactics\falcontactic.ai"/>
+        <File Id="farseertactic.ai" Name="farseertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\tactics\farseertactic.ai"/>
+        <File Id="guardiantactic.ai" Name="guardiantactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\tactics\guardiantactic.ai"/>
+        <File Id="harlequintactic.ai" Name="harlequintactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\tactics\harlequintactic.ai"/>
+        <File Id="seercounciltactic.ai" Name="seercounciltactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\tactics\seercounciltactic.ai"/>
+        <File Id="webwaygatetactic.ai" Name="webwaygatetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\eldar_race\tactics\webwaygatetactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_GUARD_CONTENT" Directory="TP_DATA_AI_RACES_GUARD" Guid="b638243d-7b94-4a8a-8c45-3bb4b7631b83">
+        <File Id="tp_data_ai_races_guard_loader.ai" Name="loader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\loader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_GUARD_INFO_CONTENT" Directory="TP_DATA_AI_RACES_GUARD_INFO" Guid="9c47864b-c3a6-45ee-a5df-70930df3af19">
+        <File Id="guardunitstats.ai" Name="guardunitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\info\guardunitstats.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_GUARD_STRATEGIES_CONTENT" Directory="TP_DATA_AI_RACES_GUARD_STRATEGIES" Guid="adfbfa83-6f9f-4fb9-9f31-603ad9946231">
+        <File Id="guardbuildbasestrategy.ai" Name="guardbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\strategies\guardbuildbasestrategy.ai"/>
+        <File Id="guardstrategyinfo.ai" Name="guardstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\strategies\guardstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_GUARD_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_GUARD_TACTICS" Guid="68627265-863f-4876-9cb8-26e76a6a826e">
+        <File Id="tp_data_ai_races_guard_tactics_assassintactic.ai" Name="assassintactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\assassintactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_basilisktactic.ai" Name="basilisktactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\basilisktactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_chimeratactic.ai" Name="chimeratactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\chimeratactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_commandsquadtactic.ai" Name="commandsquadtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\commandsquadtactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_commissartactic.ai" Name="commissartactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\commissartactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_enginseertactic.ai" Name="enginseertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\enginseertactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_guardbunkertactic.ai" Name="guardbunkertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\guardbunkertactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_guardhqtactic.ai" Name="guardhqtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\guardhqtactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_guardinfantrytactic.ai" Name="guardinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\guardinfantrytactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_guardsquadtactic.ai" Name="guardsquadtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\guardsquadtactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_guardvehicletactic.ai" Name="guardvehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\guardvehicletactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_heavyweaponsteamtactic.ai" Name="heavyweaponsteamtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\heavyweaponsteamtactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_hellhoundtactic.ai" Name="hellhoundtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\hellhoundtactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_kasrkintactic.ai" Name="kasrkintactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\kasrkintactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_maraudertactic.ai" Name="maraudertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\maraudertactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_priesttactic.ai" Name="priesttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\priesttactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_psykertactic.ai" Name="psykertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\psykertactic.ai"/>
+        <File Id="tp_data_ai_races_guard_tactics_sentineltactic.ai" Name="sentineltactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\guard_race\tactics\sentineltactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_NECRON_CONTENT" Directory="TP_DATA_AI_RACES_NECRON" Guid="507daa8f-b614-4d47-a4ec-74004a249fc0">
+        <File Id="tp_data_ai_races_necron_loader.ai" Name="loader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\loader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_NECRON_INFO_CONTENT" Directory="TP_DATA_AI_RACES_NECRON_INFO" Guid="1d3cc9bf-544e-43f3-8cf8-6f82e6be19f1">
+        <File Id="necronunitstats.ai" Name="necronunitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\info\necronunitstats.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_NECRON_STRATEGIES_CONTENT" Directory="TP_DATA_AI_RACES_NECRON_STRATEGIES" Guid="25698b79-5a3b-4268-b14d-f9f3609581c9">
+        <File Id="necronbuildbasestrategy.ai" Name="necronbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\strategies\necronbuildbasestrategy.ai"/>
+        <File Id="necronstrategyinfo.ai" Name="necronstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\strategies\necronstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_NECRON_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_NECRON_TACTICS" Guid="cfb0f6bb-8889-4734-b54b-7688c8fdc5db">
+        <File Id="tp_data_ai_races_necron_tactics_attackscarabtactic.ai" Name="attackscarabtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\attackscarabtactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_flayedonestactic.ai" Name="flayedonestactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\flayedonestactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_monolithtactic.ai" Name="monolithtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\monolithtactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_necroninfantrytactic.ai" Name="necroninfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\necroninfantrytactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_necronlisteningposttactic.ai" Name="necronlisteningposttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\necronlisteningposttactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_necronlordtactic.ai" Name="necronlordtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\necronlordtactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_necronvehicletactic.ai" Name="necronvehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\necronvehicletactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_nightbringertactic.ai" Name="nightbringertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\nightbringertactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_restoredmonolithtactic.ai" Name="restoredmonolithtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\restoredmonolithtactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_scarabbuildertactic.ai" Name="scarabbuildertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\scarabbuildertactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_tombspydertactic.ai" Name="tombspydertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\tombspydertactic.ai"/>
+        <File Id="tp_data_ai_races_necron_tactics_wraithtactic.ai" Name="wraithtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\necron_race\tactics\wraithtactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_NPC_CONTENT" Directory="TP_DATA_AI_RACES_NPC" Guid="1e5e0d20-26bd-4dc4-b4af-4d6568f20efa">
+        <File Id="tp_data_ai_races_npc_loader.ai" Name="loader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\npc_race\loader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_NPC_INFO_CONTENT" Directory="TP_DATA_AI_RACES_NPC_INFO" Guid="e9e1c3d9-3b03-4d55-9c80-f1ab87b6644a">
+        <File Id="npcunitstats.ai" Name="npcunitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\npc_race\info\npcunitstats.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_ORK_CONTENT" Directory="TP_DATA_AI_RACES_ORK" Guid="f246cc29-fb84-4b20-9948-c51722ad0f84">
+        <File Id="tp_data_ai_races_ork_loader.ai" Name="loader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\loader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_ORK_INFO_CONTENT" Directory="TP_DATA_AI_RACES_ORK_INFO" Guid="1af9c42e-0b5b-45eb-9238-d841a3e5f20e">
+        <File Id="orkunitstats.ai" Name="orkunitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\info\orkunitstats.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_ORK_STRATEGIES_CONTENT" Directory="TP_DATA_AI_RACES_ORK_STRATEGIES" Guid="67fa08af-8c89-46f4-b8ce-20bafca84b8a">
+        <File Id="orkbuildbasestrategy.ai" Name="orkbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\strategies\orkbuildbasestrategy.ai"/>
+        <File Id="orkstrategyinfo.ai" Name="orkstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\strategies\orkstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_ORK_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_ORK_TACTICS" Guid="bd8e8bdc-3034-422f-ac58-bffda20ead9c">
+        <File Id="tp_data_ai_ork_tactics_baddoktactic.ai" Name="baddoktactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\baddoktactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_grottactic.ai" Name="grottactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\grottactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_meganobztactic.ai" Name="meganobztactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\meganobztactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_mekboytactic.ai" Name="mekboytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\mekboytactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_nobztactic.ai" Name="nobztactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\nobztactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_orkinfantrytactic.ai" Name="orkinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\orkinfantrytactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_orkvehicletactic.ai" Name="orkvehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\orkvehicletactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_shootatactic.ai" Name="shootatactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\shootatactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_sluggaboyztactic.ai" Name="sluggaboyztactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\sluggaboyztactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_stormboyztactic.ai" Name="stormboyztactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\stormboyztactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_tankbustatactic.ai" Name="tankbustatactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\tankbustatactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_warbosstactic.ai" Name="warbosstactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\warbosstactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_wartraktactic.ai" Name="wartraktactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\wartraktactic.ai"/>
+        <File Id="tp_data_ai_ork_tactics_wartrukktactic.ai" Name="wartrukktactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\ork_race\tactics\wartrukktactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_SISTERS_CONTENT" Directory="TP_DATA_AI_RACES_SISTERS" Guid="3e20c29d-87c5-4f84-817f-6c19178a2b6f">
+        <File Id="tp_data_ai_races_sisters_loader.ai" Name="loader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\loader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_SISTERS_INFO_CONTENT" Directory="TP_DATA_AI_RACES_SISTERS_INFO" Guid="862b0e73-b76a-41f1-834a-23a8edaca3d8">
+        <File Id="sistersunitstats.ai" Name="sistersunitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\info\sistersunitstats.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_SISTERS_STRATEGIES_CONTENT" Directory="TP_DATA_AI_RACES_SISTERS_STRATEGIES" Guid="ee97b215-4a9b-4b5c-a68a-04a1f8b1d0c6">
+        <File Id="sistersbuildbasestrategy.ai" Name="sistersbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\strategies\sistersbuildbasestrategy.ai"/>
+        <File Id="sistersstrategyinfo.ai" Name="sistersstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\strategies\sistersstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_SISTERS_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_SISTERS_TACTICS" Guid="4ac052ab-e9e1-4dc1-8123-66c3510094d7">
+        <File Id="sistersbuildingdefensetactic.ai" Name="sistersbuildingdefensetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersbuildingdefensetactic.ai"/>
+        <File Id="sisterscanonesstactic.ai" Name="sisterscanonesstactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sisterscanonesstactic.ai"/>
+        <File Id="sisterscelestiantactic.ai" Name="sisterscelestiantactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sisterscelestiantactic.ai"/>
+        <File Id="sistersconfessortactic.ai" Name="sistersconfessortactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersconfessortactic.ai"/>
+        <File Id="sistersexorcisttactic.ai" Name="sistersexorcisttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersexorcisttactic.ai"/>
+        <File Id="sistersimmolatortactic.ai" Name="sistersimmolatortactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersimmolatortactic.ai"/>
+        <File Id="sistersinfantrytactic.ai" Name="sistersinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersinfantrytactic.ai"/>
+        <File Id="sisterslivingsainttactic.ai" Name="sisterslivingsainttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sisterslivingsainttactic.ai"/>
+        <File Id="sistersmissionarytactic.ai" Name="sistersmissionarytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersmissionarytactic.ai"/>
+        <File Id="sistersrepentiatactic.ai" Name="sistersrepentiatactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersrepentiatactic.ai"/>
+        <File Id="sistersrhinotactic.ai" Name="sistersrhinotactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersrhinotactic.ai"/>
+        <File Id="sistersseraphimtactic.ai" Name="sistersseraphimtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersseraphimtactic.ai"/>
+        <File Id="sistersservitortactic.ai" Name="sistersservitortactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersservitortactic.ai"/>
+        <File Id="sistersvehicletactic.ai" Name="sistersvehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\sisters_race\tactics\sistersvehicletactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_SM_CONTENT" Directory="TP_DATA_AI_RACES_SM" Guid="e30d2600-4b6c-4fcb-96fe-1e96555bbc1a">
+        <File Id="tp_data_ai_races_sm_content_loader.ai" Name="loader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\loader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_SM_INFO_CONTENT" Directory="TP_DATA_AI_RACES_SM_INFO" Guid="3b7f6706-0693-4d1b-8dec-8d5964cc3d07">
+        <File Id="marineunitstats.ai" Name="marineunitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\info\marineunitstats.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_SM_STRATEGIES_CONTENT" Directory="TP_DATA_AI_RACES_SM_STRATEGIES" Guid="a0b6c230-38b9-48bf-b7ee-8b6bc5c185e7">
+        <File Id="marinebuildbasestrategy.ai" Name="marinebuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\strategies\marinebuildbasestrategy.ai"/>
+        <File Id="marinestrategyinfo.ai" Name="marinestrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\strategies\marinestrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_SM_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_SM_TACTICS" Guid="c98c5514-df60-48e5-b173-bca9a03dab95">
+        <File Id="tp_data_ai_races_sm_tactics_apothecarytactic.ai" Name="apothecarytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\apothecarytactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_chaplaintactic.ai" Name="chaplaintactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\chaplaintactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_dreadnoughttactic.ai" Name="dreadnoughttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\dreadnoughttactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_forcecommandertactic.ai" Name="forcecommandertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\forcecommandertactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_landraidertactic.ai" Name="landraidertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\landraidertactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_librariantactic.ai" Name="librariantactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\librariantactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_marinebarrackstactic.ai" Name="marinebarrackstactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\marinebarrackstactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_orbitalrelaytactic.ai" Name="orbitalrelaytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\orbitalrelaytactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_rhinotactic.ai" Name="rhinotactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\rhinotactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_scouttactic.ai" Name="scouttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\scouttactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_servitortactic.ai" Name="servitortactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\servitortactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_skullprobetactic.ai" Name="skullprobetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\skullprobetactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_spacemarineinfantrytactic.ai" Name="spacemarineinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\spacemarineinfantrytactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_spacemarinevehicletactic.ai" Name="spacemarinevehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\spacemarinevehicletactic.ai"/>
+        <File Id="tp_data_ai_races_sm_tactics_tempesttactic.ai" Name="tempesttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\space_marine_race\tactics\tempesttactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_TAU_CONTENT" Directory="TP_DATA_AI_RACES_TAU" Guid="99fb3bb5-9b84-4b56-82f2-fa56e4280025">
+        <File Id="tp_data_ai_races_tau_loader.ai" Name="loader.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\loader.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_TAU_INFO_CONTENT" Directory="TP_DATA_AI_RACES_TAU_INFO" Guid="1d6195fa-949f-4fb3-9955-9df4c6b7a6f5">
+        <File Id="tauunitstats.ai" Name="tauunitstats.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\info\tauunitstats.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_TAU_STRATEGIES_CONTENT" Directory="TP_DATA_AI_RACES_TAU_STRATEGIES" Guid="70cc6015-a6a3-4829-b588-9d00abdbccaf">
+        <File Id="taubuildbasestrategy.ai" Name="taubuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\strategies\taubuildbasestrategy.ai"/>
+        <File Id="taustrategyinfo.ai" Name="taustrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\strategies\taustrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_RACES_TAU_TACTICS_CONTENT" Directory="TP_DATA_AI_RACES_TAU_TACTICS" Guid="771f33b1-e5c7-4e0f-be62-8315d4e2cf8c">
+        <File Id="tp_data_ai_races_tau_tactics_broadsidebattlesuittactic.ai" Name="broadsidebattlesuittactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\broadsidebattlesuittactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_crisistactic.ai" Name="crisistactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\crisistactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_devilfishtactic.ai" Name="devilfishtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\devilfishtactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_droneharbingertactic.ai" Name="droneharbingertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\droneharbingertactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_etherealtactic.ai" Name="etherealtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\etherealtactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_firewarriortactic.ai" Name="firewarriortactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\firewarriortactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_harbingerdronestactic.ai" Name="harbingerdronestactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\harbingerdronestactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_krootcarnivoretactic.ai" Name="krootcarnivoretactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\krootcarnivoretactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_krootshapertactic.ai" Name="krootshapertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\krootshapertactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_pathfindertactic.ai" Name="pathfindertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\pathfindertactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_skyraytactic.ai" Name="skyraytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\skyraytactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_stealthteamtactic.ai" Name="stealthteamtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\stealthteamtactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_taucommandertactic.ai" Name="taucommandertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\taucommandertactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_tauhonorguardtactic.ai" Name="tauhonorguardtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\tauhonorguardtactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_tauinfantrytactic.ai" Name="tauinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\tauinfantrytactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_tauvehicletactic.ai" Name="tauvehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\tauvehicletactic.ai"/>
+        <File Id="tp_data_ai_races_tau_tactics_vespidtactic.ai" Name="vespidtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\races\tau_race\tactics\vespidtactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_STRATEGIES_CONTENT" Directory="TP_DATA_AI_STRATEGIES" Guid="52378954-a8dc-4a09-9fed-08fb94dacc59">
+        <File Id="tp_data_ai_strategies_attackstrategy.ai" Name="attackstrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\attackstrategy.ai"/>
+        <File Id="tp_data_ai_strategies_buildbasestrategy.ai" Name="buildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\buildbasestrategy.ai"/>
+        <File Id="tp_data_ai_strategies_buildorderstrategy.ai" Name="buildorderstrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\buildorderstrategy.ai"/>
+        <File Id="tp_data_ai_strategies_chaosbuildbasestrategy.ai" Name="chaosbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\chaosbuildbasestrategy.ai"/>
+        <File Id="tp_data_ai_strategies_darkeldarbuildbasestrategy.ai" Name="darkeldarbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\darkeldarbuildbasestrategy.ai"/>
+        <File Id="tp_data_ai_strategies_defendstrategy.ai" Name="defendstrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\defendstrategy.ai"/>
+        <File Id="tp_data_ai_strategies_designerstrategy.ai" Name="designerstrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\designerstrategy.ai"/>
+        <File Id="tp_data_ai_strategies_designerstrategyinfo.ai" Name="designerstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\designerstrategyinfo.ai"/>
+        <File Id="tp_data_ai_strategies_eldarbuildbasestrategy.ai" Name="eldarbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\eldarbuildbasestrategy.ai"/>
+        <File Id="tp_data_ai_strategies_guardbuildbasestrategy.ai" Name="guardbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\guardbuildbasestrategy.ai"/>
+        <File Id="tp_data_ai_strategies_marinebuildbasestrategy.ai" Name="marinebuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\marinebuildbasestrategy.ai"/>
+        <File Id="tp_data_ai_strategies_necronbuildbasestrategy.ai" Name="necronbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\necronbuildbasestrategy.ai"/>
+        <File Id="tp_data_ai_strategies_orkbuildbasestrategy.ai" Name="orkbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\orkbuildbasestrategy.ai"/>
+        <File Id="tp_data_ai_strategies_sistersbuildbasestrategy.ai" Name="sistersbuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\sistersbuildbasestrategy.ai"/>
+        <File Id="tp_data_ai_strategies_strategy.ai" Name="strategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\strategy.ai"/>
+        <File Id="tp_data_ai_strategies_taubuildbasestrategy.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\taubuildbasestrategy.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_STRATEGIES_ADVANCED_CONTENT" Directory="TP_DATA_AI_STRATEGIES_ADVANCED" Guid="d60f0cba-0053-43dd-b961-a133ccc49975">
+        <File Id="tp_data_ai_strategies_advanced_attackstrategyinfo.ai" Name="attackstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\advanced\attackstrategyinfo.ai"/>
+        <File Id="tp_data_ai_strategies_advanced_buildbasestrategyinfo.ai" Name="buildbasestrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\advanced\buildbasestrategyinfo.ai"/>
+        <File Id="tp_data_ai_strategies_advanced_buildorderstrategyinfo.ai" Name="buildorderstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\advanced\buildorderstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_STRATEGIES_EASY_CONTENT" Directory="TP_DATA_AI_STRATEGIES_EASY" Guid="533c9512-19c4-4b62-9b6d-ff6b1a1bd052">
+        <File Id="tp_data_ai_strategies_easy_attackstrategyinfo.ai" Name="attackstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\easy\attackstrategyinfo.ai"/>
+        <File Id="tp_data_ai_strategies_easy_buildbasestrategyinfo.ai" Name="buildbasestrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\easy\buildbasestrategyinfo.ai"/>
+        <File Id="tp_data_ai_strategies_easy_buildorderstrategyinfo.ai" Name="buildorderstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\easy\buildorderstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_STRATEGIES_HARD_CONTENT" Directory="TP_DATA_AI_STRATEGIES_HARD" Guid="b6bf2de9-45f1-40c4-baf7-0107029cf5ea">
+        <File Id="tp_data_ai_strategies_hard_attackstrategyinfo.ai" Name="attackstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\hard\attackstrategyinfo.ai"/>
+        <File Id="tp_data_ai_strategies_hard_buildbasestrategyinfo.ai" Name="buildbasestrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\hard\buildbasestrategyinfo.ai"/>
+        <File Id="tp_data_ai_strategies_hard_buildorderstrategyinfo.ai" Name="buildorderstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\hard\buildorderstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_STRATEGIES_STANDARD_CONTENT" Directory="TP_DATA_AI_STRATEGIES_STANDARD" Guid="a6d3df2a-018b-4de9-ac7e-0100c7f2ce67">
+        <File Id="tp_data_ai_strategies_standard_attackstrategyinfo.ai" Name="attackstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\standard\attackstrategyinfo.ai"/>
+        <File Id="tp_data_ai_strategies_standard_buildbasestrategyinfo.ai" Name="buildbasestrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\standard\buildbasestrategyinfo.ai"/>
+        <File Id="tp_data_ai_strategies_standard_buildorderstrategyinfo.ai" Name="buildorderstrategyinfo.ai" Source="..\..\Files\TournamentPatch\Data\ai\strategies\standard\buildorderstrategyinfo.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_TACTICS_CONTENT" Directory="TP_DATA_AI_TACTICS" Guid="39bdfb88-2dd2-4cfe-bc72-f28d07adf6bd">
+        <File Id="tp_data_ai_tactics_ability.ai" Name="ability.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\ability.ai"/>
+        <File Id="tp_data_ai_tactics_basetactic.ai" Name="basetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\basetactic.ai"/>
+        <File Id="tp_data_ai_tactics_defaulttactic.ai" Name="defaulttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\defaulttactic.ai"/>
+        <File Id="tp_data_ai_tactics_engineertactic.ai" Name="engineertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\engineertactic.ai"/>
+        <File Id="tp_data_ai_tactics_healertactic.ai" Name="healertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\healertactic.ai"/>
+        <File Id="tp_data_ai_tactics_infantrytactic.ai" Name="infantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\infantrytactic.ai"/>
+        <File Id="tp_data_ai_tactics_leadertactic.ai" Name="leadertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\leadertactic.ai"/>
+        <File Id="tp_data_ai_tactics_spellcastertactic.ai" Name="spellcastertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\spellcastertactic.ai"/>
+        <File Id="tp_data_ai_tactics_supportvehicletactic.ai" Name="supportvehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\supportvehicletactic.ai"/>
+        <File Id="tp_data_ai_tactics_tactic.ai" Name="tactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\tactic.ai"/>
+        <File Id="tp_data_ai_tactics_vehicletactic.ai" Name="vehicletactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\vehicletactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_TACTICS_CHAOS_CONTENT" Directory="TP_DATA_AI_TACTICS_CHAOS" Guid="1bbf756f-f69e-4704-be1a-5f23ae01f5af">
+        <File Id="tp_data_ai_tactics_chaos_bloodthirstertactic.ai" Name="bloodthirstertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\chaosmarines\bloodthirstertactic.ai"/>
+        <File Id="tp_data_ai_tactics_chaos_chaoslordtactic.ai" Name="chaoslordtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\chaosmarines\chaoslordtactic.ai"/>
+        <File Id="tp_data_ai_tactics_chaos_cultisttactic.ai" Name="cultisttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\chaosmarines\cultisttactic.ai"/>
+        <File Id="tp_data_ai_tactics_chaos_daemonprincetactic.ai" Name="daemonprincetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\chaosmarines\daemonprincetactic.ai"/>
+        <File Id="tp_data_ai_tactics_chaos_slavetactic.ai" Name="slavetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\chaosmarines\slavetactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_TACTICS_DE_CONTENT" Directory="TP_DATA_AI_TACTICS_DE" Guid="df5580fe-852c-496c-bbf2-46b751f26f23">
+        <File Id="tp_data_ai_tactics_de_darkeldarhqtactic.ai" Name="darkeldarhqtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\darkeldar\darkeldarhqtactic.ai"/>
+        <File Id="tp_data_ai_tactics_de_darkeldarslavetactic.ai" Name="darkeldarslavetactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\darkeldar\darkeldarslavetactic.ai"/>
+        <File Id="tp_data_ai_tactics_de_haemonculustactic.ai" Name="haemonculustactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\darkeldar\haemonculustactic.ai"/>
+        <File Id="tp_data_ai_tactics_de_talostactic.ai" Name="talostactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\darkeldar\talostactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_TACTICS_ELDAR_CONTENT" Directory="TP_DATA_AI_TACTICS_ELDAR" Guid="4b3d4dbe-583e-4756-a0cd-2894dfa57581">
+        <File Id="eldarharlequintactic.ai" Name="eldarharlequintactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\eldar\eldarharlequintactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_TACTICS_GUARD_CONTENT" Directory="TP_DATA_AI_TACTICS_GUARD" Guid="5cef1633-96fc-453d-a61d-13eac4f372b5">
+        <File Id="tp_data_ai_tactics_guard_commandsquadtactic.ai" Name="commandsquadtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\guard\commandsquadtactic.ai"/>
+        <File Id="tp_data_ai_tactics_guard_commissartactic.ai" Name="commissartactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\guard\commissartactic.ai"/>
+        <File Id="tp_data_ai_tactics_guard_guardinfantrytactic.ai" Name="guardinfantrytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\guard\guardinfantrytactic.ai"/>
+        <File Id="tp_data_ai_tactics_guard_heavyweaponsteamtactic.ai" Name="heavyweaponsteamtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\guard\heavyweaponsteamtactic.ai"/>
+        <File Id="tp_data_ai_tactics_guard_priesttactic.ai" Name="priesttactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\guard\priesttactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_TACTICS_NECRON_CONTENT" Directory="TP_DATA_AI_TACTICS_NECRON" Guid="0d51b78e-282b-433f-ac12-a028bd1bc11c">
+        <File Id="tp_data_ai_tactics_necron_builderscarabtactic.ai" Name="builderscarabtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\necron\builderscarabtactic.ai"/>
+        <File Id="tp_data_ai_tactics_necron_necronlordtactic.ai" Name="necronlordtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\necron\necronlordtactic.ai"/>
+        <File Id="tp_data_ai_tactics_necron_nightbringertactic.ai" Name="nightbringertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\necron\nightbringertactic.ai"/>
+        <File Id="tp_data_ai_tactics_necron_tombspydertactic.ai" Name="tombspydertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\necron\tombspydertactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_TACTICS_ORK_CONTENT" Directory="TP_DATA_AI_TACTICS_ORK" Guid="7df6dc17-d66c-4d60-8a0e-fb2a3b5789a1">
+        <File Id="tp_data_ai_tactics_ork_grottactic.ai" Name="grottactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\orks\grottactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_TACTICS_SISTERS_CONTENT" Directory="TP_DATA_AI_TACTICS_SISTERS" Guid="6fb5ad3e-c5b4-4492-a183-27d74f6f964e">
+        <File Id="tp_data_ai_tactics_sisters_canonesstactic.ai" Name="canonesstactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\sistersofbattle\canonesstactic.ai"/>
+        <File Id="tp_data_ai_tactics_sisters_missionarytactic.ai" Name="missionarytactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\sistersofbattle\missionarytactic.ai"/>
+        <File Id="tp_data_ai_tactics_sisters_repentiatactic.ai" Name="repentiatactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\sistersofbattle\repentiatactic.ai"/>
+        <File Id="tp_data_ai_tactics_sisters_servitortactic.ai" Name="servitortactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\sistersofbattle\servitortactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_AI_TACTICS_TAU_CONTENT" Directory="TP_DATA_AI_TACTICS_TAU" Guid="585a835b-ecef-4fa9-9cd0-99d4c18d99cc">
+        <File Id="tp_data_ai_tactics_tau_broadsidebattlesuittactic.ai" Name="broadsidebattlesuittactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\tau\broadsidebattlesuittactic.ai"/>
+        <File Id="tp_data_ai_tactics_tau_droneharbingertactic.ai" Name="droneharbingertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\tau\droneharbingertactic.ai"/>
+        <File Id="tp_data_ai_tactics_tau_harbingerdronestactic.ai" Name="harbingerdronestactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\tau\harbingerdronestactic.ai"/>
+        <File Id="tp_data_ai_tactics_tau_taucommandertactic.ai" Name="taucommandertactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\tau\taucommandertactic.ai"/>
+        <File Id="tp_data_ai_tactics_tau_tauetherealtactic.ai" Name="tauetherealtactic.ai" Source="..\..\Files\TournamentPatch\Data\ai\tactics\tau\tauetherealtactic.ai"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_EBPS_RACES_CHAOS_TEXTURE_CONTENT" Directory="TP_DATA_ART_EBPS_RACES_CHAOS_TEXTURE" Guid="c915c52b-1401-43c2-9b7c-6115a34ebad9">
+        <File Id="tp_data_art_ebps_races_chaos_texture_chainsword_blade.rsh" Name="chainsword_blade.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\texture_share\chainsword_blade.rsh"/>
+        <File Id="tp_data_art_ebps_races_chaos_texture_chaos_marine_unit_default.wtp" Name="chaos_marine_unit_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\texture_share\chaos_marine_unit_default.wtp"/>
+        <File Id="tp_data_art_ebps_races_chaos_texture_chaos_raptor_and_asp_champ_raptor.rsh" Name="chaos_raptor_and_asp_champ_raptor.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\texture_share\chaos_raptor_and_asp_champ_raptor.rsh"/>
+        <File Id="tp_data_art_ebps_races_chaos_texture_chaos_raptor_and_asp_champ_raptor_default.wtp" Name="chaos_raptor_and_asp_champ_raptor_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\texture_share\chaos_raptor_and_asp_champ_raptor_default.wtp"/>
+        <File Id="tp_data_art_ebps_races_chaos_texture_chaos_raptor_champion_codex_unit.rsh" Name="chaos_raptor_champion_codex_unit.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\texture_share\chaos_raptor_champion_codex_unit.rsh"/>
+        <File Id="tp_data_art_ebps_races_chaos_texture_chaos_raptor_champion_codex_unit_default.wtp" Name="chaos_raptor_champion_codex_unit_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\texture_share\chaos_raptor_champion_codex_unit_default.wtp"/>
+        <File Id="tp_data_art_ebps_races_chaos_texture_chaos_raptor_codex_unit.rsh" Name="chaos_raptor_codex_unit.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\texture_share\chaos_raptor_codex_unit.rsh"/>
+        <File Id="tp_data_art_ebps_races_chaos_texture_chaos_raptor_codex_unit_default.wtp" Name="chaos_raptor_codex_unit_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\texture_share\chaos_raptor_codex_unit_default.wtp"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_EBPS_RACES_CHAOS_TROOPS_CONTENT" Directory="TP_DATA_ART_EBPS_RACES_CHAOS_TROOPS" Guid="61a6ffbe-0599-4fa9-b8a9-74bb42cf13f5">
+        <File Id="horror.whe" Name="horror.whe" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\troops\horror.whe"/>
+        <File Id="horror.whm" Name="horror.whm" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\troops\horror.whm"/>
+        <File Id="raptor_champion_codex.lua" Name="raptor_champion_codex.lua" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\troops\raptor_champion_codex.lua"/>
+        <File Id="raptor_champion_codex.whe" Name="raptor_champion_codex.whe" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\troops\raptor_champion_codex.whe"/>
+        <File Id="raptor_champion_codex.whm" Name="raptor_champion_codex.whm" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\troops\raptor_champion_codex.whm"/>
+        <File Id="raptor_codex.lua" Name="raptor_codex.lua" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\troops\raptor_codex.lua"/>
+        <File Id="raptor_codex.whe" Name="raptor_codex.whe" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\troops\raptor_codex.whe"/>
+        <File Id="raptor_codex.whm" Name="raptor_codex.whm" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\chaos\troops\raptor_codex.whm"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_EBPS_RACES_ELDAR_STRUCTURES_CONTENT" Directory="TP_DATA_ART_EBPS_RACES_ELDAR_STRUCTURES" Guid="2430724a-bd6f-44d5-89c3-424a3848192a">
+        <File Id="support_platform.lua" Name="support_platform.lua" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\structures\support_platform.lua"/>
+        <File Id="support_platform.whe" Name="support_platform.whe" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\structures\support_platform.whe"/>
+        <File Id="support_platform.whm" Name="support_platform.whm" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\structures\support_platform.whm"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_EBPS_RACES_ELDAR_TEXTURE_CONTENT" Directory="TP_DATA_ART_EBPS_RACES_ELDAR_TEXTURE" Guid="a0a9e49e-db79-4238-acbd-0f83ded1fc47">
+        <File Id="avatar_unit_page.rsh" Name="avatar_unit_page.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\avatar_unit_page.rsh"/>
+        <File Id="avatar_unit_page_default.wtp" Name="avatar_unit_page_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\avatar_unit_page_default.wtp"/>
+        <File Id="avatar_unit_page_default_0.rtx" Name="avatar_unit_page_default_0.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\avatar_unit_page_default_0.rtx"/>
+        <File Id="avatar_unit_page_default_1.rtx" Name="avatar_unit_page_default_1.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\avatar_unit_page_default_1.rtx"/>
+        <File Id="avatar_unit_page_default_2.rtx" Name="avatar_unit_page_default_2.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\avatar_unit_page_default_2.rtx"/>
+        <File Id="avatar_unit_page_default_3.rtx" Name="avatar_unit_page_default_3.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\avatar_unit_page_default_3.rtx"/>
+        <File Id="avatar_unit_page_default_4.rtx" Name="avatar_unit_page_default_4.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\avatar_unit_page_default_4.rtx"/>
+        <File Id="avatar_unit_page_default_5.rtx" Name="avatar_unit_page_default_5.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\avatar_unit_page_default_5.rtx"/>
+        <File Id="avatar_unit_page_default_6.rtx" Name="avatar_unit_page_default_6.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\avatar_unit_page_default_6.rtx"/>
+        <File Id="avatar_unit_page_default_7.rtx" Name="avatar_unit_page_default_7.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\avatar_unit_page_default_7.rtx"/>
+        <File Id="guardian_defender_unit.rsh" Name="guardian_defender_unit.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_defender_unit.rsh"/>
+        <File Id="guardian_defender_unit_default.wtp" Name="guardian_defender_unit_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_defender_unit_default.wtp"/>
+        <File Id="guardian_unit.rsh" Name="guardian_unit.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_unit.rsh"/>
+        <File Id="guardian_unit_default.wtp" Name="guardian_unit_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_unit_default.wtp"/>
+        <File Id="guardian_unit_default_0.rtx" Name="guardian_unit_default_0.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_unit_default_0.rtx"/>
+        <File Id="guardian_unit_default_1.rtx" Name="guardian_unit_default_1.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_unit_default_1.rtx"/>
+        <File Id="guardian_unit_default_2.rtx" Name="guardian_unit_default_2.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_unit_default_2.rtx"/>
+        <File Id="guardian_unit_default_3.rtx" Name="guardian_unit_default_3.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_unit_default_3.rtx"/>
+        <File Id="guardian_unit_default_4.rtx" Name="guardian_unit_default_4.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_unit_default_4.rtx"/>
+        <File Id="guardian_unit_default_5.rtx" Name="guardian_unit_default_5.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_unit_default_5.rtx"/>
+        <File Id="guardian_unit_default_6.rtx" Name="guardian_unit_default_6.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_unit_default_6.rtx"/>
+        <File Id="guardian_unit_default_7.rtx" Name="guardian_unit_default_7.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_unit_default_7.rtx"/>
+        <File Id="guardian_weapons.rsh" Name="guardian_weapons.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_weapons.rsh"/>
+        <File Id="guardian_weapons_default.wtp" Name="guardian_weapons_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\texture_share\guardian_weapons_default.wtp"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_EBPS_RACES_ELDAR_TROOPS_CONTENT" Directory="TP_DATA_ART_EBPS_RACES_ELDAR_TROOPS" Guid="c27100b4-c7b9-4a1f-bb33-65cdab6054ac">
+        <File Id="avatar_of_khaine.lua" Name="avatar_of_khaine.lua" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\troops\avatar_of_khaine.lua"/>
+        <File Id="avatar_of_khaine.whe" Name="avatar_of_khaine.whe" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\troops\avatar_of_khaine.whe"/>
+        <File Id="avatar_of_khaine.whm" Name="avatar_of_khaine.whm" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\troops\avatar_of_khaine.whm"/>
+        <File Id="guardian_defender.lua" Name="guardian_defender.lua" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\troops\guardian_defender.lua"/>
+        <File Id="guardian_defender.whe" Name="guardian_defender.whe" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\troops\guardian_defender.whe"/>
+        <File Id="guardian_defender.whm" Name="guardian_defender.whm" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\eldar\troops\guardian_defender.whm"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_EBPS_RACES_NECRON_TROOPS_CONTENT" Directory="TP_DATA_ART_EBPS_RACES_NECRON_TROOPS" Guid="28b776ea-9a29-4680-806b-3399e8ac72b2">
+        <File Id="necron_lord.whe" Name="necron_lord.whe" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\necrons\troops\necron_lord.whe"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_EBPS_RACES_ORK_TEXTURE_CONTENT" Directory="TP_DATA_ART_EBPS_RACES_ORK_TEXTURE" Guid="908fb32f-b7e7-4eb2-a4ef-18b045067929">
+        <File Id="big_mek_unit.rsh" Name="big_mek_unit.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit.rsh"/>
+        <File Id="big_mek_unit_default.wtp" Name="big_mek_unit_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_default.wtp"/>
+        <File Id="big_mek_unit_default_0.rtx" Name="big_mek_unit_default_0.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_default_0.rtx"/>
+        <File Id="big_mek_unit_default_1.rtx" Name="big_mek_unit_default_1.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_default_1.rtx"/>
+        <File Id="big_mek_unit_default_2.rtx" Name="big_mek_unit_default_2.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_default_2.rtx"/>
+        <File Id="big_mek_unit_default_3.rtx" Name="big_mek_unit_default_3.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_default_3.rtx"/>
+        <File Id="big_mek_unit_default_4.rtx" Name="big_mek_unit_default_4.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_default_4.rtx"/>
+        <File Id="big_mek_unit_default_5.rtx" Name="big_mek_unit_default_5.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_default_5.rtx"/>
+        <File Id="big_mek_unit_default_6.rtx" Name="big_mek_unit_default_6.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_default_6.rtx"/>
+        <File Id="big_mek_unit_default_7.rtx" Name="big_mek_unit_default_7.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_default_7.rtx"/>
+        <File Id="big_mek_unit_weaponbits.rsh" Name="big_mek_unit_weaponbits.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weaponbits.rsh"/>
+        <File Id="big_mek_unit_weaponbits_default.wtp" Name="big_mek_unit_weaponbits_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weaponbits_default.wtp"/>
+        <File Id="big_mek_unit_weaponbits_default_0.rtx" Name="big_mek_unit_weaponbits_default_0.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weaponbits_default_0.rtx"/>
+        <File Id="big_mek_unit_weaponbits_default_1.rtx" Name="big_mek_unit_weaponbits_default_1.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weaponbits_default_1.rtx"/>
+        <File Id="big_mek_unit_weaponbits_default_2.rtx" Name="big_mek_unit_weaponbits_default_2.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weaponbits_default_2.rtx"/>
+        <File Id="big_mek_unit_weaponbits_default_3.rtx" Name="big_mek_unit_weaponbits_default_3.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weaponbits_default_3.rtx"/>
+        <File Id="big_mek_unit_weaponbits_default_4.rtx" Name="big_mek_unit_weaponbits_default_4.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weaponbits_default_4.rtx"/>
+        <File Id="big_mek_unit_weaponbits_default_5.rtx" Name="big_mek_unit_weaponbits_default_5.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weaponbits_default_5.rtx"/>
+        <File Id="big_mek_unit_weaponbits_default_6.rtx" Name="big_mek_unit_weaponbits_default_6.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weaponbits_default_6.rtx"/>
+        <File Id="big_mek_unit_weaponbits_default_7.rtx" Name="big_mek_unit_weaponbits_default_7.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weaponbits_default_7.rtx"/>
+        <File Id="big_mek_unit_weapons.rsh" Name="big_mek_unit_weapons.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weapons.rsh"/>
+        <File Id="big_mek_unit_weapons_default.wtp" Name="big_mek_unit_weapons_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weapons_default.wtp"/>
+        <File Id="big_mek_unit_weapons_default_0.rtx" Name="big_mek_unit_weapons_default_0.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weapons_default_0.rtx"/>
+        <File Id="big_mek_unit_weapons_default_1.rtx" Name="big_mek_unit_weapons_default_1.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weapons_default_1.rtx"/>
+        <File Id="big_mek_unit_weapons_default_2.rtx" Name="big_mek_unit_weapons_default_2.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weapons_default_2.rtx"/>
+        <File Id="big_mek_unit_weapons_default_3.rtx" Name="big_mek_unit_weapons_default_3.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weapons_default_3.rtx"/>
+        <File Id="big_mek_unit_weapons_default_4.rtx" Name="big_mek_unit_weapons_default_4.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weapons_default_4.rtx"/>
+        <File Id="big_mek_unit_weapons_default_5.rtx" Name="big_mek_unit_weapons_default_5.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weapons_default_5.rtx"/>
+        <File Id="big_mek_unit_weapons_default_6.rtx" Name="big_mek_unit_weapons_default_6.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weapons_default_6.rtx"/>
+        <File Id="big_mek_unit_weapons_default_7.rtx" Name="big_mek_unit_weapons_default_7.rtx" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\texture_share\big_mek_unit_weapons_default_7.rtx"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_EBPS_RACES_ORK_TROOPS_CONTENT" Directory="TP_DATA_ART_EBPS_RACES_ORK_TROOPS" Guid="2de66096-e5af-4356-8a88-f2cadf413093">
+        <File Id="big_mek.lua" Name="big_mek.lua" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\troops\big_mek.lua"/>
+        <File Id="big_mek.whe" Name="big_mek.whe" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\troops\big_mek.whe"/>
+        <File Id="big_mek.whm" Name="big_mek.whm" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\orks\troops\big_mek.whm"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_EBPS_RACES_SM_TEXTURE_CONTENT" Directory="TP_DATA_ART_EBPS_RACES_SM_TEXTURE" Guid="1c87a467-f7d3-4590-a70e-6d4226313339">
+        <File Id="tp_data_art_ebps_races_sm_texture_chainsword_blade.rsh" Name="chainsword_blade.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\chainsword_blade.rsh"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_unit_vanguard.rsh" Name="space_marine_unit_vanguard.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_unit_vanguard.rsh"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_unit_vanguard_assault_jumppack.rsh" Name="space_marine_unit_vanguard_assault_jumppack.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_unit_vanguard_assault_jumppack.rsh"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_unit_vanguard_assault_jumppack_default.wtp" Name="space_marine_unit_vanguard_assault_jumppack_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_unit_vanguard_assault_jumppack_default.wtp"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_unit_vanguard_default.wtp" Name="space_marine_unit_vanguard_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_unit_vanguard_default.wtp"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_unit_veteran_sergeant.rsh" Name="space_marine_unit_veteran_sergeant.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_unit_veteran_sergeant.rsh"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_unit_veteran_sergeant_default.wtp" Name="space_marine_unit_veteran_sergeant_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_unit_veteran_sergeant_default.wtp"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_weapons.rsh" Name="space_marine_weapons.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_weapons.rsh"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_weapons_2.rsh" Name="space_marine_weapons_2.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_weapons_2.rsh"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_weapons_2_default.wtp" Name="space_marine_weapons_2_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_weapons_2_default.wtp"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_weapons_3.rsh" Name="space_marine_weapons_3.rsh" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_weapons_3.rsh"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_weapons_3_default.wtp" Name="space_marine_weapons_3_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_weapons_3_default.wtp"/>
+        <File Id="tp_data_art_ebps_races_sm_texture_space_marine_weapons_default.wtp" Name="space_marine_weapons_default.wtp" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\texture_share\space_marine_weapons_default.wtp"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_EBPS_RACES_SM_TROOPS_CONTENT" Directory="TP_DATA_ART_EBPS_RACES_SM_TROOPS" Guid="1912d97f-cb9c-41da-836d-7ba15964306b">
+        <File Id="space_marine_vanguard_assault.lua" Name="space_marine_vanguard_assault.lua" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\troops\space_marine_vanguard_assault.lua"/>
+        <File Id="space_marine_vanguard_assault.whe" Name="space_marine_vanguard_assault.whe" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\troops\space_marine_vanguard_assault.whe"/>
+        <File Id="space_marine_vanguard_assault.whm" Name="space_marine_vanguard_assault.whm" Source="..\..\Files\TournamentPatch\Data\art\ebps\races\space_marines\troops\space_marine_vanguard_assault.whm"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_UI_INGAME_NECRON_CONTENT" Directory="TP_DATA_ART_UI_INGAME_NECRON" Guid="474c2358-1f11-4008-a008-1460f763e00c">
+        <File Id="tp_rata_art_ui_ingame_necron_Exterminatio_icon.tga" Name="Exterminatio_icon.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame\necron_icons\Exterminatio_icon.tga"/>
+        <File Id="tp_rata_art_ui_ingame_necron_Extermination_of_the_living.tga" Name="Extermination_of_the_living.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame\necron_icons\Extermination_of_the_living.tga"/>
+        <File Id="tp_rata_art_ui_ingame_necron_necron_Ctan_gauss_weapons.tga" Name="necron_Ctan_gauss_weapons.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame\necron_icons\necron_Ctan_gauss_weapons.tga"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_UI_INGAME_SISTERS_CONTENT" Directory="TP_DATA_ART_UI_INGAME_SISTERS" Guid="6dcd5c96-d3f9-48c8-9502-49fb89f029d2">
+        <File Id="tp_data_art_ui_ingame_sisters_research_flash_grenades.tga" Name="research_flash_grenades.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame\sisters_icons\research_flash_grenades.tga"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_UI_INGAME_SM_CONTENT" Directory="TP_DATA_ART_UI_INGAME_SM" Guid="9d90c602-2887-4b86-a5da-24c223c9fc7d">
+        <File Id="tp_data_art_ui_ingame_sm_marine_scout_armor_research.tga" Name="marine_scout_armor_research.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame\space_marine_icons\marine_scout_armor_research.tga"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_UI_INGAME_TAU_CONTENT" Directory="TP_DATA_ART_UI_INGAME_TAU" Guid="0416d2d7-f980-4d0e-bf49-54dc754218ac">
+        <File Id="tp_data_art_ui_ingame_tau_Ammunition_tau_icons.tga" Name="Ammunition_tau_icons.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame\tau_icons\Ammunition_tau_icons.tga"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_UI_INGAMEDISABLED_NECRON_CONTENT" Directory="TP_DATA_ART_UI_INGAMEDISABLED_NECRON" Guid="d1a339c0-fa1a-4740-9d75-08bb035cef15">
+        <File Id="tp_data_art_ui_ingamedisabled_necron_Exterminatio_icon.tga" Name="Exterminatio_icon.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame_disabled\necron_icons\Exterminatio_icon.tga"/>
+        <File Id="tp_data_art_ui_ingamedisabled_necron_Extermination_of_the_living.tga" Name="Extermination_of_the_living.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame_disabled\necron_icons\Extermination_of_the_living.tga"/>
+        <File Id="tp_data_art_ui_ingamedisabled_necron_necron_Ctan_gauss_weapons.tga" Name="necron_Ctan_gauss_weapons.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame_disabled\necron_icons\necron_Ctan_gauss_weapons.tga"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_UI_INGAMEDISABLED_SISTERS_CONTENT" Directory="TP_DATA_ART_UI_INGAMEDISABLED_SISTERS" Guid="5036c685-ea07-49e6-92fc-6b11c6e457c4">
+        <File Id="tp_rata_art_ui_ingamedisabled_sisters_research_flash_grenades.tga" Name="research_flash_grenades.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame_disabled\sisters_icons\research_flash_grenades.tga"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_UI_INGAMEDISABLED_SM_CONTENT" Directory="TP_DATA_ART_UI_INGAMEDISABLED_SM" Guid="2e5f12b1-ae67-4ac4-99fb-c43dc353f04c">
+        <File Id="tp_data_art_ui_ingamedisabled_sm_marine_scout_armor_research.tga" Name="marine_scout_armor_research.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame_disabled\space_marine_icons\marine_scout_armor_research.tga"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_UI_INGAMEDISABLED_TAU_CONTENT" Directory="TP_DATA_ART_UI_INGAMEDISABLED_TAU" Guid="a3fcaa54-fa62-4125-a9d6-f5b868265857">
+        <File Id="tp_data_art_ui_ingamedisabled_tau_Ammunition_tau_icons.tga" Name="Ammunition_tau_icons.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\ingame_disabled\tau_icons\Ammunition_tau_icons.tga"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_UI_SCREENS_CONTENT" Directory="TP_DATA_ART_UI_SCREENS" Guid="d1069075-fe3b-47b9-b8ef-4d10c93ae4bf">
+        <File Id="gameloadscreen.screen" Name="gameloadscreen.screen" Source="..\..\Files\TournamentPatch\Data\art\ui\screens\gameloadscreen.screen"/>
+      </Component>
+
+      <Component Id="TP_DATA_ART_UI_TEXTURES_CONTENT" Directory="TP_DATA_ART_UI_TEXTURES" Guid="64c9c96d-066a-4d71-a718-9542ead70aa3">
+        <File Id="map_frame.tga" Name="map_frame.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\map_frame.tga"/>
+        <File Id="map_frame_border.tga" Name="map_frame_border.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\map_frame_border.tga"/>
+        <File Id="map_label.tga" Name="map_label.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\map_label.tga"/>
+        <File Id="mp_player_team1.tga" Name="mp_player_team1.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\mp_player_team1.tga"/>
+        <File Id="mp_player_team2.tga" Name="mp_player_team2.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\mp_player_team2.tga"/>
+        <File Id="mp_player_team3.tga" Name="mp_player_team3.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\mp_player_team3.tga"/>
+        <File Id="mp_player_team4.tga" Name="mp_player_team4.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\mp_player_team4.tga"/>
+        <File Id="mp_player_team5.tga" Name="mp_player_team5.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\mp_player_team5.tga"/>
+        <File Id="mp_player_team6.tga" Name="mp_player_team6.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\mp_player_team6.tga"/>
+        <File Id="mp_player_team7.tga" Name="mp_player_team7.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\mp_player_team7.tga"/>
+        <File Id="mp_player_team8.tga" Name="mp_player_team8.tga" Source="..\..\Files\TournamentPatch\Data\art\ui\textures\mp_player_team8.tga"/>
+      </Component>
+
+      <Component Id="TP_DATA_ATTRIB_ABILITIES_CONTENT" Directory="TP_DATA_ATTRIB_ABILITIES" Guid="40fa7837-6fd7-4f92-a2e8-0b192dbae1f4">
+        <File Id="chaos_chains_of_torment.rgd" Name="chaos_chains_of_torment.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_chains_of_torment.rgd"/>
+        <File Id="chaos_chains_of_torment_2.rgd" Name="chaos_chains_of_torment_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_chains_of_torment_2.rgd"/>
+        <File Id="chaos_chains_of_torment_motion.rgd" Name="chaos_chains_of_torment_motion.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_chains_of_torment_motion.rgd"/>
+        <File Id="chaos_corruption.rgd" Name="chaos_corruption.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_corruption.rgd"/>
+        <File Id="chaos_daemon_strength.rgd" Name="chaos_daemon_strength.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_daemon_strength.rgd"/>
+        <File Id="chaos_forced_labor.rgd" Name="chaos_forced_labor.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_forced_labor.rgd"/>
+        <File Id="chaos_frag_grenades_2.rgd" Name="chaos_frag_grenades_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_frag_grenades_2.rgd"/>
+        <File Id="chaos_furious_rage2.rgd" Name="chaos_furious_rage2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_furious_rage2.rgd"/>
+        <File Id="chaos_smoke_launchers.rgd" Name="chaos_smoke_launchers.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_smoke_launchers.rgd"/>
+        <File Id="chaos_symbol_of_chaos.rgd" Name="chaos_symbol_of_chaos.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_symbol_of_chaos.rgd"/>
+        <File Id="chaos_symbol_of_prince.rgd" Name="chaos_symbol_of_prince.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_symbol_of_prince.rgd"/>
+        <File Id="chaos_taint_ability_heretic.rgd" Name="chaos_taint_ability_heretic.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\chaos_taint_ability_heretic.rgd"/>
+        <File Id="dark_eldar_animus_vitae.rgd" Name="dark_eldar_animus_vitae.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_animus_vitae.rgd"/>
+        <File Id="dark_eldar_combat_drugs.rgd" Name="dark_eldar_combat_drugs.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_combat_drugs.rgd"/>
+        <File Id="dark_eldar_corrosive_cloud.rgd" Name="dark_eldar_corrosive_cloud.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_corrosive_cloud.rgd"/>
+        <File Id="dark_eldar_corrosive_cloud_2.rgd" Name="dark_eldar_corrosive_cloud_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_corrosive_cloud_2.rgd"/>
+        <File Id="dark_eldar_crucible.rgd" Name="dark_eldar_crucible.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_crucible.rgd"/>
+        <File Id="dark_eldar_darklance_sweep.rgd" Name="dark_eldar_darklance_sweep.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_darklance_sweep.rgd"/>
+        <File Id="dark_eldar_rekindle_rage.rgd" Name="dark_eldar_rekindle_rage.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_rekindle_rage.rgd"/>
+        <File Id="dark_eldar_short_circuit.rgd" Name="dark_eldar_short_circuit.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_short_circuit.rgd"/>
+        <File Id="dark_eldar_soul_explosion_pre.rgd" Name="dark_eldar_soul_explosion_pre.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_soul_explosion_pre.rgd"/>
+        <File Id="dark_eldar_soul_shock.rgd" Name="dark_eldar_soul_shock.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_soul_shock.rgd"/>
+        <File Id="dark_eldar_soul_shock_1.rgd" Name="dark_eldar_soul_shock_1.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_soul_shock_1.rgd"/>
+        <File Id="dark_eldar_soulstorm.rgd" Name="dark_eldar_soulstorm.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_soulstorm.rgd"/>
+        <File Id="dark_eldar_stinger.rgd" Name="dark_eldar_stinger.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_stinger.rgd"/>
+        <File Id="dark_eldar_tracking_device.rgd" Name="dark_eldar_tracking_device.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_tracking_device.rgd"/>
+        <File Id="dark_eldar_tracking_device_motion.rgd" Name="dark_eldar_tracking_device_motion.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_tracking_device_motion.rgd"/>
+        <File Id="dark_eldar_wildfire.rgd" Name="dark_eldar_wildfire.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire.rgd"/>
+        <File Id="dark_eldar_wildfire2.rgd" Name="dark_eldar_wildfire2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire2.rgd"/>
+        <File Id="dark_eldar_wildfire3.rgd" Name="dark_eldar_wildfire3.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire3.rgd"/>
+        <File Id="dark_eldar_wildfire4.rgd" Name="dark_eldar_wildfire4.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire4.rgd"/>
+        <File Id="dark_eldar_wildfire5.rgd" Name="dark_eldar_wildfire5.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire5.rgd"/>
+        <File Id="dark_eldar_wildfire6.rgd" Name="dark_eldar_wildfire6.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire6.rgd"/>
+        <File Id="dark_eldar_wildfire7.rgd" Name="dark_eldar_wildfire7.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire7.rgd"/>
+        <File Id="dark_eldar_wildfire8.rgd" Name="dark_eldar_wildfire8.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire8.rgd"/>
+        <File Id="dark_eldar_wildfire9.rgd" Name="dark_eldar_wildfire9.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire9.rgd"/>
+        <File Id="dark_eldar_wildfire10.rgd" Name="dark_eldar_wildfire10.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire10.rgd"/>
+        <File Id="dark_eldar_wildfire11.rgd" Name="dark_eldar_wildfire11.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire11.rgd"/>
+        <File Id="dark_eldar_wildfire12.rgd" Name="dark_eldar_wildfire12.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire12.rgd"/>
+        <File Id="dark_eldar_wildfire13.rgd" Name="dark_eldar_wildfire13.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire13.rgd"/>
+        <File Id="dark_eldar_wildfire14.rgd" Name="dark_eldar_wildfire14.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire14.rgd"/>
+        <File Id="dark_eldar_wildfire15.rgd" Name="dark_eldar_wildfire15.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire15.rgd"/>
+        <File Id="dark_eldar_wildfire16.rgd" Name="dark_eldar_wildfire16.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire16.rgd"/>
+        <File Id="dark_eldar_wildfire17.rgd" Name="dark_eldar_wildfire17.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire17.rgd"/>
+        <File Id="dark_eldar_wildfire18.rgd" Name="dark_eldar_wildfire18.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire18.rgd"/>
+        <File Id="dark_eldar_wildfire19.rgd" Name="dark_eldar_wildfire19.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire19.rgd"/>
+        <File Id="dark_eldar_wildfire20.rgd" Name="dark_eldar_wildfire20.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\dark_eldar_wildfire20.rgd"/>
+        <File Id="deceiver_aura.rgd" Name="deceiver_aura.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\deceiver_aura.rgd"/>
+        <File Id="deceiver_aura_2.rgd" Name="deceiver_aura_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\deceiver_aura_2.rgd"/>
+        <File Id="eldar_bonessong.rgd" Name="eldar_bonessong.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_bonessong.rgd"/>
+        <File Id="eldar_eldritchstorm.rgd" Name="eldar_eldritchstorm.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_eldritchstorm.rgd"/>
+        <File Id="eldar_eldritchstorm_fx.rgd" Name="eldar_eldritchstorm_fx.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_eldritchstorm_fx.rgd"/>
+        <File Id="eldar_eldritchstorm_sp_noreqsnorecharge.rgd" Name="eldar_eldritchstorm_sp_noreqsnorecharge.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_eldritchstorm_sp_noreqsnorecharge.rgd"/>
+        <File Id="eldar_eldritchstorm_stronghold_sp.rgd" Name="eldar_eldritchstorm_stronghold_sp.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_eldritchstorm_stronghold_sp.rgd"/>
+        <File Id="eldar_eldritchstorm_throw.rgd" Name="eldar_eldritchstorm_throw.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_eldritchstorm_throw.rgd"/>
+        <File Id="eldar_eldritchstorm_throw_damage.rgd" Name="eldar_eldritchstorm_throw_damage.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_eldritchstorm_throw_damage.rgd"/>
+        <File Id="eldar_entanglement.rgd" Name="eldar_entanglement.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_entanglement.rgd"/>
+        <File Id="eldar_entanglement_2.rgd" Name="eldar_entanglement_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_entanglement_2.rgd"/>
+        <File Id="eldar_entanglement_motion.rgd" Name="eldar_entanglement_motion.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_entanglement_motion.rgd"/>
+        <File Id="eldar_fleetoffoot_banshee.rgd" Name="eldar_fleetoffoot_banshee.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_fleetoffoot_banshee.rgd"/>
+        <File Id="eldar_fortune.rgd" Name="eldar_fortune.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_fortune.rgd"/>
+        <File Id="eldar_liquefy.rgd" Name="eldar_liquefy.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_liquefy.rgd"/>
+        <File Id="eldar_liquefy_boiling_blood.rgd" Name="eldar_liquefy_boiling_blood.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_liquefy_boiling_blood.rgd"/>
+        <File Id="eldar_mind_war.rgd" Name="eldar_mind_war.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_mind_war.rgd"/>
+        <File Id="eldar_pulse_avatar.rgd" Name="eldar_pulse_avatar.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_pulse_avatar.rgd"/>
+        <File Id="eldar_wraithtomb.rgd" Name="eldar_wraithtomb.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\eldar_wraithtomb.rgd"/>
+        <File Id="guard_curse_machine_spirits.rgd" Name="guard_curse_machine_spirits.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_curse_machine_spirits.rgd"/>
+        <File Id="guard_curse_machine_spirits_advance_sp.rgd" Name="guard_curse_machine_spirits_advance_sp.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_curse_machine_spirits_advance_sp.rgd"/>
+        <File Id="guard_curse_machine_spirits_command_squad.rgd" Name="guard_curse_machine_spirits_command_squad.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_curse_machine_spirits_command_squad.rgd"/>
+        <File Id="guard_incendiary_bombs.rgd" Name="guard_incendiary_bombs.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_incendiary_bombs.rgd"/>
+        <File Id="guard_incendiary_bombs_aura.rgd" Name="guard_incendiary_bombs_aura.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_incendiary_bombs_aura.rgd"/>
+        <File Id="guard_krak_bombs.rgd" Name="guard_krak_bombs.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_krak_bombs.rgd"/>
+        <File Id="guard_priest_righteous_fury_command_squad.rgd" Name="guard_priest_righteous_fury_command_squad.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_priest_righteous_fury_command_squad.rgd"/>
+        <File Id="guard_psyker_lightning_arc.rgd" Name="guard_psyker_lightning_arc.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_psyker_lightning_arc.rgd"/>
+        <File Id="guard_psyker_lightning_arc_command_squad.rgd" Name="guard_psyker_lightning_arc_command_squad.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_psyker_lightning_arc_command_squad.rgd"/>
+        <File Id="guard_psyker_strip_soul.rgd" Name="guard_psyker_strip_soul.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_psyker_strip_soul.rgd"/>
+        <File Id="guard_psyker_strip_soul_command_squad.rgd" Name="guard_psyker_strip_soul_command_squad.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_psyker_strip_soul_command_squad.rgd"/>
+        <File Id="guard_smoke_bombs.rgd" Name="guard_smoke_bombs.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_smoke_bombs.rgd"/>
+        <File Id="guard_smoke_bombs_aura.rgd" Name="guard_smoke_bombs_aura.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_smoke_bombs_aura.rgd"/>
+        <File Id="guard_stop_bombs.rgd" Name="guard_stop_bombs.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\guard_stop_bombs.rgd"/>
+        <File Id="marines_chaplain_healing_fake1.rgd" Name="marines_chaplain_healing_fake1.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\marines_chaplain_healing_fake1.rgd"/>
+        <File Id="marines_fall_aura_2.rgd" Name="marines_fall_aura_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\marines_fall_aura_2.rgd"/>
+        <File Id="marines_frag_grenades_2.rgd" Name="marines_frag_grenades_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\marines_frag_grenades_2.rgd"/>
+        <File Id="marines_inquisition.rgd" Name="marines_inquisition.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\marines_inquisition.rgd"/>
+        <File Id="marines_inquisition_new.rgd" Name="marines_inquisition_new.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\marines_inquisition_new.rgd"/>
+        <File Id="marines_sabotage.rgd" Name="marines_sabotage.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\marines_sabotage.rgd"/>
+        <File Id="marines_smoke_launchers.rgd" Name="marines_smoke_launchers.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\marines_smoke_launchers.rgd"/>
+        <File Id="marines_word_of_emperer.rgd" Name="marines_word_of_emperer.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\marines_word_of_emperer.rgd"/>
+        <File Id="necron_chronometron.rgd" Name="necron_chronometron.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron.rgd"/>
+        <File Id="necron_chronometron_child_2.rgd" Name="necron_chronometron_child_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_2.rgd"/>
+        <File Id="necron_chronometron_child_3.rgd" Name="necron_chronometron_child_3.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_3.rgd"/>
+        <File Id="necron_chronometron_child_4.rgd" Name="necron_chronometron_child_4.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_4.rgd"/>
+        <File Id="necron_chronometron_child_5.rgd" Name="necron_chronometron_child_5.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_5.rgd"/>
+        <File Id="necron_chronometron_child_6.rgd" Name="necron_chronometron_child_6.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_6.rgd"/>
+        <File Id="necron_chronometron_child_7.rgd" Name="necron_chronometron_child_7.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_7.rgd"/>
+        <File Id="necron_chronometron_child_8.rgd" Name="necron_chronometron_child_8.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_8.rgd"/>
+        <File Id="necron_chronometron_child_9.rgd" Name="necron_chronometron_child_9.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_9.rgd"/>
+        <File Id="necron_chronometron_child_10.rgd" Name="necron_chronometron_child_10.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_10.rgd"/>
+        <File Id="necron_chronometron_child_11.rgd" Name="necron_chronometron_child_11.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_11.rgd"/>
+        <File Id="necron_chronometron_child_12.rgd" Name="necron_chronometron_child_12.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_12.rgd"/>
+        <File Id="necron_chronometron_child_13.rgd" Name="necron_chronometron_child_13.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_13.rgd"/>
+        <File Id="necron_chronometron_child_14.rgd" Name="necron_chronometron_child_14.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_14.rgd"/>
+        <File Id="necron_chronometron_child_15.rgd" Name="necron_chronometron_child_15.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_15.rgd"/>
+        <File Id="necron_chronometron_child_16.rgd" Name="necron_chronometron_child_16.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_chronometron_child_16.rgd"/>
+        <File Id="necron_deceive_test.rgd" Name="necron_deceive_test.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_deceive_test.rgd"/>
+        <File Id="necron_deceive_test1.rgd" Name="necron_deceive_test1.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_deceive_test1.rgd"/>
+        <File Id="necron_deceive_test2.rgd" Name="necron_deceive_test2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_deceive_test2.rgd"/>
+        <File Id="necron_destroyer_cover_enemy.rgd" Name="necron_destroyer_cover_enemy.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_destroyer_cover_enemy.rgd"/>
+        <File Id="necron_listening_post.rgd" Name="necron_listening_post.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_listening_post.rgd"/>
+        <File Id="necron_mass_resurrection.rgd" Name="necron_mass_resurrection.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_mass_resurrection.rgd"/>
+        <File Id="necron_mass_resurrection2.rgd" Name="necron_mass_resurrection2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_mass_resurrection2.rgd"/>
+        <File Id="necron_mass_resurrection3.rgd" Name="necron_mass_resurrection3.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_mass_resurrection3.rgd"/>
+        <File Id="necron_mass_resurrection4.rgd" Name="necron_mass_resurrection4.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_mass_resurrection4.rgd"/>
+        <File Id="necron_mass_resurrection5.rgd" Name="necron_mass_resurrection5.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_mass_resurrection5.rgd"/>
+        <File Id="necron_melee_aura_bld.rgd" Name="necron_melee_aura_bld.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_melee_aura_bld.rgd"/>
+        <File Id="necron_phase_shifter.rgd" Name="necron_phase_shifter.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_phase_shifter.rgd"/>
+        <File Id="necron_phase_shifter_child.rgd" Name="necron_phase_shifter_child.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_phase_shifter_child.rgd"/>
+        <File Id="necron_phylactery.rgd" Name="necron_phylactery.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_phylactery.rgd"/>
+        <File Id="necron_resurrection_orb.rgd" Name="necron_resurrection_orb.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_resurrection_orb.rgd"/>
+        <File Id="necron_resurrection_orb2.rgd" Name="necron_resurrection_orb2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_resurrection_orb2.rgd"/>
+        <File Id="necron_wraith_defense.rgd" Name="necron_wraith_defense.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_wraith_defense.rgd"/>
+        <File Id="necron_wraith_defense_improved.rgd" Name="necron_wraith_defense_improved.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\necron_wraith_defense_improved.rgd"/>
+        <File Id="ork_kustom_tellyporta.rgd" Name="ork_kustom_tellyporta.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_kustom_tellyporta.rgd"/>
+        <File Id="ork_pop_growth_increase_at_20.rgd" Name="ork_pop_growth_increase_at_20.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_pop_growth_increase_at_20.rgd"/>
+        <File Id="ork_pop_growth_increase_at_50.rgd" Name="ork_pop_growth_increase_at_50.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_pop_growth_increase_at_50.rgd"/>
+        <File Id="ork_pop_growth_increase_at_60.rgd" Name="ork_pop_growth_increase_at_60.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_pop_growth_increase_at_60.rgd"/>
+        <File Id="ork_pop_growth_increase_at_70.rgd" Name="ork_pop_growth_increase_at_70.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_pop_growth_increase_at_70.rgd"/>
+        <File Id="ork_power_of_waagh.rgd" Name="ork_power_of_waagh.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_power_of_waagh.rgd"/>
+        <File Id="ork_power_surge.rgd" Name="ork_power_surge.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_power_surge.rgd"/>
+        <File Id="ork_tank_zappa.rgd" Name="ork_tank_zappa.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_tank_zappa.rgd"/>
+        <File Id="ork_tank_zappa2.rgd" Name="ork_tank_zappa2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_tank_zappa2.rgd"/>
+        <File Id="ork_tank_zappa3.rgd" Name="ork_tank_zappa3.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_tank_zappa3.rgd"/>
+        <File Id="ork_waagh_charge_extra_healthregen.rgd" Name="ork_waagh_charge_extra_healthregen.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_waagh_charge_extra_healthregen.rgd"/>
+        <File Id="ork_waagh_morale_10.rgd" Name="ork_waagh_morale_10.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_waagh_morale_10.rgd"/>
+        <File Id="ork_waagh_morale_20.rgd" Name="ork_waagh_morale_20.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_waagh_morale_20.rgd"/>
+        <File Id="ork_waagh_morale_30.rgd" Name="ork_waagh_morale_30.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_waagh_morale_30.rgd"/>
+        <File Id="ork_waagh_morale_40.rgd" Name="ork_waagh_morale_40.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_waagh_morale_40.rgd"/>
+        <File Id="ork_waagh_morale_50.rgd" Name="ork_waagh_morale_50.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_waagh_morale_50.rgd"/>
+        <File Id="ork_waagh_morale_60.rgd" Name="ork_waagh_morale_60.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\ork_waagh_morale_60.rgd"/>
+        <File Id="sisters_act_of_faith_an_emperors_touch.rgd" Name="sisters_act_of_faith_an_emperors_touch.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_act_of_faith_an_emperors_touch.rgd"/>
+        <File Id="sisters_act_of_faith_divine_retribution.rgd" Name="sisters_act_of_faith_divine_retribution.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_act_of_faith_divine_retribution.rgd"/>
+        <File Id="sisters_act_of_faith_emperors_touch.rgd" Name="sisters_act_of_faith_emperors_touch.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_act_of_faith_emperors_touch.rgd"/>
+        <File Id="sisters_act_of_faith_holy_passion.rgd" Name="sisters_act_of_faith_holy_passion.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_act_of_faith_holy_passion.rgd"/>
+        <File Id="sisters_blind.rgd" Name="sisters_blind.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_blind.rgd"/>
+        <File Id="sisters_blind2.rgd" Name="sisters_blind2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_blind2.rgd"/>
+        <File Id="sisters_conflagration.rgd" Name="sisters_conflagration.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_conflagration.rgd"/>
+        <File Id="sisters_conflagration2.rgd" Name="sisters_conflagration2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_conflagration2.rgd"/>
+        <File Id="sisters_divine_pronouncement.rgd" Name="sisters_divine_pronouncement.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_divine_pronouncement.rgd"/>
+        <File Id="sisters_divine_pronouncement_2.rgd" Name="sisters_divine_pronouncement_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_divine_pronouncement_2.rgd"/>
+        <File Id="sisters_divine_pronouncement_hg.rgd" Name="sisters_divine_pronouncement_hg.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_divine_pronouncement_hg.rgd"/>
+        <File Id="sisters_divine_pronouncement_motion.rgd" Name="sisters_divine_pronouncement_motion.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_divine_pronouncement_motion.rgd"/>
+        <File Id="sisters_hk_missiles.rgd" Name="sisters_hk_missiles.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_hk_missiles.rgd"/>
+        <File Id="sisters_hk_missiles_dmg.rgd" Name="sisters_hk_missiles_dmg.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_hk_missiles_dmg.rgd"/>
+        <File Id="sisters_hk_missiles_impactfx.rgd" Name="sisters_hk_missiles_impactfx.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_hk_missiles_impactfx.rgd"/>
+        <File Id="sisters_hk_missiles_sp_dxp3.rgd" Name="sisters_hk_missiles_sp_dxp3.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_hk_missiles_sp_dxp3.rgd"/>
+        <File Id="sisters_krak_grenades.rgd" Name="sisters_krak_grenades.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_krak_grenades.rgd"/>
+        <File Id="sisters_krak_grenades_slow.rgd" Name="sisters_krak_grenades_slow.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_krak_grenades_slow.rgd"/>
+        <File Id="sisters_krak_grenades_slow_2.rgd" Name="sisters_krak_grenades_slow_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_krak_grenades_slow_2.rgd"/>
+        <File Id="sisters_krak_grenades_slow_3.rgd" Name="sisters_krak_grenades_slow_3.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_krak_grenades_slow_3.rgd"/>
+        <File Id="sisters_leadership.rgd" Name="sisters_leadership.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_leadership.rgd"/>
+        <File Id="sisters_phosphor_grenades.rgd" Name="sisters_phosphor_grenades.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_phosphor_grenades.rgd"/>
+        <File Id="sisters_phosphor_grenades_burn.rgd" Name="sisters_phosphor_grenades_burn.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_phosphor_grenades_burn.rgd"/>
+        <File Id="sisters_phosphor_grenades_sp_dxp3_prisoner.rgd" Name="sisters_phosphor_grenades_sp_dxp3_prisoner.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_phosphor_grenades_sp_dxp3_prisoner.rgd"/>
+        <File Id="sisters_purgatus_aura.rgd" Name="sisters_purgatus_aura.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_purgatus_aura.rgd"/>
+        <File Id="sisters_righteous_fervor.rgd" Name="sisters_righteous_fervor.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\sisters_righteous_fervor.rgd"/>
+        <File Id="tau_death_pulse.rgd" Name="tau_death_pulse.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_death_pulse.rgd"/>
+        <File Id="tau_devour.rgd" Name="tau_devour.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_devour.rgd"/>
+        <File Id="tau_emp_grenade.rgd" Name="tau_emp_grenade.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_emp_grenade.rgd"/>
+        <File Id="tau_emp_grenade2.rgd" Name="tau_emp_grenade2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_emp_grenade2.rgd"/>
+        <File Id="tau_emp_grenade3.rgd" Name="tau_emp_grenade3.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_emp_grenade3.rgd"/>
+        <File Id="tau_mark_squad.rgd" Name="tau_mark_squad.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_mark_squad.rgd"/>
+        <File Id="tau_nuke.rgd" Name="tau_nuke.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_nuke.rgd"/>
+        <File Id="tau_personal_shield.rgd" Name="tau_personal_shield.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_personal_shield.rgd"/>
+        <File Id="tau_personal_shield_overdrive.rgd" Name="tau_personal_shield_overdrive.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_personal_shield_overdrive.rgd"/>
+        <File Id="tau_photon_grenade.rgd" Name="tau_photon_grenade.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_photon_grenade.rgd"/>
+        <File Id="tau_photon_grenade2.rgd" Name="tau_photon_grenade2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_photon_grenade2.rgd"/>
+        <File Id="tau_sonic_pulse.rgd" Name="tau_sonic_pulse.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_sonic_pulse.rgd"/>
+        <File Id="tau_sonic_pulse_1.rgd" Name="tau_sonic_pulse_1.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_sonic_pulse_1.rgd"/>
+        <File Id="tau_sonic_pulse_2.rgd" Name="tau_sonic_pulse_2.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_sonic_pulse_2.rgd"/>
+        <File Id="tau_target_acquired.rgd" Name="tau_target_acquired.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tau_target_acquired.rgd"/>
+        <File Id="tay_shasui_bonus.rgd" Name="tay_shasui_bonus.rgd" Source="..\..\Files\TournamentPatch\Data\attrib\abilities\tay_shasui_bonus.rgd"/>
       </Component>
     </ComponentGroup>
   </Fragment>
