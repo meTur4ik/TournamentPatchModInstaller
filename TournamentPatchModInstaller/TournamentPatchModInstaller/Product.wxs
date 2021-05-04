@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="dafcc5c4-88a8-4749-a3ac-3fb6a8289a33" Name="TournamentPatchMod" Language="1033" Version="1.6.4" Manufacturer="Tournament Patch" UpgradeCode="664efaf7-ab73-44f9-9ac1-0b98202a9ae8">
+  <Product Id="52fec560-84de-4d21-9334-6840cd6a818f" Name="TournamentPatchMod" Language="1033" Version="1.6.5" Manufacturer="Tournament Patch" UpgradeCode="664efaf7-ab73-44f9-9ac1-0b98202a9ae8">
     <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
     <MajorUpgrade Schedule="afterInstallValidate" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />

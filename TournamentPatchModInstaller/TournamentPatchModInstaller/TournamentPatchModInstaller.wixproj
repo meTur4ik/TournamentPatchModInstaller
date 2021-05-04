@@ -12,13 +12,14 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug</DefineConstants>
+    <DefineConstants>Debug;SourceFilesDir=..\..\Files\Mod</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Components.wxs" />
     <Compile Include="Product.wxs" />
     <Compile Include="TpModFiles.wxs" />
   </ItemGroup>
@@ -38,6 +39,12 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
   <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+  </Target>
+  <Target Name="BeforeBuild">
+    <PropertyGroup>
+      <WixToolPath>C:\Program Files (x86)\WiX Toolset v3.11\bin</WixToolPath>
+    </PropertyGroup>
+    <HeatDirectory ToolPath="$(WixToolPath)" Directory="$(ProjectDir)..\..\Files\Mod" ComponentGroupName="TpModComponents" DirectoryRefId="TARGETDIR" GenerateGuidsNow="true" SuppressFragments="true" SuppressRootDirectory="true" PreprocessorVariable="var.SourceFilesDir" OutputFile="Components.wxs" />
   </Target>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

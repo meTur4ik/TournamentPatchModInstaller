@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <Fragment>
-    <ComponentGroup Id="TpModComponents">
+    <ComponentGroup Id="TpModComponents1">
       <Component Id="TournamentPatch.module" Directory="TARGETDIR" Guid="702c1d53-5003-4b0b-84a5-67ee117289c3">
         <File Id="TournamentPatch.module" Name="TournamentPatch.module" Source="..\..\Files\TournamentPatch.module"/>
       </Component>
