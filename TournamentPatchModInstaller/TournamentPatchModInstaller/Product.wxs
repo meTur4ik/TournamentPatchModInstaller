@@ -13,7 +13,7 @@
     <Property Id="DOWROOTFOLDER">
       <RegistrySearch Id="DowRootFolder"
                       Root="HKLM"
-                      Key="SOFTWARE\WOW6432Node\THQ\Dawn of War - Soulstorm"
+                      Key="SOFTWARE\THQ\Dawn of War - Soulstorm"
                       Name="installlocation"
                       Type="raw" />
     </Property>
@@ -52,7 +52,8 @@
       <ComponentGroupRef Id="CameraFix"/>
     </Feature>
 
-    <Feature Id="QwertyHotkeys" Title="Set QWERTY hotkeys by default" Display="collapse">
+    <!--32767 is max available level value, so setting it shows feature as "not to be installed" by default-->
+    <Feature Id="QwertyHotkeys" Title="Set QWERTY hotkeys by default" Level="32767" Display="collapse">
       <ComponentGroupRef Id="QwertyHotkeys"/>
     </Feature>
 
