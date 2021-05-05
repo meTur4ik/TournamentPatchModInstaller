@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="52fec560-84de-4d21-9334-6840cd6a818f" Name="TournamentPatchMod" Language="1033" Version="1.6.5" Manufacturer="Tournament Patch" UpgradeCode="664efaf7-ab73-44f9-9ac1-0b98202a9ae8">
-    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+  <Product Id="52fec560-84de-4d21-9334-6840cd6a818f" Name="TournamentPatchMod" Language="1033" Version="1.6.4" Manufacturer="Tournament Patch" UpgradeCode="664efaf7-ab73-44f9-9ac1-0b98202a9ae8">
+    <Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Platform="x64"/>
 
     <MajorUpgrade Schedule="afterInstallValidate" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate EmbedCab="yes" />
@@ -18,11 +18,24 @@
                       Type="raw" />
     </Property>
 
-    <CustomAction Id="SetTargetDir" Property="TARGETDIR" Value="[DOWROOTFOLDER]"/>
+    <Property Id="PREVIOUSINSTALLFOLDER">
+      <RegistrySearch Id="PreviousInstallFolder"
+                      Root="HKLM"
+                      Key="Software\TpMod\TpMod"
+                      Name="path"
+                      Type="raw"/>
+    </Property>
+
+
+    <CustomAction Id="SetDowRootDir" Property="TARGETDIR" Value="[DOWROOTFOLDER]"/>
+    <CustomAction Id="SetPreviousInstallDir" Property="TARGETDIR" Value="[PREVIOUSINSTALLFOLDER]"/>
 
 
     <InstallUISequence>
-      <Custom Action="SetTargetDir" Before="CostFinalize"/>
+      <Custom Action="SetPreviousInstallDir" Before="SetDowRootDir"></Custom>
+      <Custom Action="SetDowRootDir" Before="CostFinalize">
+        PREVIOUSINSTALLFOLDER = ""
+      </Custom>
     </InstallUISequence>
 
     <InstallExecuteSequence>
@@ -32,6 +45,7 @@
 
     <Feature Id="TpMod" Title="TournamentPatch Mod" Level="1" ConfigurableDirectory="TARGETDIR">
       <ComponentGroupRef Id="TpModComponents" />
+      <ComponentRef Id="RegistryEntries"/>
     </Feature>
 
     <Feature Id="CameraFix" Title="Camera Fix" Display="collapse">
@@ -375,6 +389,16 @@
         <File Id="KeyDefaults.lua" Source="..\..\Files\QwertyHotkeys\KEYDEFAULTS.LUA"></File>
       </Component>
     </ComponentGroup>
-  </Fragment>
 
+    <DirectoryRef Id="TARGETDIR">
+      <Component Id="RegistryEntries" Guid="821d8b0e-4895-49de-90b7-6cc98a3a47bb">
+        <RegistryKey Root="HKLM"
+                     Key="Software\TpMod\TpMod"
+                     Action="createAndRemoveOnUninstall">
+          <RegistryValue Type="integer" Name="SomeIntegerValue" Value="1" KeyPath="yes"/>
+          <RegistryValue Type="string" Name="path" Value="[TARGETDIR]"/>
+        </RegistryKey>
+      </Component>
+    </DirectoryRef>
+  </Fragment>
 </Wix>
