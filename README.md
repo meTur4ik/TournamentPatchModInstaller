@@ -1,23 +1,20 @@
 # TournamentPatchModInstaller
-NSIS Installer for TournamentPatch mod
+MSI Installer for TournamentPatch mod
 
 ## Русский:
 Генерация установщика:
-- Установить NSIS. Найти его можно тут: [https://nsis.sourceforge.io/Download](https://nsis.sourceforge.io/Download) (нужна 3.* версия).
-- Распаковать архив с Tournament Patch в папку `Files\` и убедиться, что лицензия совпадает с желаемой, если нет - заменить на желаемую.
-- После того, как всё проверено - натравить NSIS на файл `main.nsi`. Это можно сделать как `ПКМ по main.nsi > Compile NSIS Script`, так и из коммандной строки (если прописан PATH):
-```cmd
-    makensis.exe .\main.nsi
-```
-- После того, как NSIS отработает, в корневой папке репозитория появится установщик `TPModInstaller.exe`. для Steam'овской версии он сам найдёт, где лежит игра.
+- Установить [Visual Studio](https://visualstudio.microsoft.com/ru/vs/) (рекомендуется 2019 любой редакции).
+- Установить WIX. Найти его можно тут: [https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm](https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm) (нужна 3.11.* версия. в ином случае надо редактировать путь в задаче "HeatDirectory" в файле [TournamentPatchModInstaller.wixproj](TournamentPatchModInstaller/TournamentPatchModInstaller/TournamentPatchModInstaller.wixproj).
+- Установить расширение [WiX для Visual Studio](https://marketplace.visualstudio.com/items?itemName=WixToolset.WiXToolset) для скачанной версии Visual Studio
+- Распаковать архив с Tournament Patch в папку `Files\Mod` и убедиться, что [лицензия](TournamentPatchModInstaller\TournamentPatchModInstaller\Visuals\License.rtf) совпадает с желаемой, если нет - заменить на желаемую.
+- После того, как всё проверено, собрать проект (открыть [TournamentPatchModInstaller.sln](TournamentPatchModInstaller/TournamentPatchModInstaller.sln), в Visual Studio, выбрать на верхней панели желаемую конфигурацию (Debug или Release) и нажать комбинацию клавиш `Ctrl+Shift+B`)
+- После того, как сборка окончена, в папке `TournamentPatchModInstaller/TournamentPatchModInstaller/bin` появится папка `Release` или `Debug` (в зависимости от конфигурации), в которой будет находиться установщик `TournamentPatchMod.msi`.
 
 ## English:
 Generating an installer:
-
-- Install NSIS. You can find it here: [https://nsis.sourceforge.io/Download](https://nsis.sourceforge.io/Download) (3.* version).
-- Unpack archive with Tournament Patch into `Files\` directory and ensure that license template matches with your license. if not - replace with your license file.
-- Compile `main.nsi`. It could be done as `RMB on main.nsi > Compile NSIS Script`, or with cmd (if PATH variable is updated for NSIS):
-```cmd
-    makensis.exe .\main.nsi
-```
-- After Compilation installer `TPModInstaller.exe` should appear in the root directory. If installing on Steam version of Soulstorm it should find target folder.
+- install [Visual Studio](https://visualstudio.microsoft.com/vs/) (2019 of any edition is recommended).
+- Install WIX. You can find it here: [https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm](https://github.com/wixtoolset/wix3/releases/tag/wix3112rtm) (3.11.* version is used in this project by default, however, you can install other and configure path to it in "HeatDirectory" task for [TournamentPatchModInstaller.wixproj](TournamentPatchModInstaller/TournamentPatchModInstaller/TournamentPatchModInstaller.wixproj)).
+- Install [WiX for Visual Studio](https://marketplace.visualstudio.com/items?itemName=WixToolset.WiXToolset) extension for downloaded version of Visual Studio
+- Unpack archive with Tournament Patch into `Files\Mod` directory and ensure that [license template](TournamentPatchModInstaller/TournamentPatchModInstaller/Visuals/License.rtf) matches with your license. if not - replace with your license file.
+- Open [TournamentPatchModInstaller.sln](TournamentPatchModInstaller/TournamentPatchModInstaller.sln) in Visual Studio, choose Build Configuration (Debug or Release) and press `Ctrl+Shift+B` key combination to build a project.
+- After build finishes correctly, the `TournamentPatchMod.msi` shall appear inside `TournamentPatchModInstaller/TournamentPatchModInstaller/bin/(Debug or Release)` folder.

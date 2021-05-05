@@ -17,6 +17,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
+    <DefineConstants>SourceFilesDir=..\..\Files\Mod</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Components.wxs" />
