@@ -4,3 +4,4 @@
 *.sgb filter=lfs diff=lfs merge=lfs -text
 *.tga filter=lfs diff=lfs merge=lfs -text
 *.sga filter=lfs diff=lfs merge=lfs -text
+30228baa04df9f0bf87a4cdf17aaf3200a19640c filter=lfs diff=lfs merge=lfs -text
