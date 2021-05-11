@@ -6,6 +6,9 @@
     <MajorUpgrade Schedule="afterInstallValidate" DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
     <MediaTemplate EmbedCab="yes" />
 
+    <Icon Id="ss.ico" SourceFile="Visuals\ss.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="ss.ico" />
+
     <UIRef Id="WixUI_FeatureTree"/>
     <Property Id="WIXUI_INSTALLDIR" Value="TARGETDIR" />
     <WixVariable Id="WixUILicenseRtf" Value="Visuals\License.rtf" />
@@ -99,7 +102,12 @@
         </RegistryKey>
       </Component>
       <Component Id="LauncherShortcut" Guid="e1f69857-c574-48a1-bc20-701d9fe219c3">
-        <Shortcut Id="SoulstormShortcut" Name="Tournament Patch" Target="[TARGETDIR]Soulstorm.exe" Arguments="-modname TournamentPatch" Directory="DesktopFolder"/>
+        <Shortcut Id="SoulstormShortcut"
+                  Name="Tournament Patch"
+                  Target="[TARGETDIR]Soulstorm.exe"
+                  Arguments="-modname TournamentPatch"
+                  Directory="DesktopFolder"
+                  Icon="ss.ico"/>
         <RegistryValue Root="HKCU"
                        Name="installed"
                        Type="integer"
