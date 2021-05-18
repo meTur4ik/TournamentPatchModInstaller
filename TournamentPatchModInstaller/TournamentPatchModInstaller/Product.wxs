@@ -63,7 +63,7 @@
   </Product>
 
   <Fragment>
-    <Directory Id="TARGETDIR" Name="SourceDir">
+    <Directory Id="TARGETDIR" Name="SourceDir" ComponentGuidGenerationSeed="626453c8-0f6b-49da-a02d-98b638f528b5">
       <Directory Id="DesktopFolder" SourceName="Desktop"/>
       <Directory Id="TP" Name="TournamentPatch"/>
       <Directory Id="ENGINE" Name="Engine">

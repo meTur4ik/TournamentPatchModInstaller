@@ -46,7 +46,7 @@
     <PropertyGroup>
       <WixToolPath>C:\Program Files (x86)\WiX Toolset v3.11\bin</WixToolPath>
     </PropertyGroup>
-    <HeatDirectory ToolPath="$(WixToolPath)" Directory="$(ProjectDir)..\..\Files\Mod" ComponentGroupName="TpModComponents" DirectoryRefId="TARGETDIR" GenerateGuidsNow="true" SuppressFragments="true" SuppressRootDirectory="true" PreprocessorVariable="var.SourceFilesDir" OutputFile="Components.wxs" />
+    <HeatDirectory ToolPath="$(WixToolPath)" Directory="$(ProjectDir)..\..\Files\Mod" ComponentGroupName="TpModComponents" DirectoryRefId="TARGETDIR" AutogenerateGuids="true" SuppressFragments="true" SuppressRootDirectory="true" PreprocessorVariable="var.SourceFilesDir" OutputFile="Components.wxs" />
   </Target>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
