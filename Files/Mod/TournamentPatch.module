@@ -4,7 +4,7 @@ Description = Unofficial balance mod for Dawn of War - Soulstorm
 Playable = 1
 DllName = WXPMod
 ModFolder = TournamentPatch
-ModVersion = 1.6.4
+ModVersion = 1.6.5
 
 ;; //////////////////////////////////////////////////////////////////
 ;; List of folders to map for this MOD 
