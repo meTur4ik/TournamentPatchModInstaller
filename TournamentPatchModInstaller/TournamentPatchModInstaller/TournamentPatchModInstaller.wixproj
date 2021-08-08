@@ -22,7 +22,6 @@
   <ItemGroup>
     <Compile Include="Components.wxs" />
     <Compile Include="Product.wxs" />
-    <Compile Include="TpModFiles.wxs" />
   </ItemGroup>
   <ItemGroup>
     <WixExtension Include="WixUIExtension">
