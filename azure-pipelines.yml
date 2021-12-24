@@ -1,0 +1,31 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- msi_master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'x86'
+  buildConfiguration: 'Release'
+
+steps:
+- checkout: self  # self represents the repo where the initial Pipelines YAML file was found
+  lfs: true
+
+- task: MSBuild@1
+  displayName: 'Building Installer'
+  inputs:
+    solution: '$(solution)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+    msbuildArguments: >
+      /target:Build
+
+- publish: $(System.DefaultWorkingDirectory)/TournamentPatchModInstaller/TournamentPatchModInstaller/bin/Release
+  artifact: TournamentPatchMod.msi
