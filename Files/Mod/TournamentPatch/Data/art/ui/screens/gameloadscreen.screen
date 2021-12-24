@@ -279,6 +279,7 @@ Screen =
 					1,
 					1,
 				},
+			
 			},
 			-- LOADING TEXT
 			--[[
@@ -2914,7 +2915,86 @@ Screen =
 					0.37925,
 				},
 			},
-			
+	
+
+			{
+				type = "ArtLabel",
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleLabel",
+				},
+				position =  
+				{
+					0,
+					0,
+				},
+				name = "artMapFrameBorder1",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Graphic",
+							ID = 356611,
+							texture = "generic:art/ui/textures/map_frame_border1.tga",
+							states =  
+							{
+								"Normal",
+								"Disabled",
+								"Active",
+								"Hover",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					1,
+					0.03,
+				},
+			},
+
+			{
+				type = "ArtLabel",
+				style =  
+				{
+					"DefaultStyles",
+					"defStyleLabel",
+				},
+				position =  
+				{
+					0,
+					0.85,
+				},
+				name = "artMapFrameBorder2",
+				Presentation =  
+				{
+					Art =  
+					{
+						 
+						{
+							type = "Graphic",
+							ID = 356611,
+							texture = "generic:art/ui/textures/map_frame_border2.tga",
+							states =  
+							{
+								"Normal",
+								"Disabled",
+								"Active",
+								"Hover",
+							},
+						},
+					},
+				},
+				size =  
+				{
+					1,
+					0.15,
+				},
+			},
+							
 			{
 				-- PROGRESS BAR
 				type = "ProgressBar",
@@ -3240,7 +3320,17 @@ ToolInfo =
 	version = 3,
 	WidgetInfo =  
 	{
-		 
+		 {
+			ArtGuides =  
+			{
+			},
+			name = "artMapFrameBorder111",
+			HitAreaGuides =  
+			{
+			},
+			type = "ArtLabel",
+		},
+
 		{
 			ArtGuides =  
 			{
@@ -3899,7 +3989,7 @@ ToolInfo =
 			},
 			type = "ArtLabel",
 		},
-		
+				
 	},
 	Guides =  
 	{

@@ -1,0 +1,12 @@
+-- This file is generated automatically by the Relic Audio Tool
+
+version = 9
+
+priority = 15
+volume = 0.3
+maxPolyphony = 1
+
+containerType = 3
+loopingContainer = 0
+silenceBreak = 0
+silenceRandom = 0
